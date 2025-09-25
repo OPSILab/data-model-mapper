@@ -15,9 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
+//IMPORTANT: this module now does not work with multiple requests. Use it only in cli mode
 
 var fs = require('fs');
-const log = require('../utils/logger').app(module);
+const log = require('../utils/logger')//.app(module);
+const {Logger} = log
+const logger = new Logger(__filename)
 const utils = require('../utils/utils');
 const config = require('../../config').fileWriter;
 
@@ -31,16 +34,16 @@ const writeObject = async (objNumber, obj, addBRLine) => {
     /** Initialize File Stream and its first content ***/
     if (utils.isFileWriterActive && !outFileStream) {
 
-        outFileStream = fs.createWriteStream(process.env.outFilePath || utils.parseFilePath(config.filePath).absolute);
+        outFileStream = fs.createWriteStream(config.outFilePath || utils.parseFilePath(config.filePath).absolute);
         outFileStream.write("[");
 
     }
 
-    if (obj && process.env.outFilePath && outFileStream) {
+    if (obj && config.outFilePath && outFileStream) {
 
         return new Promise(async (resolve, reject) => {
 
-            log.debug('Writing to file, object number: ' + objNumber + ' , id: ' + obj.id);
+            logger.debug('Writing to file, object number: ' + objNumber + ' , id: ' + obj.id);
             try {
 
                 outFileStream.on('error', (error) => reject("There was an error while writing object to File Stream: " + error));
@@ -52,29 +55,29 @@ const writeObject = async (objNumber, obj, addBRLine) => {
 
                 outFileStream.write(JSON.stringify(obj));
                 isFirstObject = false;
-                process.env.fileWrittenCount++;
+                config.fileWrittenCount++;
 
                 // Add a blank return line if enabled
                 if (addBRLine)
                     outFileStream.write("\n");
 
-                log.debug("'Entity Number: ' + objNumber + ' with Id: ' + obj.id + ' correctly written to file");
+                logger.debug("'Entity Number: ' + objNumber + ' with Id: ' + obj.id + ' correctly written to file");
                 return resolve();
 
             } catch (err) {
-                process.env.fileUnWrittenCount++;
-                log.error('Error while writing mapped object to file');
-                log.error('----------------------------------------------------------\n' +
+                config.fileUnWrittenCount++;
+                logger.error('Error while writing mapped object to file');
+                logger.error('----------------------------------------------------------\n' +
                     'Entity Number: ' + objNumber + ' with Id: ' + obj.id + ' NOT written to file');
-                console.log(err)
+                logger.error(err)
                 return reject(err);
             }
         });
     } else {
 
         return new Promise(async (resolve, reject) => {
-            console.log('');
-            log.debug("Mapped Object is undefined or the FileWriter was not correctly configured");
+            logger.info('');
+            logger.debug("Mapped Object is undefined or the FileWriter was not correctly configured");
             return resolve();
         });
     }
@@ -84,27 +87,27 @@ const finalizeFile = async () => {
 
     return new Promise(async (resolve, reject) => {
 
-        await outFileStream.write("]");
-        await outFileStream.on('end', () => resolve("File stream correctly closed"));
-        await outFileStream.on('error', () => reject("File stream failed to close"));
-        await outFileStream.end();
+        await outFileStream?.write("]");
+        await outFileStream?.on('end', () => resolve("File stream correctly closed"));
+        await outFileStream?.on('error', () => reject("File stream failed to close"));
+        await outFileStream?.end();
         outFileStream = undefined;
         return resolve();
-    }).then(value => { if (value) log.debug(value) }).catch(value => console.log(value));
+    }).then(value => { if (value) logger.debug(value) }).catch(value => logger.error(value));
 };
 
 const printFileFinalReport = async (logger) => {
 
     await logger.info('\t\n--------FILE WRITER REPORT----------\n' +
-        '\t Object written to File: ' + process.env.fileWrittenCount + '/' + process.env.validCount + '\n' +
-        '\t Object NOT written to File: ' + process.env.fileUnWrittenCount + '/' + process.env.validCount + '\n' +
+        '\t Object written to File: ' + config.fileWrittenCount + '/' + config.validCount + '\n' +
+        '\t Object NOT written to File: ' + config.fileUnWrittenCount + '/' + config.validCount + '\n' +
         '\t-----------------------------------------');
 
 };
 
 /// Use Events?
 async function checkAndPrintFinalReport() {
-    if (parseInt(process.env.fileWrittenCount) + parseInt(process.env.fileUnWrittenCount) == parseInt(process.env.validCount)) {
+    if (parseInt(config.fileWrittenCount) + parseInt(config.fileUnWrittenCount) == parseInt(config.validCount)) {
         await printFileFinalReport(log);
     }
 }

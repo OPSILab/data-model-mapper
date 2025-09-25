@@ -24,40 +24,48 @@ const geoParser = require("../parsers/geoJsonParser.js");
 const jsonParser = require("../parsers/jsonParser.js");
 const orionWriter = require("../writers/orionWriter");
 const fileWriter = require("../writers/fileWriter");
-const log = require('../utils/logger').app(module);
+const log = require('../utils/logger')//.app(module);
+const { Logger } = log
+const logger = new Logger(__filename)
 const report = require('../utils/logger').report;
 const utils = require('../utils/utils.js');
+const common = require('../utils/common.js');
 const config = require("../../config.js");
-const service = require("../server/api/services/service");
+const { load } = require('nconf');
 
+//var promises = [];
 
-process.env.validCount = 0;
-process.env.unvalidCount = 0;
-process.env.orionWrittenCount = 0;
-process.env.orionUnWrittenCount = 0;
-process.env.orionSkippedCount = 0;
-process.env.fileWrittenCount = 0;
-process.env.fileUnWrittenCount = 0;
-process.env.rowNumber = 0;
+const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res) => {
 
-var promises = [];
+    if (!res.dmm)
+        res.dmm = {}
+    res.dmm.promises = []
 
-const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath) => {
+    config.validCount = 0;
+    config.unvalidCount = 0;
+    config.orionWrittenCount = 0;
+    config.orionUnWrittenCount = 0;
+    config.orionSkippedCount = 0;
+    config.fileWrittenCount = 0;
+    config.fileUnWrittenCount = 0;
+    config.rowNumber = 0;
 
-    reinitializeProcessStatus();
+    res.dmm.config = config
+
+    //reinitializeProcessStatus();
 
     if (dataModelSchemaPath && mapData) {
 
-        log.debug("dataModelSchemaPath && mapData")
+        logger.debug("dataModelSchemaPath && mapData")
 
         if (sourceData) {
 
-            log.debug("sourceData:");
-            log.debug(sourceData);
-            log.debug(typeof sourceData)
+            //logger.trace("sourceData:");
+            //logger.trace(sourceData);
+            //logger.debug(typeof sourceData)
 
             if (typeof sourceData === 'object') sourceData = sourceData.toString()
-            log.debug(sourceData);
+            //logger.trace(sourceData);
 
             if (typeof sourceData === 'string') {
 
@@ -70,34 +78,34 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
                 var extension = sourceData.ext;
                 if (!extension) {
                     // No file path provided nor dataType
-                    log.error('The provided url/file path does not have file extension');
+                    logger.error('The provided url/file path does not have file extension');
                     return Promise.reject('The provided url / file path does not have file extension');
                 }
 
             } else if (!sourceDataType) {
                 // No file path provided nor dataType
-                log.error('No file path provided nor dataType');
+                logger.error('No file path provided nor dataType');
                 return Promise.reject('No file path provided nor dataType');
             }
 
             if (typeof mapData === 'string' && !mapData.startsWith("{")) {
                 mapData = utils.parseFilePath(mapData);
-                log.debug("typeof mapData === 'string' && !mapData.startsWith({})");
+                logger.debug("typeof mapData === 'string' && !mapData.startsWith({})");
             }
 
             try {
                 // Load Map form file/url or directly as object
                 var map = await mapHandler.loadMap(mapData[1] == "mapData" ? mapData[0] : mapData); // map is the file map loaded
-                log.debug("map is the file map loaded")
+                logger.debug("map is the file map loaded")
             } catch (error) {
-                log.error('There was an error while loading Map: ');
-                console.log(error)
+                logger.error('There was an error while loading Map: ');
+                logger.error(error)               
                 return Promise.reject('There was an error while loading Map: ' + error);
             }
 
 
             if (map) {
-                log.info('Map loaded');
+                logger.info('Map loaded');
 
                 try {
 
@@ -106,40 +114,43 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
                     if ((targetDataModel = map['targetDataModel']) !== undefined) {
                         /* Check if provided TargetDataModel is valid, otherwise return error */
                         if ((dataModelSchemaPath = utils.getDataModelPath(targetDataModel)) === undefined) {
-                            log.error("Incorrect target Data Model name: "+ targetDataModel);
-                            process.res?.status(400).json({"error": "Incorrect target Data Model name: "+ targetDataModel})
+                            logger.error("Incorrect target Data Model name: " + targetDataModel);
+                            res?.status(400).json({ "error": "Incorrect target Data Model name: " + targetDataModel })
                             return Promise.reject("Incorrect target Data Model name");
                         }
                     }
                     delete map['targetDataModel'];
                     var loadedSchema = await schemaHandler.parseDataModelSchema(dataModelSchemaPath); // here schema is loaded
-                    log.info('Data Model Schema loaded and dereferenced');
+                    logger.info('Data Model Schema loaded and dereferenced');
 
                 } catch (error) {
-                    log.error('There was an error while processing Data Model schema: ');
-                    console.log(error)
-                    return Promise.reject(error);
+                    logger.error('There was an error while processing Data Model schema: ');
+                    logger.error(error)                  
+                    if (schema)
+                        loadedSchema = JSON.parse(JSON.stringify(schema))
+                    else
+                        return Promise.reject(error);
                 }
 
-                log.info('Starting to Map Source Object');
+                logger.info('Starting to Map Source Object');
 
                 switch (extension || sourceDataType.toLowerCase()) {
 
                     case '.txt':
                     case 'txt':
-                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess);
+                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
                         break;
                     case '.csv':
                     case 'csv':
-                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess);
+                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
                         break;
                     case '.json':
                     case 'json':
-                        await jsonParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess);
+                        await jsonParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
                         break;
                     case '.geojson':
                     case 'geojson':
-                        geoParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess);
+                        geoParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
                         break;
                     default:
                         break;
@@ -147,20 +158,20 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
                 return await Promise.resolve("OK");
 
             } else {
-                log.error('There was an error while loading Map File');
+                logger.error('There was an error while loading Map File');
                 return await Promise.reject('There was an error while loading Map File');
             }
 
         } else {
-            log.error('The source Data is not a valid file nor a valid path/url: ');
+            logger.error('The source Data is not a valid file nor a valid path/url: ');
             return await Promise.reject('The source Data is not a valid file nor a valid path/url');
         }
 
     } else if (!dataModelSchemaPath) {
-        log.error('Data Model Schema path not specified');
+        logger.error('Data Model Schema path not specified');
         return await Promise.reject('Data Model Schema path not specified');
     } else {
-        log.error('Map path not specified');
+        logger.error('Map path not specified');
         return await Promise.reject('Map path not specified');
     }
 
@@ -168,71 +179,106 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
 };
 
 
-const processRow = async (rowNumber, row, map, schema, mappedHandler) => {
+const processRow = async (rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res) => {//TODO this can confict with command line mode: fix
 
     /** If any, extract site, service and group for Id Pattern from Map and 
      * set globally for each row of this mapping, otherwise use the ones initialized in the Global Vars 
      **/
 
-    process.env.idSite = map['idSite'] || process.env.idSite;
-    process.env.idService = map['idService'] || process.env.idService;
-    process.env.idGroup = map['idGroup'] || process.env.idGroup;
+    config.idSite = map['idSite'] || config.idSite;
+    config.idService = map['idService'] || config.idService;
+    config.idGroup = map['idGroup'] || config.idGroup;
     delete map['idSite'];
     delete map['idService'];
     delete map['idGroup'];
+    try {
+        var result = mapHandler.mapObjectToDataModel(rowNumber, utils.cleanRow(row, NGSI_entity), map, schema, config.idSite, config.idService, config.idGroup, config.entityNameField, NGSI_entity, minioObj, config, res);
+    }
+    catch (error) {
+        logger.error(error, "\n", error.message)
+    }
 
-    var result = mapHandler.mapObjectToDataModel(rowNumber, utils.cleanRow(row), map, schema, process.env.idSite, process.env.idService, process.env.idGroup, config.entityNameField);
-
-    log.debug("Row: " + rowNumber + " - Object mapped correctly ");
-    await mappedHandler(rowNumber, result, schema);
+    logger.debug("Row: " + rowNumber + " - Object mapped correctly ");
+    //logger.trace("Result: " + JSON.stringify(result))
+    await mappedHandler(rowNumber, result, schema, res.dmm.promises, config);
 
 };
 
-const processMappedObject = async (objNumber, obj, modelSchema) => {
+const processMappedObject = async (objNumber, obj, modelSchema, promises, config) => {
+    if (!promises)
+        promises = []
+    try {
+        config.writers.forEach(async (writer) => {
 
-    config.writers.forEach(async (writer) => {
+            switch (writer) {
 
-        switch (writer) {
-
-            case 'orionWriter':
-                promises.push(await orionWriter.writeObject(objNumber, obj, modelSchema));
-                break;
-            case 'fileWriter':
-                promises.push(await fileWriter.writeObject(objNumber, obj, config.fileWriter.addBlankLine));
-                break;
-            default:
-                promises.push(await utils.sleep(0));
-                break;
-        }
-    });
+                case 'orionWriter':
+                    try {
+                        //logger.trace("obj : " + JSON.stringify(obj))
+                        promises.push(
+                            async () => await orionWriter.writeObject(objNumber, obj, modelSchema, config)
+                        );
+                    }
+                    catch (error) {
+                        logger.error(error.toString())
+                        //logger.debug(JSON.stringify(error))
+                    }
+                    break;
+                case 'fileWriter':
+                    promises.push(await fileWriter.writeObject(objNumber, obj, config.fileWriter.addBlankLine, config));
+                    break;
+                default:
+                    //promises.push(await common.sleep(0));
+                    break;
+            }
+        });
+    }
+    catch (error) {
+        logger.error(error.toString())
+        //logger.debug(JSON.stringify(error))
+    }
 };
 
-const finalizeProcess = async () => {
+const finalizeProcess = async (minioObj, config, res) => {
+
+    let promises = res.dmm.promises
 
     try {
-        await Promise.all(promises);
+        //await Promise.all(promises);
+        for (let i = 0; i < promises.length; i++) {
+            logger.debug("Promise ", i)
+            try {
+                await promises[i]();
+                if (config.orionWriter.delayBetweenRequests)
+                    await common.sleep(config.orionWriter.delayBetweenRequests)
+            }
+            catch (error) {
+                logger.error(error, promises[i])
+            }
+        }
 
+        //WARNING: this indeed restore global env but brokes the orion request
         /* If server mode, restore current per request configuration to the default ones */
-        if (config.mode.toLowerCase() === 'server')
-            utils.restoreDefaultConfs();
+        //if (config.mode.toLowerCase() === 'server')
+        //utils.restoreDefaultConfs();
 
         // Wait until all promises resolve (defined and pushed in processMappedObject handler)
         if (utils.isFileWriterActive()) {
-            await fileWriter.finalize(); // Finalize file in case of using fileWriter
-            await fileWriter.checkAndPrintFinalReport();
+            await fileWriter.finalize(config); // Finalize file in case of using fileWriter
+            await fileWriter.checkAndPrintFinalReport(config);
         }
 
         if (utils.isOrionWriterActive()) {
-            await orionWriter.checkAndPrintFinalReport();
+            await orionWriter.checkAndPrintFinalReport(config);
         }
 
-        await utils.printFinalReportAndSendResponse(log);
-        await utils.printFinalReportAndSendResponse(report);
+        await utils.printFinalReportAndSendResponse(log, minioObj, config, res);
+        //await utils.printFinalReportAndSendResponse(report);
 
-        return await Promise.resolve();
+        //return await Promise.resolve();
 
     } catch (error) {
-        console.log(error)
+        logger.error(error)      
         return await Promise.reject(error);
     }
 };
@@ -242,14 +288,14 @@ const finalizeProcess = async () => {
  **/
 const reinitializeProcessStatus = () => {
 
-    process.env.validCount = 0;
-    process.env.unvalidCount = 0;
-    process.env.orionWrittenCount = 0;
-    process.env.orionUnWrittenCount = 0;
-    process.env.orionSkippedCount = 0;
-    process.env.fileWrittenCount = 0;
-    process.env.fileUnWrittenCount = 0;
-    process.env.rowNumber = 0;
+    config.validCount = 0;
+    config.unvalidCount = 0;
+    config.orionWrittenCount = 0;
+    config.orionUnWrittenCount = 0;
+    config.orionSkippedCount = 0;
+    config.fileWrittenCount = 0;
+    config.fileUnWrittenCount = 0;
+    config.rowNumber = 0;
     promises = [];
 
 };

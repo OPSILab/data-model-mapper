@@ -39,3 +39,11 @@ mapper.bat
 sourceFileTemp.csv
 sourceFileTemp.json
 sourceFileTemp..json
+log0.json
+log1.json
+log2.json
+log3.json
+*.sandbox
+src/utils/common_dev.js
+src/utils/threads.js
+src/writers/orionWriter.old.js

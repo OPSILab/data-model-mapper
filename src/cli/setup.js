@@ -17,22 +17,22 @@
  ******************************************************************************/
 
 const commandLine = require('../utils/confUtils');
-const process = require('../utils/process');
+const dmmProcess = require('../utils/process');
 const config = require('../../config')
 
-const log = require('../utils/logger').app(module);
+const log = require('../utils/logger')//.app(module);
+const {Logger} = log
+const logger = new Logger(__filename)
 const utils = require('../utils/utils');
 
-let service = require ("../server/api/services/service")
-
-module.exports = async (sourceDataIn, mapPathIn, dataModelIn) => {
-    log.info("Initializing Mapper in " + (config.mode == "commandLine" ? "Command Line " : "Server ") + "Mode");
+module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res) => {
+    logger.info("Initializing Mapper in " + (config.mode == "commandLine" ? "Command Line " : "Server ") + "Mode");
 
     if (Array.isArray(sourceDataIn)) sourceDataIn = sourceDataIn[0]
 
-    if (commandLine.init(sourceDataIn, mapPathIn, dataModelIn)) {
+    if (commandLine.init(sourceDataIn, mapPathIn, dataModelIn, config)) {
 
-        log.debug("commandLine.init()");
+        logger.debug("commandLine.init()");
 
         // file path or directly string/binary content 
         var sourceData = sourceDataIn || commandLine.getParam('sourceDataPath');
@@ -40,20 +40,19 @@ module.exports = async (sourceDataIn, mapPathIn, dataModelIn) => {
         var dataModelPath = utils.getDataModelPath(dataModelIn) || commandLine.getParam('targetDataModel');
 
         try {
-            await process.processSource(sourceData, "", mapPath, dataModelPath);
+            await dmmProcess.processSource(sourceData, "", mapPath, dataModelPath, schema, NGSI_entity, minioObj, config, res)
         } catch (error) {
-            console.log(error)
-            //log.error(error)
-            service.error = error
+            logger.error(error)
+            dmmProcess.dataModelMapper.setupError = error
             return error
         }
 
-        log.debug("process.processSource end")
+        logger.debug("process.processSource end")
 
     } else {
-        console.log(error)
-        log.error("There was an error while initializing Mapper configuration");
-        service.error = "There was an error while initializing Mapper configuration"
+        logger.error(error)
+        logger.error("There was an error while initializing Mapper configuration");
+        dmmProcess.dataModelMapper.setupError = "There was an error while initializing Mapper configuration"
     }
 };
 

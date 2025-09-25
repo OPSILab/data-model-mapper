@@ -20,118 +20,120 @@ var JSONStream = require('JSONStream');
 const request = require('request');
 const fs = require('fs');
 const utils = require('../utils/utils');
-const log = require('../utils/logger').app(module);
+const log = require('../utils/logger')//.app(module);
+const {Logger} = log
+const logger = new Logger(__filename)
 const report = require('../utils/logger').report;
-const apiOutput = require('../server/api/services/service')
 const config = require('./../../config');
 
 
 
-async function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess) {
+async function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
 
     // The source Data is the file content itself
     if (sourceData && !sourceData.ext) {
 
         try {
-            await fileToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess);
+            await fileToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
         }
         catch (err) {
-            log.error('There was an error while getting buffer from source data: ');
-            console.log(err)
+            logger.error('There was an error while getting buffer from source data: ');
+            logger.error(err)
         }
 
     }
 
     // The source Data is the file URL
     else if (utils.httpPattern.test(sourceData.path))
-        await urlToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess);
+        await urlToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
 
     // The Source Data is the file path
     else if (sourceData.ext)
-        await fileToRowStream(fs.createReadStream(sourceData.absolute), map, schema, rowHandler, mappedHandler, finalizeProcess);
+        await fileToRowStream(fs.createReadStream(sourceData.absolute), map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
     else
-        log.error("No valid Source Data was provided");
+        logger.error("No valid Source Data was provided");
 
 }
 
-async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizeProcess) {
+async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
 
-    var rowNumber = Number(process.env.rowNumber);
-    var rowStart = Number(process.env.rowStart);
-    var rowEnd = Number(process.env.rowEnd);
+    var rowNumber = Number(config.rowNumber);
+    var rowStart = Number(config.rowStart);
+    var rowEnd = Number(config.rowEnd);
 
     request(url).pipe(JSONStream.parse('.*'))
         .on('error', function (err) {
-            console.error(err);
+            logger.error(err);
         })
         .on('header', function (columns) {
-            //  console.log('Columns: ' + columns);
+            //  logger.info('Columns: ' + columns);
         })
         .on('data', function (data) {
 
             rowNumber++;
-            process.env.rowNumber = rowNumber;
+            config.rowNumber = rowNumber;
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler);
+                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
 
             }
         })
         .on('column', function (key, value) {
             // outputs the column name associated with the value found
-            // console.log('#' + key + ' = ' + value);
+            // logger.info('#' + key + ' = ' + value);
         })
         .on('end', async function () {
             try {
 
-                await finalizeProcess();
-                log.debug("urlToRowStream: request(url).pipe(geo.parse()).on(end)");
-                await utils.printFinalReportAndSendResponse(log);
-                await utils.printFinalReportAndSendResponse(report);
+                await             finalizeProcess(minioObj, config, res);
+                logger.debug("urlToRowStream: request(url).pipe(geo.parse()).on(end)");
+                //await utils.printFinalReportAndSendResponse(log);
+                //await utils.printFinalReportAndSendResponse(report);
             } catch (error) {
-                log.error("Error While finalizing the streaming process: ");
-                console.log(error);
+                logger.error("Error While finalizing the streaming process: ");
+                logger.error(error);
             }
 
         });
 }
 
 
-async function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess) {
+async function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
 
-    var rowNumber = Number(process.env.rowNumber);
-    var rowStart = Number(process.env.rowStart);
-    var rowEnd = Number(process.env.rowEnd);
+    var rowNumber = Number(config.rowNumber);
+    var rowStart = Number(config.rowStart);
+    var rowEnd = Number(config.rowEnd);
 
     await inputData.pipe(JSONStream.parse('.*'))
         .on('error', function (err) {
-            console.error(err);
+            logger.error(err);
         })
         .on('header', function (columns) {
-            // console.log(columns);
+            // logger.info(columns);
         })
         .on('data', function (row) {
-            rowNumber = Number(process.env.rowNumber) + 1;
-            process.env.rowNumber = rowNumber;
+            rowNumber = Number(config.rowNumber) + 1;
+            config.rowNumber = rowNumber;
 
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler);
+                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
 
             }
 
         }).on('column', function (key, value) {
             // outputs the column name associated with the value found
-            //console.log('#' + key + ' = ' + value);
+            //logger.info('#' + key + ' = ' + value);
         })
         .on('end', async function () {
            
-            await finalizeProcess();
-            log.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");
-            await utils.printFinalReportAndSendResponse(log);
-            await utils.printFinalReportAndSendResponse(report);
+            await             finalizeProcess(minioObj, config, res);
+
+            logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");
+            //await utils.printFinalReportAndSendResponse(log);
+            //await utils.printFinalReportAndSendResponse(report);
 
         });
 
