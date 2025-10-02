@@ -109,6 +109,15 @@ const encodingHandler = (mapSourceSubField, source) => {
  * input source but it will set the output field to the return of the function)
  */
 
+const check = (x) => {
+    if (typeof x == "object")
+        for (let subKey in x)
+            x[subKey] = check(x[subKey])
+    if (typeof x == "string" && x.startsWith("static:"))
+        return new Function("input", "return '" + x.match(staticPattern)[1] + "'");
+    return x
+};
+
 const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) => {
     logger.debug({ parsedSourceKey, normSourceKey, schemaDestKey, source })
     for (let key in normSourceKey) {
@@ -241,7 +250,8 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             }
             if (typeof parsedSourceKey == "string")
                 parsedSourceKey = parsedSourceKey.replaceAll('"', '')
-            logger.debug({ mapDestKey, parsedSourceKey, coordinates: parsedSourceKey.coordinates?.toString() })
+            parsedSourceKey = check(parsedSourceKey)
+            logger.debug({ mapDestKey, parsedSourceKey: parsedSourceKey.toString(), keys: typeof parsedSourceKey == "object" ? Object.keys(parsedSourceKey) : "not an object", coordinatesIfLocation: parsedSourceKey.coordinates?.toString() })
             var converter = mapper.makeConverter({ [mapDestKey]: parsedSourceKey });
             try {
                 singleResult = converter(source);

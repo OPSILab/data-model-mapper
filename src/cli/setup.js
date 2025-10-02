@@ -21,7 +21,7 @@ const dmmProcess = require('../utils/process');
 const config = require('../../config')
 
 const log = require('../utils/logger')//.app(module);
-const {Logger} = log
+const { Logger } = log
 const logger = new Logger(__filename)
 const utils = require('../utils/utils');
 
@@ -50,8 +50,10 @@ module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entit
         logger.debug("process.processSource end")
 
     } else {
-        logger.error(error)
-        logger.error("There was an error while initializing Mapper configuration");
+        logger.error(sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res.body, res.dmm)
+        logger.error("There was an error while initializing Mapper configuration")
+        if (!dmmProcess.dataModelMapper)
+            dmmProcess.dataModelMapper = {}
         dmmProcess.dataModelMapper.setupError = "There was an error while initializing Mapper configuration"
     }
 };

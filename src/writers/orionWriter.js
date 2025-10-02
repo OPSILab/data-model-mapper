@@ -177,6 +177,7 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
 
     if (obj) {
         logger.debug('Sending to Orion CB object number: ' + objNumber + ' , id: ' + obj.id);
+        logger.debug({ToOrionObject : !config.orionWriter.keyValues || obj})
 
         var orionedObj = !config.orionWriter.keyValues && toOrionObject(obj, modelSchema) || obj;
 
@@ -517,7 +518,7 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
 
 function toOrionObject(obj, schema) {
 
-    // logger.debug("Transforming Mapped object to an Orion Entity (explicit types in attributes)");
+    logger.debug("Transforming Mapped object to an Orion Entity (explicit types in attributes)");
 
     for (key in obj) {
         if (key != 'id' && key != 'type') {
@@ -526,12 +527,13 @@ function toOrionObject(obj, schema) {
             var modelFieldType = modelField.type;
             var modelFieldFormat = modelField.format;
             var objField = obj[key];
+            logger.debug({key : obj[key], modelField});
 
             if (key == 'location') {
 
                 var newValue = {};
                 newValue = {
-                    type: "geo:json",
+                    type: modelFieldType,//"geo:json",
                     value: objField
                 };
                 obj['location'] = newValue;
