@@ -109,6 +109,7 @@ const encodingHandler = (mapSourceSubField, source) => {
  * input source but it will set the output field to the return of the function)
  */
 
+
 const check = (x) => {
     if (typeof x == "object")
         for (let subKey in x)
