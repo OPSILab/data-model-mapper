@@ -1,0 +1,35 @@
+name: Sync
+
+on:
+  push:
+    branches:
+      - fullstack 
+  workflow_dispatch: 
+
+jobs:
+  push-subtrees:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout fullstack
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.FRONTEND_KEY }}
+
+      
+      - name: Set Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+     
+      - name: Add frontend remote
+        run: git remote add frontend-remote git@github.com:OPSILab/Data-model-mapper-frontend.git || echo "Remote already exists"
+     
+      - name: Push frontend subtree
+        run: git subtree push --prefix=frontend frontend-remote main || echo "No changes"

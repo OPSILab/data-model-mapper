@@ -15,6 +15,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  
+          
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.BACKEND_KEY }}
 
       
       - name: Set Git user
@@ -23,15 +28,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
      
-      - name: Add frontend remote
-        run: git remote add frontend-remote https://github.com/OPSILab/Data-model-mapper-frontend.git || echo "Remote already exists"
-
       - name: Add backend remote
-        run: git remote add backend-remote https://github.com/OPSILab/Data-model-mapper-backend.git || echo "Remote already exists"
-
+        run: git remote add backend-remote git@github.com:OPSILab/Data-model-mapper-backend.git || echo "Remote already exists"
      
-      - name: Push frontend subtree
-        run: git subtree push --prefix=frontend frontend-remote main || echo "No changes"
-
       - name: Push backend subtree
         run: git subtree push --prefix=backend backend-remote main || echo "No changes"
