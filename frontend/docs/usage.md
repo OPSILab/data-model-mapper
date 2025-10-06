@@ -292,7 +292,7 @@ If you just need an example payload, you can go to *example payload* accordion a
 
 ## Config accordion
 
-The config settings can be modified by writing them on the [Config file](../backend/config.js) once you install the Data model mapper, however you can set your transform config template for each mapper record. Go down to the *Config* accordion and click it.
+The config settings can be modified by writing them on the **Config file** in the *backend* folder once you install the Data model mapper, however you can set your transform config template for each mapper record. Go down to the *Config* accordion and click it.
 
 ![](images/config.png)
 
