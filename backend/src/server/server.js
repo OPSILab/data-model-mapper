@@ -9,16 +9,10 @@ module.exports = () => {
   const swaggerUi = require('swagger-ui-express');
   let swaggerDocument = require('./swagger/swagger.json');
   let minioDocument = require('./swagger/minio.json');
- // const service = require("./api/services/service.js")
   const log = require('../utils/logger')//.app(module);
-  //const {trace, debug, info, warn, err} = log
-  //const e = log.error
-  //function logger(fn, ...msg) { fn(__filename, ...msg) }
   const { type } = require('os');
-
   const { Logger } = log
   const logger = new Logger(__filename)
-
   const dmmServer = express();
 
   swaggerDocument.host = (config.host == "host.docker.internal" ? "localhost" : config.host) + (config.externalPort ? ":" + (config.externalPort || 5500) : "")
@@ -28,7 +22,7 @@ module.exports = () => {
     for (let path in minioDocument.paths)
       swaggerDocument.paths[path] = minioDocument.paths[path]
   */
-  let path = "/minio/getObject/{bucketName}/{objectName}"
+  let path = "/minio/getObject/{bucketName}/{objectName}" //TODO why?
   swaggerDocument.paths[path] = minioDocument.paths[path]
   dmmServer.use(express.json({ limit: '50mb' }));
   dmmServer.use(express.urlencoded({ limit: '50mb', extended: false }));
@@ -42,29 +36,11 @@ module.exports = () => {
     swaggerUi.setup(swaggerDocument)
   );
 
-  function getOs() {
-    /*const { exec } = require('child_process');
-
-    exec('pwd', (error, stdout, stderr) => {
-      if (error) {
-        logger.error(`Error: ${error}`);
-        //return;
-      }
-      if (stderr) {
-        logger.error(`Stderr: ${stderr}`);
-        //return;
-      }
-
-      const currentDirectory = stdout.trim();*/
-    return type()
-  }
-
   function init() {
-
 
     mongoose
       //.connect((currentDirectory == "/app" ? config.mongo.replace(/localhost/g, 'host.docker.internal') : config.mongo), { useNewUrlParser: true })
-      .connect((!getOs().startsWith("Windows") ? config.mongo.replace(/localhost/g, 'host.docker.internal') : config.mongo), {})
+      .connect(config.mongo, {})
       .then(() => {
         dmmServer.listen(config.httpPort || 5500, () => {
           logger.info("Server has started!");
@@ -74,14 +50,8 @@ module.exports = () => {
             logLevel: config.logLevel,
             activeWriters: config.writers
           })
-
-          /*if (config.writers.filter(writer => writer == "minioWriter")[0]) {
-            const minioWriter = require('../writers/minioWriter')
-            logger.info("Minio connection enabled")
-          }*/
         });
       })
-    //});
   }
 
   init()

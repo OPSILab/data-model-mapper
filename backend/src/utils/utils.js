@@ -280,7 +280,7 @@ const bodyMapper = (body) => {
     }
 
     let map
-    if (body.mapPathIn)
+    if (body.mapPathIn) //TODO this map handle must be consistent. Only object, not string or array or object
         map = config.sourceDataPath + body.mapPathIn
     else if (body.mapID) {
         map = {

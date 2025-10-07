@@ -27,6 +27,7 @@ const utils = require('../utils/utils');
 
 module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res) => {
     logger.info("Initializing Mapper in " + (config.mode == "commandLine" ? "Command Line " : "Server ") + "Mode");
+    logger.debug({sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj})
 
     if (Array.isArray(sourceDataIn)) sourceDataIn = sourceDataIn[0]
 
@@ -50,7 +51,7 @@ module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entit
         logger.debug("process.processSource end")
 
     } else {
-        logger.error(sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res.body, res.dmm)
+        logger.error(sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res?.body, res?.dmm)
         logger.error("There was an error while initializing Mapper configuration")
         if (!dmmProcess.dataModelMapper)
             dmmProcess.dataModelMapper = {}

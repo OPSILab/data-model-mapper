@@ -37,6 +37,8 @@ const { load } = require('nconf');
 
 const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res) => {
 
+    logger.debug(schema)
+
     if (!res.dmm)
         res.dmm = {}
     res.dmm.promises = []
@@ -106,12 +108,14 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
 
             if (map) {
                 logger.info('Map loaded');
+                logger.debug({map})
 
                 try {
 
                     // Load Data Model Schema from either map field "TargetDataModel", url or local file
                     let targetDataModel;
                     if ((targetDataModel = map['targetDataModel']) !== undefined) {
+                        logger.debug(targetDataModel)
                         /* Check if provided TargetDataModel is valid, otherwise return error */
                         if ((dataModelSchemaPath = utils.getDataModelPath(targetDataModel)) === undefined) {
                             logger.error("Incorrect target Data Model name: " + targetDataModel);

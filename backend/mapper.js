@@ -16,11 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
 const log = require('./src/utils/logger')
-//const {trace, debug, info, warn, err} = log
-//const e = log.error
-//function logger(fn, ...msg) { fn(__filename, ...msg) }
-
-const {Logger} = log
+const { Logger } = log
 const logger = new Logger(__filename)
 process.dataModelMapper = {}
 
@@ -33,24 +29,12 @@ try {
 
     if (config.mode === 'commandLine') {
         const cli = require('./src/cli/setup');
-        return cli();
+        return cli(undefined, undefined, undefined, undefined, undefined, undefined, config, {dmm:{}});
     } else if (config.mode === 'server') {
         const server = require('./src/server/server');
         return server();
     }
-
-
-    module.exports = (sourceDataIn, mapPathIn, dataModelIn) => {
-        if (config.mode === 'commandLine') {
-            const cli = require('./src/cli/setup');
-            return cli(sourceDataIn, mapPathIn, dataModelIn);
-        } else if (config.mode === 'server') {
-            const server = require('./src/server/server');
-            return server();
-        }
-    };
 }
 catch (error) {
     logger.error(error)
-    
 }
