@@ -35,6 +35,16 @@ const Debugger = require('./utils/debugger');
 const { type } = require('os');
 const report = require('./utils/logger').report;
 
+const checkSingleResult = (singleResult, source) => {
+    if (typeof singleResult == "object")
+        for (let key in singleResult)
+            if (typeof singleResult[key] == "function")
+                singleResult[key] = singleResult[key](source)
+            else if (typeof singleResult[key] == "object")
+                singleResult[key] = checkSingleResult(singleResult[key], source)
+    return singleResult
+}
+
 const loadMap = (mapData) => {
 
     if (typeof mapData === 'object' && mapData.absolute) {
@@ -50,6 +60,80 @@ const loadMap = (mapData) => {
     }
 
 };
+
+const fixBrokenJsonString = (str) => {
+    // Rimuove spazi inutili
+    str = str.trim()
+        .replace(/\s*{\s*/g, '{')
+        .replace(/\s*}\s*/g, '}')
+        .replace(/\s*:\s*/g, ':')
+        .replace(/\s*,\s*/g, ',');
+
+    // Aggiunge le virgolette alle chiavi e ai valori
+    // 1. Chiavi: qualsiasi parola prima dei due punti
+    str = str.replace(/([{,])(\w+):/g, '$1"$2":');
+
+    // 2. Valori non tra virgolette o parentesi
+    str = str.replace(/:([^,"\[\]{}]+)/g, ':"$1"');
+
+    // Se è un array senza virgolette intorno agli oggetti, le sistema
+    if (!str.startsWith('[')) str = `[${str}]`;
+
+    try {
+        return JSON.parse(str);
+    } catch (err) {
+        console.error('Errore parsing:', err.message, str);
+        return null;
+    }
+}
+
+const fixBrokenJsonString1 = (field) => {
+    let fixedField
+    field = field.replaceAll('[', '["')
+    field = field.replaceAll(']', '"]')
+    while (field.replaceAll("{ ", '{') != field) field = field.replaceAll("{ ", '{')
+    while (field.replaceAll(" {", '{') != field) field = field.replaceAll(" {", '{')
+    while (field.replaceAll("} ", '}') != field) field = field.replaceAll("} ", '}')
+    while (field.replaceAll(" }", '}') != field) field = field.replaceAll(" }", '}')
+    while (field.replaceAll(" : ", ':') != field) field = field.replaceAll(" : ", ':')
+    while (field.replaceAll(", ", ',') != field) field = field.replaceAll(", ", ',')
+    field = field.replaceAll("{", '{"');
+    field = field.replaceAll("}", '"}');
+    field = field.replaceAll(",", '","');
+    field = field.replaceAll(":", '":"');
+    try { 
+        fixedField = JSON.parse(field) 
+    }
+    catch (error) {
+        logger.error(error.message)
+        field = field.replaceAll('}","{', '},{');
+        while (field.replaceAll('" ', '"') != field) field = field.replaceAll('" ', '"')
+        while (field.replaceAll(' "', '"') != field) field = field.replaceAll(' "', '"')
+        while (field.replaceAll('":"{', '":{') != field) field = field.replaceAll('":"{', '":{');
+        while (field.replaceAll('}"', '}') != field) field = field.replaceAll('}"', '}');
+        field = field.replaceAll('["{', '[{');
+        //field = field.replaceAll('\"', '"');
+        fixedField = JSON.parse(field)
+    }
+
+    return fixedField || field
+
+}
+
+const fixBrokenJsonString2 = (str) => {
+    let fixed = str.replaceAll('[', '["').replaceAll(']', '"]').replaceAll(',', '","')
+        .replaceAll('{', '{"')
+        .replaceAll('}', '"}')
+        .replaceAll(':', '":"')
+    try {
+        return JSON.parse(fixed)
+    } catch (error) {
+        logger.error(fixed)
+        logger.error(fixed.toString())
+        logger.error(error)
+        return str
+    }
+}
 
 const cleanValue = (value) => {
     let parsed = false
@@ -110,14 +194,14 @@ const encodingHandler = (mapSourceSubField, source) => {
  * input source but it will set the output field to the return of the function)
  */
 
-const check = (x) => {
+/*const check = (x) => {
     if (typeof x == "object")
         for (let subKey in x)
             x[subKey] = check(x[subKey])
     if (typeof x == "string" && x.startsWith("static:"))
         return new Function("input", "return '" + x.match(staticPattern)[1] + "'");
     return x
-};
+};*/
 
 const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) => {
     logger.debug("objectHandler")
@@ -139,34 +223,42 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
                     schemaDestSubKey = oneOfElement.properties[key];
         logger.debug({ schemaDestSubKey })
 
-        if (schemaDestSubKey) {
+        if (schemaDestSubKey || schemaDestKey.type == "array") {
 
-            let schemaFieldType = schemaDestSubKey.type;
-            let schemaFieldFormat = schemaDestSubKey.format;
+            let schemaFieldType = schemaDestSubKey?.type;
+            let schemaFieldFormat = schemaDestSubKey?.format;
             let mapSourceSubField = normSourceKey[key];
+            logger.debug({ mapSourceSubField })
 
             parsedSourceKey[key] = {};
+            if (!schemaFieldType)
+                schemaFieldType = Array.isArray(normSourceKey) && "array" || typeof normSourceKey
+            logger.debug({ schemaFieldType })
             if (schemaFieldType === 'number' || schemaFieldType === 'integer' && mapSourceSubField.split('.').length == 1)
-                parsedSourceKey[key] = (input) => {
-                    return Number(input[mapSourceSubField])
-                };
+                parsedSourceKey[key] = Number(source[mapSourceSubField])
             else if (schemaFieldType === 'boolean')
-                parsedSourceKey[key] = new Function("input", "return (input[mapSourceSubField].toLowerCase() == 'true' || input[mapSourceSubField] == 1 || input['" + mapSourceSubField + "'] == '1'  ) ? true: false");
+                parsedSourceKey[key] = source[mapSourceSubField].toLowerCase() == 'true' || source[mapSourceSubField] == 1 || source[mapSourceSubField] == '1'
             else if (schemaFieldType === 'string' && schemaFieldFormat === 'date-time')
-                parsedSourceKey[key] = new Function("input", "return new Date(input['" + mapSourceSubField + "']).toISOString();");
+                parsedSourceKey[key] = new Date(source[mapSourceSubField]).toISOString();
             else if (schemaFieldType === 'string' && Array.isArray(mapSourceSubField))
-                parsedSourceKey[key] = new Function("input", "return " + handleSourceFieldsArray(mapSourceSubField).result);
-            else if (schemaFieldType === 'array')
-                parsedSourceKey[key] = new Function("input", "return " + handleSourceFieldsToDestArray(mapSourceSubField));
+                parsedSourceKey[key] = handleSourceFieldsArray(mapSourceSubField, false, source).result
+            else if (schemaFieldType === 'array') {
+                logger.debug("array"); parsedSourceKey[key] = handleSourceFieldsToDestArray(mapSourceSubField, source)
+            }
             else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("static:") || mapSourceSubField == "")) {
                 if (mapSourceSubField == "") mapSourceSubField = "static:"
-                parsedSourceKey[key] = new Function("input", "return '" + mapSourceSubField.match(staticPattern)[1] + "'");
-            } else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("encode:")))
-                parsedSourceKey[key] = new Function("input", "return '" + encodingHandler(mapSourceSubField, source) + "'");
+                parsedSourceKey[key] = mapSourceSubField.match(staticPattern)[1]
+                if (typeof parsedSourceKey[key] != "string")
+                    parsedSourceKey[key] = parsedSourceKey[key].toString()
+            } else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("encode:"))) {
+                parsedSourceKey[key] = encodingHandler(mapSourceSubField, source)
+                if (typeof parsedSourceKey[key] != "string")
+                    parsedSourceKey[key] = parsedSourceKey[key].toString()
+            }
             else if (schemaFieldType === 'object')
                 parsedSourceKey[key] = objectHandler(mapSourceSubField, mapSourceSubField, schemaDestSubKey)
             else  // normal string no action required
-                parsedSourceKey[key] = mapSourceSubField;
+                parsedSourceKey[key] = source[mapSourceSubField];
 
             // Add type to the nested map field
             //parsedNorm[key]['type'] = new Function("input", "return '" + schemaFieldType + "'");
@@ -216,45 +308,45 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             var normSourceKey = JSON.parse(unorm.nfc(JSON.stringify(mapSourceKey)));// Normalize encoding, avoiding problems 
             let parsedSourceKey = normSourceKey;// Initialize with normalized Source Key, can be replaced in the specific cases below
             logger.debug({ schemaDestKey, normSourceKey })
-            if (mapDestKey == "Field 2")
+            if (mapDestKey == "Field 31")
                 logger.debug("This might be a test. Expected choise is objec/arraytHandler")
             if (mapDestKey == entityIdField) {
                 logger.debug("entityIdField")
                 if (Array.isArray(normSourceKey) && normSourceKey.length !== 0) {
-                    let resIdFields = handleSourceFieldsArray(normSourceKey);
-                    parsedSourceKey = new Function("input", "return " + resIdFields.result);
+                    let resIdFields = handleSourceFieldsArray(normSourceKey, false, source);
+                    parsedSourceKey = resIdFields.result;
                     isIdPrefix = resIdFields.isOnlyStatic;
                 }
                 else if (normSourceKey.startsWith("static:"))
-                    parsedSourceKey = new Function("input", "return '" + normSourceKey.match(staticPattern)[1] + "'");
+                    parsedSourceKey = normSourceKey.match(staticPattern)[1]
                 else if (normSourceKey.startsWith("encode:"))
-                    parsedSourceKey = new Function("input", "return '" + encodingHandler(normSourceKey, source) + "'");
+                    parsedSourceKey = encodingHandler(normSourceKey, source) //TODO align
             }
             else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object')
                 parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
             else if (schemaDestKey && schemaDestKey.type === 'array') {
-                logger.debug("schemaDestKey && schemaDestKey.type === 'array' && Array.isArray(normSourceKey)")
-                parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey)// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
-                logger.debug("parsedSourceKeySet")
+                logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
+                parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source)// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
+                logger.debug("parsedSourceKeySet", { parsedSourceKey })
             }
             else if (schemaDestKey && (schemaDestKey.type === 'number' || schemaDestKey.type === 'integer')) {
                 logger.debug("schemaDestKey && (schemaDestKey.type === 'number' || schemaDestKey.type === 'integer')")
                 if (Array.isArray(normSourceKey))
-                    parsedSourceKey = new Function("input", "return " + handleSourceFieldsArray(normSourceKey, 'number').result);
+                    parsedSourceKey = handleSourceFieldsArray(normSourceKey, 'number', source).result;
                 else {
                     parsedSourceKey = handleDottedField(normSourceKey);
                     if (parsedSourceKey.startsWith('[')) {
                         let num = eval('source' + parsedSourceKey);
                         if (typeof num === 'string')
-                            parsedSourceKey = new Function("input", "return Number(input['" + normSourceKey + "'])");
+                            parsedSourceKey = Number(num);
                         else if (typeof num === 'number')
-                            parsedSourceKey = new Function("input", "return input['" + normSourceKey + "']");
+                            parsedSourceKey = num
                     }
                 }
             }
             else if (schemaDestKey && (schemaDestKey.type === 'boolean')) {
                 logger.debug("schemaDestKey && (schemaDestKey.type === 'boolean')")
-                parsedSourceKey = new Function("input", "return (input['" + normSourceKey + "'].toLowerCase() == 'true' || input['" + normSourceKey + "'] == 1 || input['" + normSourceKey + "'] == '1'  ) ? true: false");
+                parsedSourceKey = source[normSourceKey].toLowerCase() == 'true' || source[normSourceKey] == 1 || source[normSourceKey] == '1'
             }
             else if (schemaDestKey && schemaDestKey.type === 'string') {
                 logger.debug("schemaDestKey && schemaDestKey.type === 'string'")
@@ -262,25 +354,49 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     var date = eval('source' + handleDottedField(normSourceKey));
                     if (date === undefined || date === '')
                         continue;
-                    parsedSourceKey = new Function("input", "return new Date(input" + handleDottedField(normSourceKey) + ").toISOString()");
+                    parsedSourceKey = new Date(date).toISOString()
                 } else if (Array.isArray(normSourceKey))
-                    parsedSourceKey = new Function("input", "return " + handleSourceFieldsArray(normSourceKey).result);
+                    parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result
                 else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("static:"))
-                    parsedSourceKey = new Function("input", "return '" + normSourceKey.match(staticPattern)[1] + "'");
+                    parsedSourceKey = source[normSourceKey.match(staticPattern)[1]]
                 else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("encode:"))
-                    parsedSourceKey = new Function("input", "return '" + encodingHandler(normSourceKey, source) + "'");
+                    parsedSourceKey = encodingHandler(normSourceKey, source)//TODO align if not yet
+                else
+                    parsedSourceKey = source[parsedSourceKey]
             }
             else
                 logger.error("No schemaDestKey")
-            if (typeof parsedSourceKey == "string")
-                parsedSourceKey = parsedSourceKey.replaceAll('"', '')
-            parsedSourceKey = check(parsedSourceKey)
+            //if (typeof parsedSourceKey == "string")
+            //    parsedSourceKey = parsedSourceKey.replaceAll('"', '')
+            //parsedSourceKey = check(parsedSourceKey)
             //logger.debug({ mapDestKey, parsedSourceKey: parsedSourceKey.toString(), keys: typeof parsedSourceKey == "object" ? Object.keys(parsedSourceKey) : "not an object", coordinatesIfLocation: parsedSourceKey.coordinates?.toString() })
-            var converter = mapper.makeConverter({ [mapDestKey]: parsedSourceKey });
+            logger.debug({ parsedSourceKey })//, parsedSourceKey.toString())
+            /*let tempObj
+            if (Array.isArray(parsedSourceKey)) {
+                tempObj = {}
+                for (let i in parsedSourceKey)
+                    tempObj[i] = parsedSourceKey[i]
+            }*/
+            //var converter = mapper.makeConverter({ [mapDestKey]: parsedSourceKey });
             try {
-                //singleResult = { [mapDestKey]: parsedSourceKey(source) }
-                singleResult = converter(source);
+                if (typeof parsedSourceKey == "function") {
+                    logger.warn("FUNCTION DETECTED")
+                    var converter = mapper.makeConverter({ [mapDestKey]: parsedSourceKey });
+                    singleResult = converter(source);
+                }
+                else
+                    singleResult = { [mapDestKey]: parsedSourceKey }
+                //singleResult = converter(source);
                 logger.debug({ singleResult })
+                //singleResult = checkSingleResult(singleResult, source)
+                /*let tempSingleResult
+                if (tempObj) {
+                    tempSingleResult = []
+                    for (let key in tempObj)
+                        tempSingleResult.push(tempObj[key])
+                    singleResult = tempSingleResult
+                }*/
+
             } catch (error) {
                 logger.error(`There was an error: ${error} while processing ${parsedSourceKey} field`);
                 continue;
@@ -396,7 +512,7 @@ const checkResultWithDestModelSchema = (mappedObject, destKey, modelSchema, rowN
 
 /* Concatenates fields of the source array into a string (Source is array, dest is string)
  */
-const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType) => {
+const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
 
     var finalArray = [];
     var isOnlyStatic = true;
@@ -426,11 +542,17 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType) => {
 
                 splittedDot.shift();
                 if (splittedDot.length > 0) {
-                    finalArray[index] = finalArray[index] = (isNumber ? "Number(" : "") + "input['" + splittedDot.join("']['") + "']" + (isNumber ? ")" : "");
+                    finalArray[index] = source[splittedDot.shift()]
+                    while (splittedDot.length > 0)
+                        finalArray[index] = finalArray[index][splittedDot.shift()]
+                    if (isNumber)
+                        finalArray[index] = Number(finalArray[index])
                 } //return Number(input['" + normSourceKey + "'])
 
             } else {
-                finalArray[index] = (isNumber ? "Number(" : "") + "input['" + value + "']" + (isNumber ? ")" : "");
+                finalArray[index] = source[value]
+                if (isNumber)
+                    finalArray[index] = Number(finalArray[index])
             }
         }
     });
@@ -444,7 +566,7 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType) => {
 
 /* Map fields of the source array into a stringifed Array (source and dest are both arrays)
 */
-const handleSourceFieldsToDestArray = (sourceFieldArray) => {
+const handleSourceFieldsToDestArray = (sourceFieldArray, source) => {
     //let foreachIndex = []
     let foreachFound = false
 
@@ -488,14 +610,13 @@ const handleSourceFieldsToDestArray = (sourceFieldArray) => {
                         //let toArray = []
                         let toArrayBodyField = toArrayMatch[1].split(",");
                         logger.debug({ toArrayMatch, toArrayBodyField })
-                        finalArray[index] = "input['" + forEachArgument + "'].map(o=> [o['" + toArrayBodyField[0] + "']"
-                        //if(toArrayBodyField.length>2)
-                        if (toArrayBodyField.length > 2)
-                            for (let index = 1; index < toArrayBodyField.length - 1; index++)
-                                finalArray[index] += ", o['" + toArrayBodyField[index] + "']]"
-                        else
-                            finalArray[index] += ", o['" + toArrayBodyField[1] + "']"
-                        finalArray[index] += "])"
+                        finalArray = finalArray.concat(source[forEachArgument].map(o => {
+                            let newArray = []
+                            for (let objIndex of toArrayBodyField)
+                                newArray.push(o[objIndex])
+                            return newArray
+
+                        }))
                     }
                 }
                 else finalArray[index] = "";
@@ -507,17 +628,18 @@ const handleSourceFieldsToDestArray = (sourceFieldArray) => {
 
                     splittedDot.shift();
                     if (splittedDot.length > 0)
-                        finalArray[index] = "input['" + splittedDot.join("']['") + "']";
+                        finalArray[index] = eval("source[" + splittedDot.join("']['") + "']")
 
                 } else {
-                    finalArray[index] = "input['" + value + "']";
+                    finalArray[index] = source[value]
                 }
             }
         });
 
         // print Array String as output
         logger.debug({ finalArray })
-        resultString = '[';
+        return finalArray
+        /*resultString = '[';
         finalArray.forEach(function (value, index) {
             if (value.startsWith("input")) {
                 resultString += value + ',';
@@ -532,22 +654,26 @@ const handleSourceFieldsToDestArray = (sourceFieldArray) => {
         logger.debug({ resultString })
         if (foreachFound)
             return new Function("input", "return " + resultString.substring(1, resultString.length - 1));
-        return new Function("input", "return " + resultString)//.substring(1, resultString.length - 1);
+        return new Function("input", "return " + resultString)//.substring(1, resultString.length - 1);*/
     }
-    else
-        return (input) => {
-            try {
-                if (typeof input[sourceFieldArray] == "string")
-                    return JSON.parse(input[sourceFieldArray].replaceAll('[', '["').replaceAll(']', '"]').replaceAll(',', '","'))
-                else
-                    return input[sourceFieldArray]
+    else {
+        //let parsed = JSON.parse(JSON.stringify(sourceFieldArray))
+        try {
+            logger.debug({ source, sourceFieldArray })
+            if (typeof source[sourceFieldArray] == "string") {
+                var fixedField = fixBrokenJsonString1(source[sourceFieldArray])
+                return fixedField
             }
-            catch (error) {
-                logger.error(error)
-                logger.debug(input[sourceFieldArray], input[sourceFieldArray][0],input[sourceFieldArray][1])
-                return input[sourceFieldArray]
-            }
+            else
+                return source[sourceFieldArray]
         }
+        catch (error) {
+            logger.error(error)
+            logger.error(fixedField)
+            //logger.debug(source[sourceFieldArray], source[sourceFieldArray][0], source[sourceFieldArray][1])
+            return source[sourceFieldArray]
+        }
+    }
     //return 'input["' + sourceFieldArray + '"]'
     //return 'typeof input["' + sourceFieldArray + '"] == "string" && JSON.parse(input["' + sourceFieldArray + '"]) || input["' + sourceFieldArray + '"]';
 };
