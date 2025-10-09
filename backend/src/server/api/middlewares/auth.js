@@ -12,6 +12,7 @@ const { Logger } = log
 const logger = new Logger(__filename)
 const common = require("../../../utils/common")
 const minioWriter = require("../../../writers/minioWriter")
+const mergeConfig = require("../../../utils/configHandler").mergeConfig
 
 function parseJwt(token) {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
@@ -34,6 +35,8 @@ function send(res, status, body) {
 
 module.exports = {
     auth: async (req, res, next) => {
+
+        req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
 
         process.env.start = Date.now()
 

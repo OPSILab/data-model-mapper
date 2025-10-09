@@ -36,10 +36,10 @@ var config = {
     logSaveInterval: 30000, // log backup interval
     idVersion: 2, // 1 for 2023 version compatibility mode, 2 for newest version
     noSchema: false, // experimental mode with no schema provided
-    onlyEPSG4326 : false, // allows only geojson with EPSG4326 coordinates
-    maxFileSize : 25, // max file size upload in MB
-    mapTilerKey : "8JYNjx8UQfefRRQUEjwZ",
-    truncateLogs : false,
+    onlyEPSG4326: false, // allows only geojson with EPSG4326 coordinates
+    maxFileSize: 25, // max file size upload in MB
+    mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
+    truncateLogs: false,
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).
@@ -117,8 +117,8 @@ var config = {
 config.orionWriter = {
 
     orionUrl: "https://orionUrl", // The Context Broker endpoint (baseUrl) where mapped entities will be stored (/v2/entities POST)
-    mongoHost : "localhost",
-    mongoPort : "27077",
+    mongoHost: "localhost",
+    mongoPort: "27077",
     orionAuthHeaderName: "", // Authorization Header name (e.g. X-Auth-Token or Authorization) for Orion request // Leave blank if any
     orionAuthToken: "", // Authorization token name for Orion request (e.g. Bearer XXX) // Leave blank if any
     fiwareService: "", // Fiware-Service header to be put in the Orion request
@@ -130,15 +130,15 @@ config.orionWriter = {
     maxRetry: 5, // Max retry number per entity POST, until the entity is skipped and marked as NOT WRITTEN
     parallelRequests: 30, // DO NOT TOUCH - Internal configuration for concurrent request parallelization
     keyValues: false, //If false, transforms Mapped object to an Orion Entity (explicit types in attributes)
-    keyValuesOption : '?options=keyValues',
-    relativeUrl : "/v2/entities",
-    protocol : "v1",
+    keyValuesOption: '?options=keyValues',
+    relativeUrl: "/v2/entities",
+    protocol: "v1",
     delayBetweenRequests: 1,
     delayBetweenPostAndPut: 1,
-    retryDelay : 1000,
-    avoidPut : true,
-    promiseRequestRetryExternalLibrary : {
-        retry : 0, // number or retries
+    retryDelay: 1000,
+    avoidPut: true,
+    promiseRequestRetryExternalLibrary: {
+        retry: 0, // number or retries
         retryDelay: 5000, // delay between retries
         timeout: 10000 // timeout before socket hang up
     }
@@ -153,8 +153,10 @@ config.fileWriter = {
 /*************** Auth CONFIGURATION **************************************/
 config.authConfig = {
     idmHost: "https://hostDomain/auth",
-    userInfoEndpoint : "",
+    userInfoEndpoint: "",
     clientId: "",
+    username: "",
+    password: "",
     disableAuth: "false",
     authProfile: "oidc",
     authRealm: "",

@@ -284,7 +284,7 @@ module.exports = {
           }
       }*/
 
-      for (let configKey in configIn) { //TODO check this. Maybe it should be in a function and in a filter for non witeable values
+      for (let configKey in configIn) { //TODO merge this with mergeConfig and use only mergeConfig
         if (configKey == "orionWriter") {
           for (let orionConfigKey in configIn[configKey])
             if (!this.orionConfigInDisabled(orionConfigKey))
@@ -292,7 +292,7 @@ module.exports = {
         }
         else if (configKey == "orionUrl")
           config.orionWriter.orionUrl = configIn.orionUrl
-        else if (configIn[configKey] != "undefined")
+        else if (configIn[configKey] != "undefined" && configIn[configKey] != undefined)
           config[configKey] = configIn[configKey]
       }
     }
@@ -318,7 +318,7 @@ module.exports = {
 
     if (!source.name && !source.url && !source.id && source.minioObjName && (!source.data || source.data && !source.data[0] && (source.path == "root" || source.path == ".root$$$" || source.path == ".root")) && common.isMinioWriterActive()) {
       // if (!source.name && source.minioObjName && (!source.data || source.data && !source.data[0])) {
-      logger.debug("picking from minio", {source})
+      logger.debug("picking from minio", { source })
       //try { 
       source.data = await this.minioGetObject(source.minioBucketName, source.minioObjName, source.type)
       //}
@@ -416,6 +416,7 @@ module.exports = {
           dataModelTempWriting.value = 'File dataModel temp is created successfully.'
         })
       await finish(dataModelTempWriting)
+      dataModel.schema_id = "dataModels/DataModelTemp" + schemaTempId + ".json"
     }
 
     if (configIn.noSchema || (configIn.noSchema == undefined) && config.noSchema) {
@@ -442,6 +443,7 @@ module.exports = {
           dataModelTempWriting.value = 'File dataModel temp is created successfully.'
         })
       await finish(dataModelTempWriting)
+      dataModel.schema_id = "dataModels/DataModelTemp" + schemaTempId + ".json"
     }
 
     if (common.isMinioWriterActive())
@@ -465,9 +467,9 @@ module.exports = {
     res.dmm.mapData = map[0]
     res.dmm.schema = schema
 
-    logger.debug({dataModel})
+    logger.debug({ dataModel })
     logger.debug(dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId)
-    
+
     try {
       await cli(
         //source.name ? config.sourceDataPath + source.name : config.sourceDataPath + sourceFileTemp2 ? 'sourceFileTemp2.' + source.type : 'sourceFileTemp.' + source.type,

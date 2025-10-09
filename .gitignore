@@ -66,3 +66,4 @@ frontend/src/app/pages/data-model-mapper/stepper_test.html
 build-frontend.sh
 backend/config,asus.js
 backend/monster.js
+backend/token.js
