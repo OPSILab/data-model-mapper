@@ -460,7 +460,9 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
                 logger.debug("Details ", objNumber, obj)
                 //logger.debug(config.orionWriter)
                 logger.error('There was an error while writing Mapped Object: ')
-                logger.error(updateResponse || createResponse)
+                const { body, statusCode } = updateResponse || createResponse
+                logger.error({ body, statusCode })
+                //logger.error(updateResponse || createResponse)
                 return Promise.reject('Error returned from Context Broker: ' + JSON.stringify(createResponse) + '\n').catch((error) => {
                     wrObj = false
                     if (!config.orionWriter.details)

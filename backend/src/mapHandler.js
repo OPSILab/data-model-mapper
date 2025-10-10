@@ -526,7 +526,7 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
             // filter forbidden characters
             var filterMatch = undefined;
             if (!(filterMatch = staticMatch[1].match(/^([^\(]*)(\((.*)\)|\n|<|>|"|'|=|;|\(|\))(.*)$/)))
-                finalArray[index] = "'" + staticMatch[1] + "'";
+                finalArray[index] = staticMatch[1];
             else if (filterMatch.length === 1)
                 finalArray[index] = ' ';
             else if (filterMatch.length === 5)
@@ -558,7 +558,7 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
     });
 
     return {
-        result: finalArray.join(' + '),
+        result: finalArray.join(config.idSeparator || ""),
         isOnlyStatic: isOnlyStatic
     };
 

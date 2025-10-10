@@ -93,6 +93,7 @@ var config = {
     // It is recommended to not modify it :), just use in the map the default field "entitySourceId" as reserved for this purpose
 
     entityNameField: "entitySourceId",
+    idSeparator: "+", // the separator between the parts of the ID, in case more than one field is used for the entityNameField
 
     // (SOON) If the entityNameField is not specified in the map, the following indicates the prefix of generated ID 
     // it will be concatenated with the row / object number. If empty, that prefix will be the source filename
