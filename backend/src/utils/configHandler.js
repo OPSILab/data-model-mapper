@@ -11,6 +11,12 @@ module.exports = {
                 configIn[key] = false
             if (configIn[key] === "undefined")
                 config[key] = configIn[key] = undefined
+            if (key == "site")
+                config.idSite = configIn.idSite = configIn.site
+            if (key == "group")
+                config.idGroup = configIn.idGroup = configIn.group
+            if (key == "service")
+                config.idService = configIn.idService = configIn.service
         }
         return {
             ...config,

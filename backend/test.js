@@ -1,10 +1,24 @@
 let config = require("./config")
 const assets = require("./assets/assets")
 const example_1 = require("./assets/example_1")
+const example_2 = require("./assets/example_2")
+const example_3 = require("./assets/example_3")
 const chai = require("chai")
 const axios = require("axios")
+let keycloak = require('./src/utils/keycloak')
+const jwt = require('jsonwebtoken');
+let authorization = require("./token")
+let email
+describe("test", async function () {
 
-describe("test", function () {
+  try {
+    authorization = require("./token")
+    email = jwt.verify(authorization, config.authConfig.publicKey, { algorithms: ['RS256'] }).email
+  }
+  catch (error) {
+    console.log("No token found, getting new one")
+    authorization = await keycloak.updateJWT()
+  }
 
   let n = 1;
 
@@ -18,47 +32,57 @@ describe("test", function () {
     'Example test', async () => {
       let configTmp = config.sourceDataPath
       config.sourceDataPath = "assets/"
-      let res = await axios.post(
-        'http://localhost:' + config.httpPort + '/api/map/transform',
-        {
-          sourceDataType: "csv",
-          sourceData: "Field 1;Field 2;Field 3 index 0;Field 3 index 1;Field 31;Field 32;Field 33;Field 4a;Field 4b;Field 4c index 0;Field 4c index 1;Field 4d;Field 5;Field 6;Field 7\r\n[Field 1 value 1,Field 1 value 2];[Field 2 value 1,Field 2 value 2];Field 3 value 1;Field 3 value 2;[{Field 31a : Field 31a, Field 31b : Field 31b }];32;33; [Field 4a value 1,Field 4a value 2];[Field 4b value 1,Field 4b value 2];Field 4c value 1;Field 4c value 1;[{Field 4da : Field 4da, Field 4db : Field 4db }, {Field 4da1 : Field 4da1, Field 4db1 : Field 4db1 }];5;6;7",
-          mapData: {
-            "Field 1": "Field 1",
-            "Field 2": "Field 2",
-            "Field 3": [
-              "Field 3 index 0",
-              "Field 3 index 1"
-            ],
-            "Field 31": "Field 31",
-            "Field 32": "Field 33",
-            "Field 33": "Field 33",
-            "Field 4": {
-              "Field 4a": "Field 4a",
-              "Field 4b": "Field 4b",
-              "Field 4c": [
-                "Field 4c index 0",
-                "Field 4c index 1"
+      let res
+      try {
+        res = await axios.post(
+          'http://localhost:' + config.httpPort + '/api/map/transform',
+          {
+            sourceDataType: "csv",
+            sourceData: "Field 1;Field 2;Field 3 index 0;Field 3 index 1;Field 31;Field 32;Field 33;Field 4a;Field 4b;Field 4c index 0;Field 4c index 1;Field 4d;Field 5;Field 6;Field 7\r\n[Field 1 value 1,Field 1 value 2];[Field 2 value 1,Field 2 value 2];Field 3 value 1;Field 3 value 2;[{Field 31a : Field 31a, Field 31b : Field 31b }];32;33; [Field 4a value 1,Field 4a value 2];[Field 4b value 1,Field 4b value 2];Field 4c value 1;Field 4c value 1;[{Field 4da : Field 4da, Field 4db : Field 4db }, {Field 4da1 : Field 4da1, Field 4db1 : Field 4db1 }];5;6;7",
+            mapData: {
+              "Field 1": "Field 1",
+              "Field 2": "Field 2",
+              "Field 3": [
+                "Field 3 index 0",
+                "Field 3 index 1"
               ],
-              "Field 4d": "Field 4d"
+              "Field 31": "Field 31",
+              "Field 32": "Field 33",
+              "Field 33": "Field 33",
+              "Field 4": {
+                "Field 4a": "Field 4a",
+                "Field 4b": "Field 4b",
+                "Field 4c": [
+                  "Field 4c index 0",
+                  "Field 4c index 1"
+                ],
+                "Field 4d": "Field 4d"
+              },
+              "Field 5": "Field 5",
+              "Field 6": "Field 6",
+              "Field 7": "Field 7",
+              "entitySourceId": [
+                "static:ExampleDataModel"
+              ],
+              "targetDataModel": "ExampleDataModel"
             },
-            "Field 5": "Field 5",
-            "Field 6": "Field 6",
-            "Field 7": "Field 7",
-            "entitySourceId": [
-              "static:ExampleDataModel"
-            ],
-            "targetDataModel": "ExampleDataModel"
+            dataModelIn: "ExampleDataModel",
+            config: {
+              delimiter: ";",
+              NGSI_entity: true
+            }
           },
-          dataModel: "ExampleDataModel",
-          config:{delimiter: ";",
-          NGSI_entity: true}
-        }
-      )
+          { headers: { authorization } }
+        )
+      }
+      catch (error) {
+        console.log({ status: error.response.status, data: error.response.data })
+        throw error
+      }
       try {
         chai.assert.equal(
           JSON.stringify(res.data[0]),
-          JSON.stringify(assets.sample)
+          JSON.stringify(assets.sample(email))
         )
       }
       catch (error) {
@@ -80,9 +104,9 @@ describe("test", function () {
           sourceData: assets.source_non_ngsi,
           mapData: assets.map_non_ngsi,
           dataModel: assets.sample_schema_non_ngsi,
-          config:{delimiter: ";",
-          NGSI_entity: false}
-        }
+          config: { NGSI_entity: false }
+        },
+        { headers: { authorization } }
       )
       try {
         chai.assert.equal(
@@ -101,7 +125,8 @@ describe("test", function () {
       //config.NGSI_entity=true;
       let res = await axios.post(
         'http://localhost:' + config.httpPort + '/api/map/transform',
-        example_1.test
+        example_1.test,
+        { headers: { authorization } }
       )
       try {
         chai.assert.equal(
@@ -115,4 +140,44 @@ describe("test", function () {
       }
     }
   );
+  it(
+    'Example test - geojson 2', async () => {
+      //config.NGSI_entity=true;
+      let res = await axios.post(
+        'http://localhost:' + config.httpPort + '/api/map/transform',
+        example_2.test,
+        { headers: { authorization } }
+      )
+      try {
+        chai.assert.equal(
+          JSON.stringify(res.data[0]),
+          JSON.stringify(assets.example_2(email))
+        )
+      }
+      catch (error) {
+        console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+        throw error
+      }
+    }
+  );
+  /*it(
+  'Example test - geojson 2', async () => {
+    //config.NGSI_entity=true;
+    let res = await axios.post(
+      'http://localhost:' + config.httpPort + '/api/map/transform',
+      example_3.test,
+      { headers: { authorization } }
+    )
+    try {
+      chai.assert.equal(
+        JSON.stringify(res.data[0]),
+        JSON.stringify(assets.example_2)
+      )
+    }
+    catch (error) {
+      console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+      throw error
+    }
+  }
+);*/
 });

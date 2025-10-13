@@ -101,8 +101,8 @@ const fixBrokenJsonString1 = (field) => {
     field = field.replaceAll("}", '"}');
     field = field.replaceAll(",", '","');
     field = field.replaceAll(":", '":"');
-    try { 
-        fixedField = JSON.parse(field) 
+    try {
+        fixedField = JSON.parse(field)
     }
     catch (error) {
         logger.error(error.message)
@@ -292,7 +292,7 @@ const extractFromNestedField = (source, field) => {
  */
 const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service, group, entityIdField, NGSI_entity, minioObj, config, res) => {
 
-    logger.debug({ rowNumber, source, map, entityIdField })
+    logger.debug({ rowNumber, source, map, entityIdField, service, group })
     var result = {};
     // If the destKey is entityIdField and has only "static:" fields, the pair value indicates only an ID prefix
     // The resulting string will be concatenated with rowNumber

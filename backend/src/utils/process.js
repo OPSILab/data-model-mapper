@@ -189,9 +189,9 @@ const processRow = async (rowNumber, row, map, schema, mappedHandler, NGSI_entit
      * set globally for each row of this mapping, otherwise use the ones initialized in the Global Vars 
      **/
 
-    config.idSite = map['idSite'] || config.idSite;
-    config.idService = map['idService'] || config.idService;
-    config.idGroup = map['idGroup'] || config.idGroup;
+    config.idSite = map['idSite'] || config.idSite || config.site;
+    config.idService = map['idService'] || config.idService || config.service;
+    config.idGroup = map['idGroup'] || config.idGroup || config.group;
     delete map['idSite'];
     delete map['idService'];
     delete map['idGroup'];
@@ -229,7 +229,7 @@ const processMappedObject = async (objNumber, obj, modelSchema, promises, config
                     }
                     break;
                 case 'fileWriter':
-                    promises.push(await fileWriter.writeObject(objNumber, obj, config.fileWriter.addBlankLine, config));
+                    promises.push(async () => await fileWriter.writeObject(objNumber, obj, config.fileWriter.addBlankLine, config));
                     break;
                 default:
                     //promises.push(await common.sleep(0));
@@ -252,12 +252,12 @@ const finalizeProcess = async (minioObj, config, res) => {
         for (let i = 0; i < promises.length; i++) {
             logger.debug("Promise ", i)
             try {
-                await promises[i]();
+                await promises[i]();//TODO this fails after a certain value of i
                 if (config.orionWriter.delayBetweenRequests)
                     await common.sleep(config.orionWriter.delayBetweenRequests)
             }
             catch (error) {
-                logger.error(error, promises[i])
+                logger.error(error, promises[i], promises.length)
             }
         }
 

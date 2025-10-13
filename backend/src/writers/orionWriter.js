@@ -565,7 +565,7 @@ function toOrionObject(obj, schema) {
                 //}
 
                 var nestedObject = objField;
-                delete objField;
+                delete objField;//TODO check
                 obj[key] = {
                     type: modelFieldType,
                     value: nestedObject

@@ -1,48 +1,50 @@
 module.exports = {
-    sample: {
-        "Field 1": "[Field 1 value 1,Field 1 value 2]",
-        "Field 2": [
-            "Field 2 value 1",
-            "Field 2 value 2"
-        ],
-        "Field 3": [
-            "Field 3 value 1",
-            "Field 3 value 2"
-        ],
-        "Field 31": [
-            {
-                "Field 31a": "Field 31a",
-                "Field 31b": "Field 31b"
-            }
-        ],
-        "Field 32": 33,
-        "Field 33": 33,
-        "Field 4": {
-            "Field 4a": "[Field 4a value 1,Field 4a value 2]",
-            "Field 4b": [
-                "Field 4b value 1",
-                "Field 4b value 2"
+    sample: (email) => {
+        return {
+            "Field 1": "[Field 1 value 1,Field 1 value 2]",
+            "Field 2": [
+                "Field 2 value 1",
+                "Field 2 value 2"
             ],
-            "Field 4c": [
-                "Field 4c value 1",
-                "Field 4c value 1"
+            "Field 3": [
+                "Field 3 value 1",
+                "Field 3 value 2"
             ],
-            "Field 4d": [
+            "Field 31": [
                 {
-                    "Field 4da": "Field 4da",
-                    "Field 4db": "Field 4db"
-                },
-                {
-                    "Field 4da1": "Field 4da1",
-                    "Field 4db1": "Field 4db1"
+                    "Field 31a": "Field 31a",
+                    "Field 31b": "Field 31b"
                 }
-            ]
-        },
-        "Field 5": 5,
-        "Field 6": 6,
-        "Field 7": "7",
-        "type": "Example",
-        "id": "urn:ngsi-ld:Example:SomeRZ:SomeService:CSV:ExampleDataModel-1"
+            ],
+            "Field 32": 33,
+            "Field 33": 33,
+            "Field 4": {
+                "Field 4a": "[Field 4a value 1,Field 4a value 2]",
+                "Field 4b": [
+                    "Field 4b value 1",
+                    "Field 4b value 2"
+                ],
+                "Field 4c": [
+                    "Field 4c value 1",
+                    "Field 4c value 1"
+                ],
+                "Field 4d": [
+                    {
+                        "Field 4da": "Field 4da",
+                        "Field 4db": "Field 4db"
+                    },
+                    {
+                        "Field 4da1": "Field 4da1",
+                        "Field 4db1": "Field 4db1"
+                    }
+                ]
+            },
+            "Field 5": 5,
+            "Field 6": 6,
+            "Field 7": "7",
+            "type": "Example",
+            "id": "urn:ngsi-ld:Example:" + email + ":ExampleDataModel-1"
+        }
     },
     sample_non_ngsi: {
         "Field 1": "Value 1",
@@ -134,5 +136,45 @@ module.exports = {
         },
         "type": "DataModel",
         "id": "urn:ngsi-ld:DataModel:SomeRZ:SomeService:CSV:001Duomo1"
+    },
+    example_2: (email) => {
+        return {
+            "laneId": 103203492,
+            "address": {
+                "addressCountry": "RO",
+                "addressLocality": "Cluj-Napoca",
+                "streetAddress": "Str. Șerpuitoare"
+            },
+            "averageVehicleSpeed": 4.45,
+            "location": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        23.577028,
+                        46.774555
+                    ],
+                    [
+                        23.577587,
+                        46.774515
+                    ],
+                    [
+                        23.578287,
+                        46.77448
+                    ],
+                    [
+                        23.578646,
+                        46.774494
+                    ],
+                    [
+                        23.579086,
+                        46.774564
+                    ]
+                ]
+            },
+            "dateModified": "2025-10-08T12:10:13.880Z",
+            "dateObserved": 1759925413880,
+            "type": "TrafficFlowObserved",
+            "id": "urn:ngsi-ld:TrafficFlowObserved:" + email + ":Cluj-Napocatraffic103203492"
+        }
     }
 }
