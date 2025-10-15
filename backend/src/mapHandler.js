@@ -243,7 +243,7 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
             else if (schemaFieldType === 'string' && Array.isArray(mapSourceSubField))
                 parsedSourceKey[key] = handleSourceFieldsArray(mapSourceSubField, false, source).result
             else if (schemaFieldType === 'array') {
-                logger.debug("array"); parsedSourceKey[key] = handleSourceFieldsToDestArray(mapSourceSubField, source)
+                logger.debug("array"); parsedSourceKey[key] = handleSourceFieldsToDestArray(mapSourceSubField, source, schemaDestSubKey?.items?.type)
             }
             else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("static:") || mapSourceSubField == "")) {
                 if (mapSourceSubField == "") mapSourceSubField = "static:"
@@ -261,7 +261,7 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
                 parsedSourceKey[key] = extractFromNestedField(source, mapSourceSubField);
             else  // normal string no action required
                 parsedSourceKey[key] = source[mapSourceSubField];
-            logger.debug({ parsedSourceKey , key, includes : key.includes('.') })
+            logger.debug({ parsedSourceKey, key, includes: key.includes('.') })
 
             // Add type to the nested map field
             //parsedNorm[key]['type'] = new Function("input", "return '" + schemaFieldType + "'");
@@ -330,7 +330,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                 parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
             else if (schemaDestKey && schemaDestKey.type === 'array') {
                 logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
-                parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source)// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
+                parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source, schemaDestKey?.items?.type)// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
                 logger.debug("parsedSourceKeySet", { parsedSourceKey })
             }
             else if (schemaDestKey && (schemaDestKey.type === 'number' || schemaDestKey.type === 'integer')) {
@@ -359,7 +359,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     if (date === undefined || date === '')
                         continue;
                     parsedSourceKey = new Date(date).toISOString()
-                } 
+                }
                 else if (Array.isArray(normSourceKey))
                     parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result
                 else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("static:"))
@@ -382,7 +382,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     //else if (oneOfElement.type === 'string')
                     //    destFieldString = oneOfElement
                     if (schemaDestKey.type === 'array')
-                        parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source)
+                        parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source, destFieldArray?.items?.type)
                     else {
                         let resIdFields = destFieldString ? handleSourceFieldsArray(normSourceKey, false, source) : handleSourceFieldsArray(normSourceKey, 'number', source);
                         parsedSourceKey = resIdFields.result;
@@ -600,11 +600,11 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
 
 /* Map fields of the source array into a stringifed Array (source and dest are both arrays)
 */
-const handleSourceFieldsToDestArray = (sourceFieldArray, source) => {
+const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
     //let foreachIndex = []
     let foreachFound = false
 
-    logger.debug({ sourceFieldArray })
+    logger.debug({ sourceFieldArray , itemsType})
     /*if (typeof sourceFieldArray == "string" && sourceFieldArray[0] == "[")
         try {
             let parsedSourceField = JSON.parse(sourceFieldArray)
@@ -665,7 +665,8 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source) => {
                         finalArray[index] = eval("source[" + splittedDot.join("']['") + "']")
 
                 } else {
-                    finalArray[index] = source[value]
+                    logger.debug({ value, sourceValue: source[value], valueType: typeof source[value], source })
+                    finalArray[index] = itemsType == "integer" ? Nummber(source[value]) : source[value]
                 }
             }
         });
@@ -696,6 +697,11 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source) => {
             logger.debug({ source, sourceFieldArray })
             if (typeof source[sourceFieldArray] == "string") {
                 var fixedField = fixBrokenJsonString1(source[sourceFieldArray])
+                logger.debug({ fixedField, type: typeof fixedField, isArray: Array.isArray(fixedField) })
+                for (let index = 0; index < fixedField.length; index++)
+                    if (typeof fixedField[index] == "string" && itemsType == "integer")
+                        fixedField[index] = Number(fixedField[index])
+                logger.debug(fixedField)
                 return fixedField
             }
             else
