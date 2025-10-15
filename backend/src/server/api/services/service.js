@@ -9,10 +9,10 @@ const { Logger } = log
 const logger = new Logger(__filename)
 const axios = require('axios')
 const RefParser = require('json-schema-ref-parser');
-const minioWriter = require('../../../writers/minioWriter')
+const { convertGeoJSON, isMinioWriterActive } = require("../../../utils/common.js")
+const minioWriter = isMinioWriterActive() ? require('../../../writers/minioWriter') : null
 const common = require('../../../utils/common');
 const { finish, lock } = common
-const { convertGeoJSON } = require("../../../utils/common.js")
 const cliGl = require('../../../cli/setup');
 
 if (!configGlobal.idVersion)

@@ -11,7 +11,7 @@ const log = require("../../../utils/logger")
 const { Logger } = log
 const logger = new Logger(__filename)
 const common = require("../../../utils/common")
-const minioWriter = require("../../../writers/minioWriter")
+const minioWriter = common.isMinioWriterActive() ? require("../../../writers/minioWriter") : null
 const mergeConfig = require("../../../utils/configHandler").mergeConfig
 
 function parseJwt(token) {

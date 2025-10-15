@@ -25,8 +25,8 @@ const isFileStream = require('is-file-stream');
 const extensionPattern = /\.[0-9a-z]+$/i;
 const httpPattern = /http:\/\//g;
 const filenameFromPathPattern = /^(.:)?\\(.+\\)*(.+)\.(.+)$/;
-const minioWriter = require("../writers/minioWriter")
 const { isMinioWriterActive, sleep, createRandId, finish } = require('./common')
+const minioWriter = isMinioWriterActive() ? require("../writers/minioWriter") : null
 const log = require('./logger')
 const { Logger } = log
 const logger = new Logger(__filename)
@@ -142,7 +142,7 @@ const uuid = () => {
  * 
  */
 const createSynchId = (type, site, service, group, entityName, isIdPrefix, rowNumber, NGSI_entity, config) => {
-    logger.debug({service, group})
+    logger.debug({ service, group })
     if (type === undefined)
         type = "SomeType"
     if (entityName) {

@@ -67,3 +67,4 @@ build-frontend.sh
 backend/config,asus.js
 backend/monster.js
 backend/token.js
+backend/config.msi.js
