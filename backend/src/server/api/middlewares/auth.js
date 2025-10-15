@@ -50,7 +50,7 @@ module.exports = {
                     req.body = { file: req.file.buffer.toString('utf8') }
 
         if (authConfig.disableAuth) {
-            let pilot = "shared", username = "shared", email = "shared" 
+            let pilot = "shared", username = "shared", email = "shared"
             if (!req.body.config)
                 req.body.config = {
                     orionWriter: {}
@@ -154,13 +154,18 @@ module.exports = {
                             req.body.pilot = pilot
                             req.body.email = email
                         }
-                        else {//TODO test this
-                            req.body.config.orionWriter.fiwareService = req.body.bucketName = decodedToken.pilot.toLowerCase() //+ "/" + email + "/" + config.minioWriter.defaultInputFolderName//{pilot, email}
-                            req.body.prefix = (decodedToken.email || decodedToken.username) + "/" + config.minioWriter.defaultInputFolderName
-                            req.body.config.group = decodedToken.email || decodedToken.username
-                            req.body.config.orionWriter.fiwareServicePath = "/" + decodedToken.pilot.toLowerCase()
-                            req.body.pilot = decodedToken.pilot
-                            req.body.email = decodedToken.email
+                        else {
+                            let pilot = "shared", username = "shared", email = "shared"
+                            if (!req.body.config)
+                                req.body.config = {
+                                    orionWriter: {}
+                                }
+                            req.body.config.orionWriter.fiwareService = req.body.bucketName = decodedToken.pilot?.toLowerCase() || "shared" //+ "/" + email + "/" + config.minioWriter.defaultInputFolderName//{pilot, email}
+                            req.body.prefix = (decodedToken.email || decodedToken.username || username) + "/" + config.minioWriter.defaultInputFolderName
+                            req.body.config.group = decodedToken.email || decodedToken.username || username
+                            req.body.config.orionWriter.fiwareServicePath = "/" + decodedToken.pilot?.toLowerCase() || pilot
+                            req.body.pilot = decodedToken.pilot || pilot
+                            req.body.email = decodedToken.email || decodedToken.username || email
                         }
                         logger.debug(req.body.prefix)
 

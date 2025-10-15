@@ -257,8 +257,11 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
             }
             else if (schemaFieldType === 'object')
                 parsedSourceKey[key] = objectHandler(mapSourceSubField, mapSourceSubField, schemaDestSubKey)
+            else if (mapSourceSubField.includes('.'))// && dotPattern.test(key)) 
+                parsedSourceKey[key] = extractFromNestedField(source, mapSourceSubField);
             else  // normal string no action required
                 parsedSourceKey[key] = source[mapSourceSubField];
+            logger.debug({ parsedSourceKey , key, includes : key.includes('.') })
 
             // Add type to the nested map field
             //parsedNorm[key]['type'] = new Function("input", "return '" + schemaFieldType + "'");
@@ -268,6 +271,7 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
 };
 
 const extractFromNestedField = (source, field) => {
+    logger.debug("extractFromNestedField", field)
     let layers
     try {
         layers = field.split('.')
@@ -355,17 +359,47 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     if (date === undefined || date === '')
                         continue;
                     parsedSourceKey = new Date(date).toISOString()
-                } else if (Array.isArray(normSourceKey))
+                } 
+                else if (Array.isArray(normSourceKey))
                     parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result
                 else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("static:"))
                     parsedSourceKey = source[normSourceKey.match(staticPattern)[1]]
                 else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("encode:"))
                     parsedSourceKey = encodingHandler(normSourceKey, source)//TODO align if not yet
+                else if (normSourceKey.includes('.'))
+                    parsedSourceKey = extractFromNestedField(source, normSourceKey)
                 else
                     parsedSourceKey = source[parsedSourceKey]
             }
-            else
+            else {
                 logger.error("No schemaDestKey")
+                if (Array.isArray(normSourceKey)) {
+                    let destFieldArray//, destFieldString
+                    if (schemaDestKey.oneOf)
+                        for (let oneOfElement of schemaDestKey.oneOf)
+                            if (oneOfElement.type === 'array')
+                                destFieldArray = oneOfElement
+                    //else if (oneOfElement.type === 'string')
+                    //    destFieldString = oneOfElement
+                    if (schemaDestKey.type === 'array')
+                        parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source)
+                    else {
+                        let resIdFields = destFieldString ? handleSourceFieldsArray(normSourceKey, false, source) : handleSourceFieldsArray(normSourceKey, 'number', source);
+                        parsedSourceKey = resIdFields.result;
+                        isIdPrefix = resIdFields.isOnlyStatic;
+                    }
+                }
+                else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("static:"))
+                    parsedSourceKey = normSourceKey.match(staticPattern)[1]
+                else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("encode:"))
+                    parsedSourceKey = encodingHandler(normSourceKey, source)//TODO align if not yet
+                else if (normSourceKey.includes('.'))
+                    parsedSourceKey = extractFromNestedField(source, normSourceKey)
+                else if (typeof normSourceKey === 'object')
+                    parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
+                else
+                    parsedSourceKey = source[normSourceKey]
+            }
             //if (typeof parsedSourceKey == "string")
             //    parsedSourceKey = parsedSourceKey.replaceAll('"', '')
             //parsedSourceKey = check(parsedSourceKey)
