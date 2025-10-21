@@ -37,7 +37,7 @@ const { load } = require('nconf');
 
 const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res) => {
 
-    logger.debug(schema)
+    logger.debug({sourceData})
 
     if (!res.dmm)
         res.dmm = {}

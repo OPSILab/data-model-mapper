@@ -196,10 +196,34 @@ describe("test", async function () {
       }
     );
   }
+  function test6() {
+    it(
+      'Multipart test', async () => {
+        let res = await axios.post(
+          'http://localhost:' + config.httpPort + '/api/map/transform',
+          assets.testSourceFromMinioBody,
+          { headers: { authorization } }
+        )
+        try {
+          res.data.pop()
+          chai.assert.equal(
+            JSON.stringify(res.data),
+            JSON.stringify(assets.testSourceFromMinioResponse)
+          )
+        }
+        catch (error) {
+          console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+          console.log(JSON.parse(error.actual))
+          throw error
+        }
+      }
+    );
+  }
   test1()
   test2()
   test3()
   test4()
   test5()
+  test6()
 }
 );

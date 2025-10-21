@@ -366,7 +366,7 @@ module.exports = {
       }
     config.EPSG_code = undefined
 
-    if (source.data && source.path)
+    if (source.data && source.path && source.path != ".root$$$")
       source.data = source.data[source.path]
 
     /*logger.debug(config.rowStart, " ", config.rowEnd)
@@ -381,6 +381,7 @@ module.exports = {
     //}
 
     let sourceTempId, schemaTempId
+    logger.debug({ source })
 
     if (source.data) {
       let sourceDataTempWriting = {}
@@ -469,6 +470,7 @@ module.exports = {
 
     logger.debug({ dataModel })
     logger.debug(dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId)
+    logger.debug(source.name, sourceTempId)
 
     try {
       await cli(
