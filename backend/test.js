@@ -2,15 +2,15 @@ let config = require("./config")
 const assets = require("./assets/assets")
 const example_1 = require("./assets/example_1")
 const example_2 = require("./assets/example_2")
-const example_3 = require("./assets/example_3")
 const chai = require("chai")
 const axios = require("axios")
 let keycloak = require('./src/utils/keycloak')
 const jwt = require('jsonwebtoken');
 let authorization = require("./token")
 let email
-
-
+const FormData = require('form-data');
+const fs = require('fs');
+const file5 = fs.readFileSync('./assets/multipartTestFile.json', 'utf8');
 
 describe("test", async function () {
 
@@ -172,29 +172,34 @@ describe("test", async function () {
       }
     );
   }
+  function test5() {
+    const formData = new FormData();
+    formData.append('file', file5);
+    it(
+      'Multipart test', async () => {
+        let res = await axios.post(
+          'http://localhost:' + config.httpPort + '/api/map/transform',
+          formData,
+          { headers: { authorization } }
+        )
+        try {
+          chai.assert.equal(
+            JSON.stringify(res.data[0]),
+            JSON.stringify(assets.testMultiPartResponse)
+          )
+        }
+        catch (error) {
+          console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+          console.log(JSON.parse(error.actual))
+          throw error
+        }
+      }
+    );
+  }
   test1()
   test2()
   test3()
   test4()
+  test5()
 }
 );
-/*it(
-'Example test - geojson 2', async () => {
-  //config.NGSI_entity=true;
-  let res = await axios.post(
-    'http://localhost:' + config.httpPort + '/api/map/transform',
-    example_3.test,
-    { headers: { authorization } }
-  )
-  try {
-    chai.assert.equal(
-      JSON.stringify(res.data[0]),
-      JSON.stringify(assets.example_2)
-    )
-  }
-  catch (error) {
-    console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
-    throw error
-  }
-}
-);*/

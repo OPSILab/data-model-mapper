@@ -36,8 +36,6 @@ function send(res, status, body) {
 module.exports = {
     auth: async (req, res, next) => {
 
-        req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
-
         process.env.start = Date.now()
 
         if (req.body.file)
@@ -48,6 +46,8 @@ module.exports = {
                     req.body.file = req.file.buffer.toString('utf8');
                 else
                     req.body = { file: req.file.buffer.toString('utf8') }
+
+        req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
 
         if (authConfig.disableAuth) {
             let pilot = "shared", username = "shared", email = "shared"

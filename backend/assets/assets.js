@@ -3191,5 +3191,7 @@ module.exports = {
             "type": "TrafficFlowObserved",
             "id": "urn:ngsi-ld:TrafficFlowObserved:" + email + ":Cluj-Napocatraffic103203492"
         }
-    }
+    },
+
+    testMultiPartResponse: {"e":"attraversamento","f":"bidirezionale"} //TODO transform in function like the others with email in input
 }

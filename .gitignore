@@ -69,3 +69,4 @@ backend/monster.js
 backend/token.js
 backend/config.msi.js
 backend/config.waze.js
+*.sandbox.*

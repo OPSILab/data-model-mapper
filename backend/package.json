@@ -16,6 +16,7 @@
     "csv-stream": "^0.2.0",
     "express": "^4.18.2",
     "filereader": "^0.10.3",
+    "form-data": "^4.0.4",
     "geojson-stream": "0.0.1",
     "is-file-stream": "^1.0.0",
     "is-valid-path": "^0.1.1",

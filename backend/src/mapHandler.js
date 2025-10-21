@@ -61,32 +61,6 @@ const loadMap = (mapData) => {
 
 };
 
-const fixBrokenJsonString = (str) => {
-    // Rimuove spazi inutili
-    str = str.trim()
-        .replace(/\s*{\s*/g, '{')
-        .replace(/\s*}\s*/g, '}')
-        .replace(/\s*:\s*/g, ':')
-        .replace(/\s*,\s*/g, ',');
-
-    // Aggiunge le virgolette alle chiavi e ai valori
-    // 1. Chiavi: qualsiasi parola prima dei due punti
-    str = str.replace(/([{,])(\w+):/g, '$1"$2":');
-
-    // 2. Valori non tra virgolette o parentesi
-    str = str.replace(/:([^,"\[\]{}]+)/g, ':"$1"');
-
-    // Se è un array senza virgolette intorno agli oggetti, le sistema
-    if (!str.startsWith('[')) str = `[${str}]`;
-
-    try {
-        return JSON.parse(str);
-    } catch (err) {
-        console.error('Errore parsing:', err.message, str);
-        return null;
-    }
-}
-
 const fixBrokenJsonString1 = (field) => {
     let fixedField
     field = field.replaceAll('[', '["')
@@ -118,21 +92,6 @@ const fixBrokenJsonString1 = (field) => {
 
     return fixedField || field
 
-}
-
-const fixBrokenJsonString2 = (str) => {
-    let fixed = str.replaceAll('[', '["').replaceAll(']', '"]').replaceAll(',', '","')
-        .replaceAll('{', '{"')
-        .replaceAll('}', '"}')
-        .replaceAll(':', '":"')
-    try {
-        return JSON.parse(fixed)
-    } catch (error) {
-        logger.error(fixed)
-        logger.error(fixed.toString())
-        logger.error(error)
-        return str
-    }
 }
 
 const cleanValue = (value) => {
