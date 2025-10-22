@@ -350,6 +350,8 @@ module.exports = {
     if ((!source.data || source.data && !source.data[0]) && source.url) {
       source.download = await axios.get(source.url)
       source.data = source.download.data
+      delete source.download.headers 
+      delete source.download.request
       /*
       fs.writeFile(config.sourceDataPath + 'sourceFileTemp2.' + source.type, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
           if (err) throw err;

@@ -449,12 +449,19 @@ const sendOutput = async (config, res) => {
         }
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
-    fs.writeFile('./output/output' + outputId + ".json", JSON.stringify(res.dmm), function (err) {
-        //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
-        if (err) throw err;
-        logger.debug('File output is created successfully.');
-        outputDataTempWriting.value = 'File output is created successfully.'
-    })
+    try {
+        fs.writeFile('./output/output' + outputId + ".json", JSON.stringify(res.dmm), function (err) {
+            //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
+            if (err) throw err;
+            logger.debug('File output is created successfully.');
+            outputDataTempWriting.value = 'File output is created successfully.'
+        })
+    }
+    catch (error) {
+        logger.error(error)
+        logger.error(res.dmm)
+        outputDataTempWriting.value = 'Error during output file creation.'
+    }
     await finish(outputDataTempWriting)
     //const deleteSession = 
     res.dmm.deleteSession()
