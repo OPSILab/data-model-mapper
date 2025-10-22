@@ -480,7 +480,7 @@ const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) =
     if (config.mode == 'server') {
         //Mapping report in output file
 
-        while (isOrionWriterActive() && (config.orionWrittenCount + config.orionUnWrittenCount < config.validCount)) {
+        while (isOrionWriterActive(config) && (config.orionWrittenCount + config.orionUnWrittenCount < config.validCount)) {
             await sleep(1000, "Orion writing progress :" + (config.orionWrittenCount + config.orionUnWrittenCount) + "/" + config.validCount)
         }
 
@@ -492,7 +492,7 @@ const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) =
                 Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
                 Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
             },
-            ORION_REPORT: isOrionWriterActive() ? {
+            ORION_REPORT: isOrionWriterActive(config) ? {
                 "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
                 "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
                 "Object SKIPPED": config.orionSkippedCount.toString() + '/' + config.validCount.toString(),
@@ -565,16 +565,16 @@ const getActiveWriters = () => {
     return config.writers;
 };
 
-const isFileWriterActive = () => {
-    return config.writers.includes('fileWriter');
+const isFileWriterActive = (configIn) => {
+    return (configIn || config).writers.includes('fileWriter');
 };
 
-const isOrionWriterActive = () => {
-    return config.writers.includes('orionWriter');
+const isOrionWriterActive = (configIn) => {
+    return (configIn || config).writers.includes('orionWriter');
 };
 
-const isWriterActive = (writerName) => {
-    return config.writers.includes(writerName);
+const isWriterActive = (writerName, configIn) => {
+    return (configIn || config).writers.includes(writerName);
 };
 
 const isReadableFileStream = (obj) => {

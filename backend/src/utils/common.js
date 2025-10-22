@@ -139,8 +139,8 @@ module.exports = {
         logger.info(message || "waiting")
         return new Promise(resolve => setTimeout(resolve, ms));
     },
-    isMinioWriterActive() {
-        return config.writers.includes('minioWriter');
+    isMinioWriterActive(configIn) {
+        return (configIn || config).writers.includes('minioWriter');
     },
     async finish(obj) {
         let logCounterFlag

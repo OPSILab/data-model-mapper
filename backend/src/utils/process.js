@@ -267,7 +267,7 @@ const finalizeProcess = async (minioObj, config, res) => {
         //utils.restoreDefaultConfs();
 
         // Wait until all promises resolve (defined and pushed in processMappedObject handler)
-        if (utils.isFileWriterActive()) {
+        if (utils.isFileWriterActive(config)) {
             await fileWriter.finalize(config); // Finalize file in case of using fileWriter
             await fileWriter.checkAndPrintFinalReport(config);
         }

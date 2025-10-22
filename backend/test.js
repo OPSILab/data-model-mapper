@@ -196,19 +196,19 @@ describe("test", async function () {
       }
     );
   }
-  function test6() {
+  function dmmRequest(name, body, expected) {
     it(
-      'Multipart test', async () => {
+      name, async () => {
         let res = await axios.post(
           'http://localhost:' + config.httpPort + '/api/map/transform',
-          assets.testSourceFromMinioBody,
+          body,
           { headers: { authorization } }
         )
         try {
           res.data.pop()
           chai.assert.equal(
             JSON.stringify(res.data),
-            JSON.stringify(assets.testSourceFromMinioResponse)
+            JSON.stringify(expected)
           )
         }
         catch (error) {
@@ -219,11 +219,42 @@ describe("test", async function () {
       }
     );
   }
+    function dmmRequestWithReport(name, body, expected) {
+    it(
+      name, async () => {
+        let res = await axios.post(
+          'http://localhost:' + config.httpPort + '/api/map/transform',
+          body,
+          { headers: { authorization } }
+        )
+        try {
+          chai.assert.equal(
+            JSON.stringify(res.data),
+            JSON.stringify(expected)
+          )
+        }
+        catch (error) {
+          console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+          console.log(JSON.parse(error.actual))
+          throw error
+        }
+      }
+    );
+  }
+  function test6() {
+    dmmRequest('MinIO test', assets.testSourceFromMinioBody, assets.testSourceFromMinioResponse)
+  }
+  // Test with source data from MinIO and data model from db
+  function test7() {
+    dmmRequestWithReport('Test with orionWriter disabled by request', assets.bodyTestOrionWriterDisabledByRequest, assets.responseTestOrionWriterDisabledByRequest)
+  }
+
   test1()
   test2()
   test3()
   test4()
   test5()
   test6()
+  test7()
 }
 );
