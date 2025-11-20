@@ -264,9 +264,9 @@ function spaceCleaner0(object) {
     return object
 }
 
-const bodyMapper = (body) => {
+const bodyMapper = (body, query) => {
 
-    if (body.mapperRecordID || body.adapterID) body.mapID = body.mapperRecordID || body.adapterID
+    if (body.mapperRecordID || body.adapterID || query.mapID) body.mapID = body.mapperRecordID || body.adapterID || query.mapID
 
     let sourceData = {
         name: body.sourceDataIn,

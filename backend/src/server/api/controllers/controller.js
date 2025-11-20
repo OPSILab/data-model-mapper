@@ -128,7 +128,7 @@ module.exports = {
 
         //await waiting("map")
         //process.dataModelMapper.map = "busy"
-        let { sourceData, map, dataModel } = utils.bodyMapper(req.body)
+        let { sourceData, map, dataModel } = utils.bodyMapper(req.body, req.query)
         const emitter = new EventEmitter();
         let id
         try {
@@ -149,6 +149,7 @@ module.exports = {
             if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
         }
         catch (error) {
+            //TODO here should be catched errors from process.js too. Actually there is a workaround in process.js with res.status(500) but it should be fixed properly. The error was genereted from mapHandler
             logger.error(error) 
             if (error.response) {
                 logger.error(error.response.data)

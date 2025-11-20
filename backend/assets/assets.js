@@ -1,6 +1,33 @@
 const { response } = require("express")
 
 module.exports = {
+    
+    testGetFromMinio: [
+        {
+            "a": "a1",
+            "b": {
+                "c": "c1"
+            }
+        },
+        {
+            "a": "a2",
+            "b": {
+                "c": "c2"
+            }
+        },
+        {
+            "a": "a3",
+            "b": {
+                "c": "c3"
+            }
+        },
+        {
+            "a": "a4",
+            "b": {
+                "c": "c4"
+            }
+        }
+    ],
     sample: (email) => {
         return {
             "Field 1": "[Field 1 value 1,Field 1 value 2]",

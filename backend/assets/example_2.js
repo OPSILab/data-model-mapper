@@ -322,6 +322,7 @@ module.exports = {
                     "description": "Property. It allows to specify a sub type of `vehicleType`, eg if the `vehicleType` is set to `Lorry` the `vehicleSubType` may be `OGV1` or `OGV2` to convey more information about the exact type of vehicle"
                 }
             }
-        }
+        },
+        config: {disableAjv: true}
     }
 }

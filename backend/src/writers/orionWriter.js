@@ -100,7 +100,7 @@ const insertLargeFiles = async (id, obj, config, modelSchema) => {
         logger.debug("Now closing connection to orion mongo")
         await orionDB.close();
         logger.debug("Now closed connection to orion mongo")
-        throw { error: "no entity updated" }
+        throw { error: "no entity updated" }//TODO why ? i think if toMongoOrionObject(fixVertices(obj)) doesn't fail it should work
     }
     //console.log({
     //    update,

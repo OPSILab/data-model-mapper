@@ -254,6 +254,7 @@ const extractFromNestedField = (source, field) => {
  * @param {"Destination schema"} modelSchema The destination schema/data model 
  */
 const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service, group, entityIdField, NGSI_entity, minioObj, config, res) => {
+    //TODO try throwing an error here to see if process.js error not been catched by controller.js is fixed
 
     logger.debug({ rowNumber, source, map, entityIdField, service, group })
     var result = {};

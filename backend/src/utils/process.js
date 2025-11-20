@@ -37,7 +37,7 @@ const { load } = require('nconf');
 
 const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res) => {
 
-    logger.debug({sourceData})
+    logger.debug({ sourceData })
 
     if (!res.dmm)
         res.dmm = {}
@@ -101,14 +101,14 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
                 logger.debug("map is the file map loaded")
             } catch (error) {
                 logger.error('There was an error while loading Map: ');
-                logger.error(error)               
+                logger.error(error)
                 return Promise.reject('There was an error while loading Map: ' + error);
             }
 
 
             if (map) {
                 logger.info('Map loaded');
-                logger.debug({map})
+                logger.debug({ map })
 
                 try {
 
@@ -129,7 +129,7 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
 
                 } catch (error) {
                     logger.error('There was an error while processing Data Model schema: ');
-                    logger.error(error)                  
+                    logger.error(error)
                     if (schema)
                         loadedSchema = JSON.parse(JSON.stringify(schema))
                     else
@@ -200,6 +200,7 @@ const processRow = async (rowNumber, row, map, schema, mappedHandler, NGSI_entit
     }
     catch (error) {
         logger.error(error, "\n", error.message)
+        res.dmm.outputFile ? res.dmm.outputFile.push({ error: error.message, tips: (!config.disableAjv ? "Try to set disableAjv=true in config.js" : "I don't know, try asking Dmm's developer.") }) : res.dmm.outputFile = [{ error: error.message, tips: (!config.disableAjv ? "Try to set disableAjv=true in config.js" : "I don't know, try asking Dmm's developer.") }]
     }
 
     logger.debug("Row: " + rowNumber + " - Object mapped correctly ");
@@ -246,6 +247,9 @@ const processMappedObject = async (objNumber, obj, modelSchema, promises, config
 const finalizeProcess = async (minioObj, config, res) => {
 
     let promises = res.dmm.promises
+    if (!res.dmm.outputFile)
+        return res.status(500).json({ "error": "No output file. Sometimes it can be caused by ajv. Try to set disableAjv=true in config.js" })
+    //TODO this error is not catched by controller: throw new Error("No output file. Sometimes it can be caused by ajv. Try to set disableAjv=true in config.js"). This should be fixed because res.send should not be called here
 
     try {
         //await Promise.all(promises);
@@ -282,7 +286,7 @@ const finalizeProcess = async (minioObj, config, res) => {
         //return await Promise.resolve();
 
     } catch (error) {
-        logger.error(error)      
+        logger.error(error)
         return await Promise.reject(error);
     }
 };

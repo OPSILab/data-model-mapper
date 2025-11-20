@@ -139,10 +139,15 @@ module.exports = {
                                 }
                                 catch (error) {
                                     logger.error(error)
-                                    send(res, 500, error || error.toString())
+                                    if (config.minioWriter.restrictAccess)
+                                        return send(res, 500, error || error.toString())
                                 }
                             }
-                            let { pilot, username, email } = data
+
+                            let pilot = data?.pilot || "shared"
+                            let email = data?.email || "shared"
+                            let username = data?.username || "shared"
+
                             if (!req.body.config)
                                 req.body.config = {
                                     orionWriter: {}

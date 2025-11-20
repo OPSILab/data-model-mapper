@@ -192,7 +192,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
 
     var valid
 
-    if (config.disableAjv) {
+    if (config.disableAjv) {//TODO if you don't use ajv, valid it properly!
         /*if (typeof data == "object") {
             for (let key in data) {
                 logger.debug(data, "\n", data[key])
