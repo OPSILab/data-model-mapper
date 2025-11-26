@@ -15,10 +15,12 @@ let n = 1;
 
 function errorHandler(error, name) {//TODO this should go in a utils or in a errorHanlder file
   //console.error({ status: error.response.status, data: error.response.data })
-  console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
-  console.error(JSON.parse(error.actual))
+  //console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
+  //console.error(JSON.parse(error.actual))
   fs.writeFileSync("./tests/" + name + " - errorResponse.json", JSON.stringify(JSON.parse(error.actual), null, 2))
   fs.writeFileSync("./tests/" + name + " - expectedResponse.json", JSON.stringify(JSON.parse(error.expected), null, 2))
+  error.actual = "trucated because it is written to a errorResponse file"
+  error.expected = "truncated because it is written to a expectedResponse file"
   throw error
 }
 
@@ -28,6 +30,7 @@ function resetFolderSync(folderPath) {//TODO this should go in a utils
 }
 
 async function handleJwtExpired(error) {//TODO this should go in a utils or in a errorHanlder file
+  console.log("Handling JWT expiration")
   console.log(error)
   authorization = await keycloak.updateJWT()
   email = jwt.verify(authorization, config.authConfig.publicKey, { algorithms: ['RS256'] }).email
@@ -296,7 +299,9 @@ function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
   files.forEach(file => {
+    //console.log("Test ", n++)
     dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
+    //console.log("Test ", n - 1, " finished")
   });
 }
 

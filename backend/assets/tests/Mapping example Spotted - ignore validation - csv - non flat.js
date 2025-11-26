@@ -1,0 +1,78 @@
+module.exports = {
+    body: {
+        "dataModelIn": "Spotted",
+        "mapData": {
+            "dataset": "static:cycle_paths",
+            "entitySourceId": [
+                "static:bike644001489880d4d150286f56"
+            ],
+            "fields": {
+                "address": {
+                    "addressCountry": "",
+                    "addressLocality": "",
+                    "streetAddress": "anagrafica"
+                },
+                "location": "Location",
+                "name": "",
+                "targetDataModel": "Spotted"
+            }
+        },
+        "sourceDataURL": "https://dati.comune.milano.it/dataset/ceda0264-24f3-4869-9a2d-411906f0abab/resource/18b0480e-5e7d-4a7d-902f-30cc76ad4f9f/download/bike_ciclabili.csv",
+        "sourceDataType": "csv",
+        "csvDelimiter": ";",
+        "config": {
+            "rowEnd": 2,
+            "ignoreValidation": true
+        }
+    },
+    response: [
+        {
+            "dataset": "cycle_paths",
+            "fields": {
+                "address": {
+                    "addressCountry": "",
+                    "addressLocality": "",
+                    "streetAddress": "PIAZZA VENTICINQUE APRILE"
+                },
+                "location": "(45.48098764714976, 9.187030518678496)",
+                "name": ""
+            }
+        },
+        {
+            "dataset": "cycle_paths",
+            "fields": {
+                "address": {
+                    "addressCountry": "",
+                    "addressLocality": "",
+                    "streetAddress": "VIA GIACOMO MEDICI DEL VASCELLO"
+                },
+                "location": "(45.43927155468637, 9.241944649071282)",
+                "name": ""
+            }
+        },
+        {
+            "dataset": "cycle_paths",
+            "fields": {
+                "address": {
+                    "addressCountry": "",
+                    "addressLocality": "",
+                    "streetAddress": "VIA GIACOMO MEDICI DEL VASCELLO"
+                },
+                "location": "(45.440019926885114, 9.239956172669872)",
+                "name": ""
+            }
+        },
+        {
+            "MAPPING_REPORT": {
+                "Processed_objects": 4093,
+                "Mapped_and_Validated_Objects": "2-4093",
+                "Mapped_and_NOT_Validated_Objects": "4091-4093"
+            },
+            "ORION_REPORT": {
+                "Object written to Orion Context Broker": "2/2",
+                "Object NOT written to Orion Context Broker": "0/2",
+                "Object SKIPPED": "0/2"
+            }
+        }
+    ]
+}

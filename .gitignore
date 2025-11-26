@@ -70,3 +70,6 @@ backend/token.js
 backend/config.msi.js
 backend/config.waze.js
 *.sandbox.*
+*errorResponse.json
+*expectedResponse.json
+frontend/src/assets/TrafficFlowObservedWaze.json
