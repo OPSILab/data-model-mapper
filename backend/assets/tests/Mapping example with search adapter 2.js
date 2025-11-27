@@ -58,6 +58,7 @@ module.exports = {
     response: [
         {
             "output": {
+                "outputId": "UniversityUNIPA",
                 "title": "Search output",
                 "type": "string",
                 "language": "English",
