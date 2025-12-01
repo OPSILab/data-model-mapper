@@ -150,7 +150,7 @@ module.exports = {
         }
         catch (error) {
             //TODO here should be catched errors from process.js too. Actually there is a workaround in process.js with res.status(500) but it should be fixed properly. The error was genereted from mapHandler
-            logger.error(error) 
+            logger.error(error)
             if (error.response) {
                 logger.error(error.response.data)
                 logger.error(error.request)
@@ -189,12 +189,12 @@ module.exports = {
     },
 
     getSourcesFromDB: async (req, res) => {
-        
+
         try {
             res.send(await service.getSourcesFromDB(req.body.prefix))
         }
         catch (error) {
-            logger.error(error)   
+            logger.error(error)
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -206,46 +206,46 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     getSourcesFromMinio: async (req, res) => {
-        
+
         try {
             res.send(await service.getMinioObjects(req.params.bucketName || req.query.bucketName, req.body.prefix, req.query.format, []))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     getMaps: async (req, res) => {
-        
+
         try {
             res.send(await service.getMaps(req.body.prefix))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     getDataModels: async (req, res) => {
-        
+
         try {
             res.send(await service.getDataModels(req.body.prefix))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -253,13 +253,13 @@ module.exports = {
 
     getSource: async (req, res) => {
         const { id, name, mapRef } = req.query
-        
+
         try {
             res.send(await service.getSource(id, name, mapRef, req.body.prefix))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(error.code || 400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -267,26 +267,26 @@ module.exports = {
 
     getMap: async (req, res) => {
         const { id, name } = req.query
-        
+
         try {
             res.send(await service.getMap(id, name, req.body.prefix))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(error.code || 400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     getConfig: async (req, res) => {
-        
+
         try {
             res.send(await service.getConfig())
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -294,13 +294,13 @@ module.exports = {
 
     getDataModel: async (req, res) => {
         const { id, name, mapRef } = req.query
-        
+
         try {
             res.send(await service.getDataModel(id, name, mapRef, req.body.prefix))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(error.code || 400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -309,7 +309,7 @@ module.exports = {
     insertSource: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
 
         try {
@@ -318,7 +318,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -328,7 +328,7 @@ module.exports = {
     insertMap: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.insertMap(req.body.name, req.body.id, req.body.map, req.body.dataModel, req.body.status, req.body.description,
@@ -338,7 +338,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -348,7 +348,7 @@ module.exports = {
     insertDataModel: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.insertDataModel(req.body.name, req.body.id, req.body.dataModel, req.body.mapRef, req.body.bucketName, req.body.prefix))
@@ -365,7 +365,7 @@ module.exports = {
     modifySource: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.modifySource(req.body.name, req.body.id, req.body.source, req.body.path, req.body.mapRef, req.body.bucketName, req.body.prefix))
@@ -373,7 +373,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -383,7 +383,7 @@ module.exports = {
     assignSource: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.assignSource(req.body.sourceDataID, req.body.mapRef))
@@ -391,7 +391,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -401,7 +401,7 @@ module.exports = {
     assignSchema: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.assignSchema(req.body.dataModelID, req.body.mapRef))
@@ -409,7 +409,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -419,7 +419,7 @@ module.exports = {
     deAssignSource: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.deAssignSource(req.body.sourceDataID, req.body.mapRef))
@@ -427,7 +427,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -437,7 +437,7 @@ module.exports = {
     deAssignSchema: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.deAssignSchema(req.body.dataModelID, req.body.mapRef))
@@ -445,7 +445,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -455,7 +455,7 @@ module.exports = {
     modifyMap: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.modifyMap(req.body.name, req.body.id, req.body.map, req.body.dataModel, req.body.status, req.body.description,
@@ -465,7 +465,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -475,7 +475,7 @@ module.exports = {
     modifyDataModel: async (req, res) => {
 
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.modifyDataModel(req.body.name, req.body.id, req.body.dataModel, req.body.mapRef, req.body.bucketName, req.body.prefix))
@@ -483,7 +483,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -493,7 +493,7 @@ module.exports = {
     deleteSource: async (req, res) => {
         const { id, name } = req.query
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try { res.send(await service.deleteSource(id, name, req.body.prefix)) }
         catch (error) { res.status(400).send(error.toString() == "[object Object]" ? error : error.toString()) }
@@ -504,14 +504,14 @@ module.exports = {
     deleteMap: async (req, res) => {
         const { id, name } = req.query
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.deleteMap(id || req.params.id, name, req.body.prefix, req.body.bucketName))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.crud =
@@ -521,7 +521,7 @@ module.exports = {
     deleteDataModel: async (req, res) => {
         const { id, name } = req.query
         await waiting("crud")
-        
+
         process.dataModelMapper.crud = "busy"
         try {
             res.send(await service.deleteDataModel(id, name, req.body.prefix))
@@ -535,7 +535,7 @@ module.exports = {
 
     dereferenceSchema: async (req, res) => {
 
-        
+
         if (req.body.bucketName) req.body.bucketName = undefined
         if (req.body.prefix) req.body.prefix = undefined
 
@@ -544,7 +544,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -552,7 +552,7 @@ module.exports = {
 
     cleanSchema: async (req, res) => {
 
-        
+
         if (req.body.bucketName) req.body.bucketName = undefined
         if (req.body.prefix) req.body.prefix = undefined
 
@@ -562,7 +562,7 @@ module.exports = {
 
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -570,7 +570,7 @@ module.exports = {
 
     buildGeoJson: async (req, res) => {
 
-        
+
         if (req.body.bucketName) req.body.bucketName = undefined
         if (req.body.prefix) req.body.prefix = undefined
 
@@ -580,7 +580,7 @@ module.exports = {
 
         catch (error) {
             logger.error(error)
-            
+
             res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -588,14 +588,14 @@ module.exports = {
 
 
     minioCreateBucket: async (req, res) => {
-        
+
         try {
             res.send(await service.minioCreateBucket(req.params.bucketName))
         }
         catch (error) {
             let errorStatusCode
             logger.error(error)
-            
+
             if (error.code == "BucketAlreadyOwnedByYou" || error.name == "InvalidBucketNameError")
                 errorStatusCode = 400
             else
@@ -608,14 +608,14 @@ module.exports = {
     },
 
     minioGetObject: async (req, res) => {
-        
+
         try {
             res.send(await service.minioGetObject(req.params.bucketName, req.params.objectName, req.query.format))
         }
         catch (error) {
             let errorStatusCode
             logger.error(error)
-            
+
             if (error.code == "NoSuchKey")
                 errorStatusCode = 400
             else
@@ -626,39 +626,39 @@ module.exports = {
     },
 
     minioListObjects: async (req, res) => {
-        
+
         try {
             res.send(await service.minioListObjects(req.params.bucketName || req.query.bucketName))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     minioGetBuckets: async (req, res) => {
-        
+
         try {
             res.send(await service.minioGetBuckets())
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
     },
 
     minioSubscribe: async (req, res) => {
-        
+
         try {
             res.send(await service.minioSubscribe(req.params.bucketName))
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -666,11 +666,11 @@ module.exports = {
 
     minioInsertObject: async (req, res) => {
         logger.info("Insert object in minio")
-        
+
         try {
             let result = await service.minioInsertObject(req.body.pilot.toLowerCase(), req.query.email + "/PRIVATE GENERIC Data/" + req.query.fileName, req.file || req.body.file, req.query.scope)
             logger.debug(result)
-            res.send({id: req.query.email, fileName: req.query.fileName, etag : result.etag, path : result.objectName, bucketName : result.bucketName})
+            res.send({ id: req.query.email, fileName: req.query.fileName, etag: result.etag, path: result.objectName, bucketName: result.bucketName })
             //res.send(await service.minioInsertObject(req.body.pilot.toLowerCase(), req.query.email + "/PRIVATE GENERIC Data/" + req.query.fileName, req.body.file))
             //res.send(await service.minioInsertObject(req.body.pilot, req.params.objectName, req.body))
             //res.send(await service.minioInsertObject(req.params.bucketName, req.params.objectName, req.body))
@@ -678,7 +678,7 @@ module.exports = {
         catch (error) {
             let errorStatusCode
             logger.error(error)
-            
+
             if (error.message == 'third argument should be of type "stream.Readable" or "Buffer" or "string"')
                 errorStatusCode = 400
             else
@@ -694,7 +694,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined
@@ -706,7 +706,7 @@ module.exports = {
         }
         catch (error) {
             logger.error(error)
-            
+
             res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         //process.dataModelMapper.resetConfig = undefined

@@ -1,7 +1,35 @@
-module.exports = { //NOTE: since it's not NGSI, the object will not be written to CB and it's expected to fail
+module.exports = { //NOTE: try also writing in CB
     body: {
-        "sourceDataType": "csv",
-        "sourceData": "Field 1;Field 2;Field 3 index 0;Field 3 index 1;Field 4a;Field 4b;Field 4c index 0;Field 4c index 1\r\n[Field 1 value 1,Field 1 value 2];[Field 2 value 1,Field 2 value 2];Field 3 value 1;Field 3 value 2; [Field 4a value 1,Field 4a value 2];[Field 4b value 1,Field 4b value 2];Field 4c value 1;Field 4c value 2",
+        "sourceDataType": "json",
+        "sourceData": [
+            {
+                "Field 1": "",
+                "Field 2": [
+                    "Value 2"
+                ],
+                "Field 4a": "Value 4a from root but now is not in root",
+                "Field 4b": [
+                    "Value 4b from root but now is not in root"
+                ],
+                "Field 4c index 0": "Field 4c index 0 value from root but now is not in root",
+                "Field 4c index 1": "Field 4c index 1 value from root but now is not in root",
+                "Field 4d": [
+                    "Value 4d"
+                ],
+                "Field 3 index 0": "Field 3 index 0 Value",
+                "Field 3 index 1": "Field 3 index 1 value",
+                "Field 31": [
+                    "Value 31"
+                ],
+                "Field 32": 32,
+                "Field 33": 33,
+                "Field 5": 5,
+                "Field 6": 6,
+                "Field 4": {
+                    "Field 4a": "4a value not from root but now is in root"
+                }
+            }
+        ],
         "mapData": {
             "Field 1": "Field 1",
             "Field 2": "Field 2",
@@ -9,14 +37,21 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                 "Field 3 index 0",
                 "Field 3 index 1"
             ],
+            "Field 31": "Field 31",
+            "Field 32": "Field 33",
+            "Field 33": "Field 33",
             "Field 4": {
                 "Field 4a": "Field 4a",
                 "Field 4b": "Field 4b",
                 "Field 4c": [
                     "Field 4c index 0",
                     "Field 4c index 1"
-                ]
+                ],
+                "Field 4d": "Field 4d"
             },
+            "Field 5": "Field 5",
+            "Field 6": "Field 6",
+            "Field 7": "Field 4.Field 4a",
             "entitySourceId": [
                 "static:ExampleDataModel"
             ],
@@ -49,10 +84,7 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                         "type": {
                             "type": "string",
                             "enum": [
-                                "Field 1",
-                                "Field 2",
-                                "Field 3",
-                                "Field 4"
+                                "Example"
                             ],
                             "description": "Example Data Model"
                         },
@@ -65,15 +97,22 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                         "Field 3": {
                             "type": "array"
                         },
+                        "Field 31": {
+                            "type": "array"
+                        },
+                        "Field 32": {
+                            "type": "number"
+                        },
+                        "Field 33": {
+                            "type": "integer"
+                        },
                         "Field 4": {
                             "type": "object",
                             "properties": {
                                 "type": {
                                     "type": "string",
                                     "enum": [
-                                        "Field 4a",
-                                        "Field 4b",
-                                        "Field 4c"
+                                        "Field 4"
                                     ]
                                 },
                                 "Field 4a": {
@@ -84,51 +123,68 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                                 },
                                 "Field 4c": {
                                     "type": "array"
+                                },
+                                "Field 4d": {
+                                    "type": "array"
                                 }
                             }
+                        },
+                        "Field 5": {
+                            "type": "number"
+                        },
+                        "Field 6": {
+                            "type": "integer"
+                        },
+                        "Field 7": {
+                            "type": "string"
                         }
                     }
                 }
             ]
         },
-        "csvDelimiter": ";"
+        "config": { "writers": ["minioWriter", "fileWriter"] }
     },
     response: [
-    {
-        "Field 1": "[Field 1 value 1,Field 1 value 2]",
-        "Field 2": [
-            "Field 2 value 1",
-            "Field 2 value 2"
-        ],
-        "Field 3": [
-            "Field 3 value 1",
-            "Field 3 value 2"
-        ],
-        "Field 4": {
-            "Field 4a": "[Field 4a value 1,Field 4a value 2]",
-            "Field 4b": [
-                "Field 4b value 1",
-                "Field 4b value 2"
+        {
+            "Field 1": "",
+            "Field 2": [
+                "Value 2"
             ],
-            "Field 4c": [
-                "Field 4c value 1",
-                "Field 4c value 2"
-            ]
+            "Field 3": [
+                "Field 3 index 0 Value",
+                "Field 3 index 1 value"
+            ],
+            "Field 31": [
+                "Value 31"
+            ],
+            "Field 32": 33,
+            "Field 33": 33,
+            "Field 4": {
+                "Field 4a": "Value 4a from root but now is not in root",
+                "Field 4b": [
+                    "Value 4b from root but now is not in root"
+                ],
+                "Field 4c": [
+                    "Field 4c index 0 value from root but now is not in root",
+                    "Field 4c index 1 value from root but now is not in root"
+                ],
+                "Field 4d": [
+                    "Value 4d"
+                ]
+            },
+            "Field 5": 5,
+            "Field 6": 6,
+            "Field 7": "4a value not from root but now is in root",
+            "type": "Example",
+            "id": "urn:ngsi-ld:Example:gabriele.percoco@demetrix.it:ExampleDataModel-1"
         },
-        "type": "Field1",
-        "id": "urn:ngsi-ld:Field1:gabriele.percoco@demetrix.it:ExampleDataModel-1"
-    },
-    {
-        "MAPPING_REPORT": {
-            "Processed_objects": 1,
-            "Mapped_and_Validated_Objects": "1-1",
-            "Mapped_and_NOT_Validated_Objects": "0-1"
-        },
-        "ORION_REPORT": {
-            "Object written to Orion Context Broker": "1/1",
-            "Object NOT written to Orion Context Broker": "0/1",
-            "Object SKIPPED": "0/1"
+        {
+            "MAPPING_REPORT": {
+                "Processed_objects": 1,
+                "Mapped_and_Validated_Objects": "1-1",
+                "Mapped_and_NOT_Validated_Objects": "0-1"
+            },
+            "ORION_REPORT": "Orion writer not enabled"
         }
-    }
-]
+    ]
 }

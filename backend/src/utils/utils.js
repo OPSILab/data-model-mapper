@@ -303,6 +303,11 @@ const bodyMapper = (body, query) => {
         schema_id: body.dataModel?.$id
     }
 
+    if (body.config)
+        body.config.NGSI_entity = body.NGSI_entity
+    else
+        body.config = { NGSI_entity: body.NGSI_entity }
+
     return {
         sourceData,
         map,
