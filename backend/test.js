@@ -21,6 +21,8 @@ function errorHandler(error, name) {//TODO this should go in a utils or in a err
   fs.writeFileSync("./tests/" + name + " - expectedResponse.json", JSON.stringify(JSON.parse(error.expected), null, 2))
   error.actual = "trucated because it is written to a errorResponse file"
   error.expected = "truncated because it is written to a expectedResponse file"
+  if (config.stopsTestsOnErrors)
+    process.exit(1)
   throw error
 }
 

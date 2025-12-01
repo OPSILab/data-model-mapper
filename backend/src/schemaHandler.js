@@ -40,12 +40,12 @@ function removeUndefined(obj) {
 }
 
 function nestedFieldsHandler(field, model) {
-    log.silly("start function nestedFieldsHandler\n" + field)
+    logger.trace("start function nestedFieldsHandler\n" + field)
     if (typeof field === "object") {
-        log.silly("field is an object")
+        logger.trace("field is an object")
         for (let subField in field) {
-            log.silly("iterating inside field:\n" + field)
-            log.silly("iterating inside field: element found: \n" + subField)
+            logger.trace("iterating inside field:\n" + field)
+            logger.trace("iterating inside field: element found: \n" + subField)
             if (model) field[subField] = nestedFieldsHandler(field[subField],
                 model[subField] ?
                     model[subField].properties ?
@@ -62,12 +62,12 @@ function nestedFieldsHandler(field, model) {
                     model
             )
             else return field
-            log.silly("iterating inside field: finish. Now field is:\n" + field)
+            logger.trace("iterating inside field: finish. Now field is:\n" + field)
         }
     }
     else if (field && (field[0] == "[")) {
         if (field[1] == "{") {
-            log.silly("field is not an object but an array of objects\n" + field)
+            logger.trace("field is not an object but an array of objects\n" + field)
             while (field.replaceAll("{ ", '{') != field) field = field.replaceAll("{ ", '{')
             while (field.replaceAll(" {", '{') != field) field = field.replaceAll(" {", '{')
             while (field.replaceAll("} ", '}') != field) field = field.replaceAll("} ", '}')
@@ -93,7 +93,7 @@ function nestedFieldsHandler(field, model) {
         else if (model.type === 'number' || model.type === 'integer') field = JSON.parse(field)
         else field = field.substring(1, field.length - 1).split(',')
     }
-    log.silly("end function nestedFieldsHandler\n" + field)
+    logger.trace("end function nestedFieldsHandler\n" + field)
     return field
 }
 
@@ -265,15 +265,15 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
     if (valid) {
         if (!isSingleField)
             logger.info({
-                level: 'silly',
+                level: 'trace',
                 message: 'Validation successful for entity with id:' + data.id
             });
 
         return true;
     }
     else {
-        if (!process.dmm.apiOutput) process.dmm.apiOutput = {outputFile:{errors:[]}}
-        process.dmm.apiOutput.outputFile.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}` })
+        if (!res.dmm.apiOutput) res.dmm.apiOutput = {outputFile:{errors:[]}}
+        res.dmm.apiOutput.outputFile.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}` })
 
         logger.info(`Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}`);
         if (!isSingleField) {

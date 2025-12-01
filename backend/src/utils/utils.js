@@ -303,10 +303,17 @@ const bodyMapper = (body, query) => {
         schema_id: body.dataModel?.$id
     }
 
-    if (body.config)
-        body.config.NGSI_entity = body.NGSI_entity
-    else
-        body.config = { NGSI_entity: body.NGSI_entity }
+    if (body.config) {
+        if (body.NGSI_entity !== undefined)
+            body.config.NGSI_entity = body.NGSI_entity
+        if (body.csvDelimiter !== undefined)
+            body.config.csvDelimiter = body.csvDelimiter
+    }
+    else if (body.NGSI_entity !== undefined || body.csvDelimiter !== undefined)
+        body.config = {
+            NGSI_entity: body.NGSI_entity,
+            csvDelimiter: body.csvDelimiter
+        }
 
     return {
         sourceData,

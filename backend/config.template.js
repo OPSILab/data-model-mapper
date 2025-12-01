@@ -24,7 +24,7 @@ var config = {
     **/
     env: 'debug', // debug or production
     mode: 'commandLine', // commandLine or server 
-    logLevel: 'debug', // error, warn, info, verbose, debug or silly
+    logLevel: 'debug', // error, warn, info, verbose, debug or trace
     httpPort: 8081, // PORT where the application will listen if ran in server mode
     host: "",
     externalPort: undefined, //use undefined if, in prod, you are exposing the data model mapper server with domain instead of IP:port
@@ -34,12 +34,13 @@ var config = {
     disableAjv: false, // disable an external validator,
     mappingReport: false, // disable output mapping report
     logSaveInterval: 30000, // log backup interval
-    idVersion: 2, // 1 for 2023 version compatibility mode, 2 for newest version
+    idVersion: 2, // 1 for 2023 version compatibility mode (id), 2 for newest version (_id). This affects MongoDB queries
     noSchema: false, // experimental mode with no schema provided
     onlyEPSG4326: false, // allows only geojson with EPSG4326 coordinates
     maxFileSize: 25, // max file size upload in MB
     mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
     truncateLogs: false,
+    stopsTestsOnErrors: false, // stops the process on errors
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).

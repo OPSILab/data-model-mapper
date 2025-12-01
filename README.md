@@ -108,7 +108,7 @@ The global setup is defined in the `config.js` file
     - **`commandLine`**: you must append the arguments via command line.
 
   + **``logLevel``**: logging level for [WINSTON](https://www.npmjs.com/package/winston). Valid values are the followings:
-    - **``error, warn, info, verbose, debug, silly``**
+    - **``error, warn, info, verbose, debug, trace``**
 
   + **``httpPort``**: PORT where the application will listen if ran in server mode.
 

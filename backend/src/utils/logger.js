@@ -24,7 +24,7 @@ const Log = require("../server/api/models/log");
 const DailyRotateFile = require("winston-daily-rotate-file");
 const { createLogger, format, transports } = require("winston");
 const { combine, timestamp, label, printf } = format;
-// { error: 0, warn: 1, info: 2, verbose: 3, debug: 4, silly: 5 }
+// { error: 0, warn: 1, info: 2, verbose: 3, debug: 4, trace: 5 }
 const fs = require("fs");
 let registredDay = 0;
 const logPath = config.logPath || "logs/"
