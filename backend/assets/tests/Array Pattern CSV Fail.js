@@ -18,8 +18,7 @@ module.exports = {
                         "Bb"
                     ]
                 }
-            },
-            "targetDataModel": "schema2"
+            }
         },
         {
             "MAPPING_REPORT": {

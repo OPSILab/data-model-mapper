@@ -162,6 +162,26 @@ const encodingHandler = (mapSourceSubField, source) => {
     return x
 };*/
 
+const getArrayItemType = (source, normSourceKey, schemaDestKey) => {
+    //return schemaDestKey?.items?.type
+    if (schemaDestKey?.items?.type)
+        return schemaDestKey.items.type
+    logger.debug(source, normSourceKey, schemaDestKey)
+    if (
+        !isNaN(parseInt(source[normSourceKey][0])) ||
+        (typeof source[normSourceKey] === "string" && !isNaN(parseInt(source[normSourceKey][1])))
+    ) {
+        logger.debug(
+            parseInt(source[normSourceKey][0]),
+            parseInt(source[normSourceKey][1])
+        )
+        return "integer"
+    }
+
+    //return schemaDestKey?.items?.type
+    //schemaDestKey?.items?.type || ((parseInt(source[normSourceKey][0]) != NaN || parseInt(source[normSourceKey][1] != NaN)) && "integer")
+}
+
 const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) => {
     logger.debug("objectHandler")
     logger.debug({ parsedSourceKey, normSourceKey, schemaDestKey, source })
@@ -184,7 +204,7 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
 
         if (schemaDestSubKey || schemaDestKey.type == "array") {
 
-            let schemaFieldType = schemaDestSubKey?.type;
+            let schemaFieldType = schemaDestSubKey?.type || (schemaDestKey.type == "string" && "string");
             let schemaFieldFormat = schemaDestSubKey?.format;
             let mapSourceSubField = normSourceKey[key];
             logger.debug({ mapSourceSubField })
@@ -193,38 +213,51 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
             if (!schemaFieldType)
                 schemaFieldType = Array.isArray(normSourceKey) && "array" || typeof normSourceKey
             logger.debug({ schemaFieldType })
-            if (schemaFieldType === 'number' || schemaFieldType === 'integer' && mapSourceSubField.split('.').length == 1)
+            if (schemaFieldType === 'number' || schemaFieldType === 'integer' && mapSourceSubField.split('.').length == 1) {
+                logger.debug("schemaFieldType === 'number' || schemaFieldType === 'integer' && mapSourceSubField.split('.').length == 1")
                 parsedSourceKey[key] = Number(source[mapSourceSubField])
-            else if (schemaFieldType === 'boolean')
+            } else if (schemaFieldType === 'boolean') {
+                logger.debug("schemaFieldType === 'boolean'")
                 parsedSourceKey[key] = source[mapSourceSubField].toLowerCase() == 'true' || source[mapSourceSubField] == 1 || source[mapSourceSubField] == '1'
-            else if (schemaFieldType === 'string' && schemaFieldFormat === 'date-time')
+            } else if (schemaFieldType === 'string' && schemaFieldFormat === 'date-time') {
+                logger.debug("schemaFieldType === 'string' && schemaFieldFormat === 'date-time'")
                 parsedSourceKey[key] = new Date(source[mapSourceSubField]).toISOString();
-            else if (schemaFieldType === 'string' && Array.isArray(mapSourceSubField))
+            } else if (schemaFieldType === 'string' && Array.isArray(mapSourceSubField)) {
+                logger.debug("schemaFieldType === 'string' && Array.isArray(mapSourceSubField)")
                 parsedSourceKey[key] = handleSourceFieldsArray(mapSourceSubField, false, source).result
-            else if (schemaFieldType === 'array') {
-                logger.debug("array"); parsedSourceKey[key] = handleSourceFieldsToDestArray(mapSourceSubField, source, schemaDestSubKey?.items?.type)
+            } else if (schemaFieldType === 'array') {
+                logger.debug("schemaFieldType === 'array'");
+                parsedSourceKey[key] = handleSourceFieldsToDestArray(mapSourceSubField, source, schemaDestSubKey?.items?.type)
             }
             else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("static:") || mapSourceSubField == "")) {
+                logger.debug("schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith(static:) || mapSourceSubField == '')")
                 if (mapSourceSubField == "") mapSourceSubField = "static:"
                 parsedSourceKey[key] = mapSourceSubField.match(staticPattern)[1]
                 if (typeof parsedSourceKey[key] != "string")
                     parsedSourceKey[key] = parsedSourceKey[key].toString()
             } else if (schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith("encode:"))) {
+                logger.debug("schemaFieldType === 'string' && typeof mapSourceSubField === 'string' && (mapSourceSubField.startsWith(encode:))")
                 parsedSourceKey[key] = encodingHandler(mapSourceSubField, source)
                 if (typeof parsedSourceKey[key] != "string")
                     parsedSourceKey[key] = parsedSourceKey[key].toString()
             }
-            else if (schemaFieldType === 'object')
-                parsedSourceKey[key] = objectHandler(mapSourceSubField, mapSourceSubField, schemaDestSubKey)
-            else if (mapSourceSubField.includes('.'))// && dotPattern.test(key)) 
+            else if (schemaFieldType === 'object') {
+                logger.debug("schemaFieldType === 'object'")
+                parsedSourceKey[key] = objectHandler(mapSourceSubField, mapSourceSubField, schemaDestSubKey, source)
+            } else if (mapSourceSubField.includes('.')) {// && dotPattern.test(key)) 
+                logger.debug("mapSourceSubField.includes(.)")
                 parsedSourceKey[key] = extractFromNestedField(source, mapSourceSubField);
-            else  // normal string no action required
+            } else {  // normal string no action required
+                logger.debug("normal string no action required")
                 parsedSourceKey[key] = source[mapSourceSubField];
+            }
             logger.debug({ parsedSourceKey, key, includes: key.includes('.') })
 
             // Add type to the nested map field
             //parsedNorm[key]['type'] = new Function("input", "return '" + schemaFieldType + "'");
         }
+        else if (Array.isArray(normSourceKey) && schemaDestKey.type == "string")
+            parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result;
     }
     return parsedSourceKey;
 };
@@ -293,7 +326,8 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
                 else if (schemaDestKey && schemaDestKey.type === 'array') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
-                    parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source, schemaDestKey?.items?.type)// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
+                    logger.debug({ source, normSourceKey })
+                    parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source, getArrayItemType(source, normSourceKey, schemaDestKey))// new Function("input", "return " + handleSourceFieldsToDestArray(normSourceKey))
                     logger.debug("parsedSourceKeySet", { parsedSourceKey })
                 }
                 else if (schemaDestKey && (schemaDestKey.type === 'number' || schemaDestKey.type === 'integer')) {
@@ -513,6 +547,7 @@ const checkResultWithDestModelSchema = (mappedObject, destKey, modelSchema, rowN
 /* Concatenates fields of the source array into a string (Source is array, dest is string)
  */
 const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
+    logger.debug("handleSourceFieldsArray", { sourceFieldArray, sourceFieldType, source })
 
     var finalArray = [];
     var isOnlyStatic = true;
@@ -550,6 +585,7 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
                 } //return Number(input['" + normSourceKey + "'])
 
             } else {
+                logger.debug({ finalArray, index, source, value })
                 finalArray[index] = source[value]
                 if (isNumber)
                     finalArray[index] = Number(finalArray[index])
