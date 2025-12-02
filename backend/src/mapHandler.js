@@ -168,18 +168,18 @@ const getArrayItemType = (source, normSourceKey, schemaDestKey) => {
         return schemaDestKey.items.type
     logger.debug(source, normSourceKey, schemaDestKey)
     if (
-        !isNaN(parseInt(source[normSourceKey][0])) ||
-        (typeof source[normSourceKey] === "string" && !isNaN(parseInt(source[normSourceKey][1])))
+        !isNaN(Number(source[normSourceKey][0])) ||
+        (typeof source[normSourceKey] === "string" && !isNaN(Number(source[normSourceKey][1])))
     ) {
         logger.debug(
-            parseInt(source[normSourceKey][0]),
-            parseInt(source[normSourceKey][1])
+            Number(source[normSourceKey][0]),
+            Number(source[normSourceKey][1])
         )
         return "integer"
     }
 
     //return schemaDestKey?.items?.type
-    //schemaDestKey?.items?.type || ((parseInt(source[normSourceKey][0]) != NaN || parseInt(source[normSourceKey][1] != NaN)) && "integer")
+    //schemaDestKey?.items?.type || ((Number(source[normSourceKey][0]) != NaN || Number(source[normSourceKey][1] != NaN)) && "integer")
 }
 
 const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) => {
@@ -624,15 +624,16 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
         // not the name of the source field.
         sourceFieldArray.forEach(function (value, index, array) {
 
+            logger.debug({ value, index })
             var staticMatch = value.match(staticPattern);
             //let toArrayMatch = value.match(toArrayPattern);
             let forEachMatch = value.match(forEachPattern);
             if (staticMatch && staticMatch.length > 0) {
-
+                logger.debug({ staticMatch })
                 finalArray[index] = staticMatch[1];
-
             }
             else if (forEachMatch && forEachMatch.length > 0) {
+                logger.debug({ forEachMatch })
                 if (!foreachFound) foreachFound = true
                 //let arrayField = forEachMatch[1];
                 //let arrayFieldCleaned = cleanValue(arrayField);
@@ -659,16 +660,19 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
             }
             else {
 
+                logger.debug("Splitted dot?")
                 var splittedDot = value.match(dotPattern);
                 if (splittedDot) {
-
+                    logger.debug("yes")
                     splittedDot.shift();
+                    logger.debug(splittedDot.join("']['"))
                     if (splittedDot.length > 0)
-                        finalArray[index] = eval("source[" + splittedDot.join("']['") + "']")
+                        finalArray[index] = eval("source['" + splittedDot.join("']['") + "']")
 
                 } else {
+                    logger.debug("no")
                     logger.debug({ value, sourceValue: source[value], valueType: typeof source[value], source })
-                    finalArray[index] = itemsType == "integer" ? Nummber(source[value]) : source[value]
+                    finalArray[index] = itemsType == "integer" ? Number(source[value]) : source[value]
                 }
             }
         });
@@ -706,6 +710,8 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
                 logger.debug(fixedField)
                 return fixedField
             }
+            else if (itemsType == "integer")
+                return source[sourceFieldArray].map(x => Number(x))
             else
                 return source[sourceFieldArray]
         }
