@@ -69,7 +69,11 @@ module.exports = {
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "a",
+                            "f": "a"
+                        }
                     },
                     {
                         "count": "1",
@@ -79,7 +83,11 @@ module.exports = {
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "a",
+                                "f": "a"
+                            }
                         }
                     }
                 ]

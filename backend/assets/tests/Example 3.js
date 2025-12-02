@@ -96,7 +96,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "1",
+                            "f": "1064"
+                        }
                     },
                     {
                         "count": "1",
@@ -106,7 +110,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "1",
+                                "f": "1064"
+                            }
                         }
                     },
                     {
@@ -116,7 +124,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "2",
+                            "f": "3377"
+                        }
                     },
                     {
                         "count": "2",
@@ -126,7 +138,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "2",
+                                "f": "3377"
+                            }
                         }
                     },
                     {
@@ -136,7 +152,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "3",
+                            "f": "3377"
+                        }
                     },
                     {
                         "count": "3",
@@ -146,7 +166,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "3",
+                                "f": "3377"
+                            }
                         }
                     },
                     {
@@ -156,7 +180,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "4",
+                            "f": "3377"
+                        }
                     },
                     {
                         "count": "4",
@@ -166,7 +194,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "4",
+                                "f": "3377"
+                            }
                         }
                     },
                     {
@@ -176,7 +208,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "5",
+                            "f": "3377"
+                        }
                     },
                     {
                         "count": "5",
@@ -186,7 +222,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "5",
+                                "f": "3377"
+                            }
                         }
                     },
                     {
@@ -196,7 +236,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "6",
+                            "f": "1360"
+                        }
                     },
                     {
                         "count": "6",
@@ -206,7 +250,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "6",
+                                "f": "1360"
+                            }
                         }
                     },
                     {
@@ -216,7 +264,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "9",
+                            "f": "4068"
+                        }
                     },
                     {
                         "count": "7",
@@ -226,7 +278,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "9",
+                                "f": "4068"
+                            }
                         }
                     },
                     {
@@ -236,7 +292,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "11",
+                            "f": "5144"
+                        }
                     },
                     {
                         "count": "8",
@@ -246,7 +306,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "11",
+                                "f": "5144"
+                            }
                         }
                     },
                     {
@@ -256,7 +320,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "12",
+                            "f": "1414"
+                        }
                     },
                     {
                         "count": "9",
@@ -266,7 +334,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "12",
+                                "f": "1414"
+                            }
                         }
                     },
                     {
@@ -276,7 +348,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "e": "13",
+                            "f": "2153"
+                        }
                     },
                     {
                         "count": "10",
@@ -286,7 +362,11 @@ module.exports = {//NOTE: since it's not NGSI, the object will not be written to
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "e": "13",
+                                "f": "2153"
+                            }
                         }
                     }
                 ]

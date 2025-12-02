@@ -32,7 +32,14 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                             "title": "Entity id is missing",
                             "detail": "The 'id' field is mandatory"
                         },
-                        "status": 400
+                        "status": 400,
+                        "bodyRequest": {
+                            "FieldArray": [
+                                {
+                                    "Field": "Value"
+                                }
+                            ]
+                        }
                     },
                     {
                         "count": "1",
@@ -42,7 +49,14 @@ module.exports = { //NOTE: since it's not NGSI, the object will not be written t
                                 "title": "Entity id is missing",
                                 "detail": "The 'id' field is mandatory"
                             },
-                            "status": 400
+                            "status": 400,
+                            "bodyRequest": {
+                                "FieldArray": [
+                                    {
+                                        "Field": "Value"
+                                    }
+                                ]
+                            }
                         }
                     }
                 ]

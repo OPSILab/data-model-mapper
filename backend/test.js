@@ -90,7 +90,7 @@ function dmmRequestWithReport(name, body, expected) {
     }
   );
 }
-function test1() {
+function test1() {//TODO modify code to accept also the swapped id and type test values
   it(
     'Example test', async () => {
       let configTmp = config.sourceDataPath
