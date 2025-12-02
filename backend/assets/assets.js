@@ -1,7 +1,7 @@
 const { response } = require("express")
 
 module.exports = {
-    
+
     testGetFromMinio: [
         {
             "a": "a1",
@@ -3222,7 +3222,12 @@ module.exports = {
         }
     },
 
-    testMultiPartResponse: { "e": "attraversamento", "f": "bidirezionale" }, //TODO transform in function like the others with email in input
+    testMultiPartResponse: {
+        "e": "attraversamento",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:gabriele.percoco@demetrix.it:9001",
+        "type": "Thing"
+    }, //TODO transform in function like the others with email in input
     testSourceFromMinioBody: {
         "sourceDataType": "json",
         "path": ".root$$$",
@@ -3281,19 +3286,27 @@ module.exports = {
     testSourceFromMinioResponse: [
         {
             "e": "a1",
-            "f": "a1"
+            "f": "a1",
+            "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:a1",
+            "type": "Thing"
         },
         {
             "e": "a2",
-            "f": "a2"
+            "f": "a2",
+            "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:a2",
+            "type": "Thing"
         },
         {
             "e": "a3",
-            "f": "a3"
+            "f": "a3",
+            "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:a3",
+            "type": "Thing"
         },
         {
             "e": "a4",
-            "f": "a4"
+            "f": "a4",
+            "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:a4",
+            "type": "Thing"
         }
     ],
     bodyTestOrionWriterDisabledByRequest: {

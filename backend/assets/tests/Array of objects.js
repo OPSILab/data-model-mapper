@@ -9,9 +9,11 @@ module.exports = {
         {
             "FieldArray": [
                 {
-                    "Field": "Value"
-                }
-            ]
+                    "Field": "Value",
+                },
+            ],
+            "id": "urn:ngsi-ld:Thing:gabriele.percoco@demetrix.it:input/-1",
+            "type": "Thing"
         },
         {
             "MAPPING_REPORT": {

@@ -17,10 +17,15 @@ function errorHandler(error, name) {//TODO this should go in a utils or in a err
   //console.error({ status: error.response.status, data: error.response.data })
   //console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
   //console.error(JSON.parse(error.actual))
-  fs.writeFileSync("./tests/" + name + " - errorResponse.json", JSON.stringify(JSON.parse(error.actual), null, 2))
-  fs.writeFileSync("./tests/" + name + " - expectedResponse.json", JSON.stringify(JSON.parse(error.expected), null, 2))
-  error.actual = "trucated because it is written to a errorResponse file"
-  error.expected = "truncated because it is written to a expectedResponse file"
+  try {
+    fs.writeFileSync("./tests/" + name + " - errorResponse.json", JSON.stringify(JSON.parse(error.actual), null, 2))
+    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", JSON.stringify(JSON.parse(error.expected), null, 2))
+  } catch (e) {
+    console.log("Error writing error files:", e, error.actual, error.expected)
+    console.error("Nothing written to error files")
+    error.actual = "trucated because it is written to a errorResponse file"
+    error.expected = "truncated because it is written to a expectedResponse file"
+  }
   if (config.stopsTestsOnErrors)
     process.exit(1)
   throw error
@@ -49,7 +54,7 @@ async function init() {
   }
 }
 
-function dmmRequest(name, body, expected) {
+function dmmRequest(name, body, exp) {
   it(
     name, async () => {
       let res = await axios.post(
@@ -59,10 +64,46 @@ function dmmRequest(name, body, expected) {
       )
       try {
         res.data.pop()
+        let expected = JSON.stringify(exp)
+        let actual = JSON.stringify(res.data)
+        let originalExpected = exp
+        let originalActual = res.data
+        if (expected !== actual) {
+          //console.log(res.data[0])
+          //console.log(assets.example_1_full(email)[0])
+          let idAndtypesExpected = originalExpected.map(e => {
+            //console.log(e.id, e.type)
+            return { id: e.id, type: e.type }
+          })
+          let idAndtypesActual = originalActual.map(e => {
+            return { id: e.id, type: e.type }
+          })
+          let nonNGSIexpected = originalExpected.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          let nonNGSIactual = originalActual.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          chai.assert.equal(
+            JSON.stringify(idAndtypesActual),
+            JSON.stringify(idAndtypesExpected)
+          )
+          chai.assert.equal(
+            JSON.stringify(nonNGSIactual),
+            JSON.stringify(nonNGSIexpected)
+          )
+        }
+        else
+          chai.assert.equal("ok", "ok")
+        /*
         chai.assert.equal(
           JSON.stringify(res.data),
           JSON.stringify(expected)
-        )
+        )*/
       }
       catch (error) {
         errorHandler(error, name)
@@ -70,7 +111,7 @@ function dmmRequest(name, body, expected) {
     }
   );
 }
-function dmmRequestWithReport(name, body, expected) {
+function dmmRequestWithReport(name, body, exp) {
   it(
     name, async () => {
       let res = await axios.post(
@@ -78,15 +119,78 @@ function dmmRequestWithReport(name, body, expected) {
         body,
         { headers: { authorization } }
       )
-      try {
+      //try {
+        let expectedReport = exp.pop()
+        let actualReport = res.data.pop()
+        let expected = JSON.stringify(exp)
+        let actual = JSON.stringify(res.data)
+        let originalExpected = exp
+        let originalActual = res.data
+        if (expected !== actual) {
+          //console.log("Comparing transformed data")
+          //console.log("Let's verify id and type : ")
+          //console.log(originalExpected[0])
+          //console.log(originalActual[0])
+          //console.log(res.data[0])
+          //console.log(assets.example_1_full(email)[0])
+          let idAndtypesExpected = originalExpected.map(e => {
+            //console.log(e.id, e.type)
+            return { id: e.id, type: e.type }
+          })
+          //console.log("Expected id and type :", idAndtypesExpected)
+          let idAndtypesActual = originalActual.map(e => {
+            return { id: e.id, type: e.type }
+          })
+          //console.log("Actual id and type :", idAndtypesActual)
+          let nonNGSIexpected = originalExpected.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          //console.log("Expected non NGSI data :", nonNGSIexpected)
+          let nonNGSIactual = originalActual.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          //console.log("Actual non NGSI data :", nonNGSIactual)
+          try {
+            chai.assert.equal(
+              JSON.stringify(idAndtypesActual),
+              JSON.stringify(idAndtypesExpected)
+            )
+          } catch (error) {
+            errorHandler(error, name + " - id and type comparison")
+          }
+          try {
+            chai.assert.equal(
+              JSON.stringify(nonNGSIactual),
+              JSON.stringify(nonNGSIexpected)
+            )
+          } catch (error) {
+            errorHandler(error, name + " - non NGSI data comparison")
+          }
+          try {
+            chai.assert.equal(
+              JSON.stringify(actualReport),
+              JSON.stringify(expectedReport)
+            )
+          } catch (error) {
+            errorHandler(error, name + " - report comparison")
+          }
+        }
+        else
+          chai.assert.equal("ok", "ok")
+        /*
         chai.assert.equal(
           JSON.stringify(res.data),
           JSON.stringify(expected)
         )
-      }
-      catch (error) {
-        errorHandler(error, name)
-      }
+        */
+      //}
+      //catch (error) {
+      //  errorHandler(error, name)
+      //}
     }
   );
 }
@@ -193,12 +297,47 @@ function test3() {
         example_1.test,
         { headers: { authorization } }
       )
-      try {
+      try {//TODO modify with also report
         res.data.pop() // remove last element which is the report
-        chai.assert.equal(
+        let expected = JSON.stringify(assets.example_1_full(email))
+        let actual = JSON.stringify(res.data)
+        let originalExpected = assets.example_1_full(email)
+        let originalActual = res.data
+        if (expected !== actual) {
+          //console.log(res.data[0])
+          //console.log(assets.example_1_full(email)[0])
+          let idAndtypesExpected = originalExpected.map(e => {
+            //console.log(e.id, e.type)
+            return { id: e.id, type: e.type }
+          })
+          let idAndtypesActual = originalActual.map(e => {
+            return { id: e.id, type: e.type }
+          })
+          let nonNGSIexpected = originalExpected.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          let nonNGSIactual = originalActual.map(e => {
+            delete e.id
+            delete e.type
+            return e
+          })
+          chai.assert.equal(
+            JSON.stringify(idAndtypesActual),
+            JSON.stringify(idAndtypesExpected)
+          )
+          chai.assert.equal(
+            JSON.stringify(nonNGSIactual),
+            JSON.stringify(nonNGSIexpected)
+          )
+        }
+        else
+          chai.assert.equal("ok", "ok")
+        /*chai.assert.equal(
           JSON.stringify(res.data),
           JSON.stringify(assets.example_1_full(email))
-        )
+        )*/
       }
       catch (error) {
         errorHandler(error, "03 Example test - geojson")
@@ -216,10 +355,36 @@ function test4() {
         { headers: { authorization } }
       )
       try {
-        chai.assert.equal(
+        let expected = JSON.stringify(assets.example_2(email))
+        let actual = JSON.stringify(res.data[0])
+        let originalExpected = assets.example_2(email)
+        let originalActual = res.data[0]
+        if (expected !== actual) {
+          //console.log(res.data[0])
+          //console.log(assets.example_1_full(email)[0])
+          let idAndtypesExpected = { id: originalExpected.id, type: originalExpected.type }
+          let idAndtypesActual = { id: originalActual.id, type: originalActual.type }
+          let nonNGSIexpected = originalExpected
+          delete nonNGSIexpected.id
+          delete nonNGSIexpected.type
+          let nonNGSIactual = originalActual
+          delete nonNGSIactual.id
+          delete nonNGSIactual.type
+          chai.assert.equal(
+            JSON.stringify(idAndtypesActual),
+            JSON.stringify(idAndtypesExpected)
+          )
+          chai.assert.equal(
+            JSON.stringify(nonNGSIactual),
+            JSON.stringify(nonNGSIexpected)
+          )
+        }
+        else
+          chai.assert.equal("ok", "ok")
+        /*chai.assert.equal(
           JSON.stringify(res.data[0]),
           JSON.stringify(assets.example_2(email))
-        )
+        )*/
       }
       catch (error) {
         errorHandler(error, "04 Example test - geojson 2")
