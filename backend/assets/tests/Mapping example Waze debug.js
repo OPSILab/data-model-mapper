@@ -773,7 +773,9 @@ module.exports = {
             },
             "dateModified": "2025-09-30T20:05:50.467Z",
             "dateObserved": "1759262750467",
-            "laneId": 1145508980
+            "laneId": 1145508980,
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:1145508980",
+            "type": "TrafficFlowObserved"
         },
         {
             "address": {
@@ -869,7 +871,9 @@ module.exports = {
             },
             "dateModified": "2025-09-30T20:05:50.904Z",
             "dateObserved": "1759262750904",
-            "laneId": 1145508994
+            "laneId": 1145508994,
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:1145508994",
+            "type": "TrafficFlowObserved"
         },
         {
             "address": {
@@ -896,7 +900,9 @@ module.exports = {
             },
             "dateModified": "2025-09-23T10:55:46.147Z",
             "dateObserved": "1758624946147",
-            "laneId": 1726062334
+            "laneId": 1726062334,
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:1726062334",
+            "type": "TrafficFlowObserved"
         },
         {
             "MAPPING_REPORT": {

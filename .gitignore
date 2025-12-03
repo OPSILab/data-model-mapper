@@ -73,3 +73,4 @@ backend/config.waze.js
 *errorResponse.json
 *expectedResponse.json
 frontend/src/assets/TrafficFlowObservedWaze.json
+backend/tests/

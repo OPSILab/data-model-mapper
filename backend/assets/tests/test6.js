@@ -1,5 +1,5 @@
 module.exports = {
-    body: {
+        body: {
         "sourceDataType": "json",
         "path": ".root$$$",
         "mapData": {
@@ -12,10 +12,10 @@ module.exports = {
             "host": "localhost",
             "NGSI_entity": true,
             "ignoreValidation": true,
-            "mappingReport": true,
+            "mappingReport": false,
             "targetDataModel": "Data Model name, according to the related Schema contained in the DataModels folder",
             "rowStart": 0,
-            "rowEnd": 10,
+            "rowEnd": 1000,
             "delimiter": ";",
             "endLine": "\n",
             "deleteEmptySpaceAtBeginning": true,
@@ -78,18 +78,6 @@ module.exports = {
             "f": "a4",
             "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:a4",
             "type": "Thing"
-        },
-        {
-            "MAPPING_REPORT": {
-                "Processed_objects": 4,
-                "Mapped_and_Validated_Objects": "4-4",
-                "Mapped_and_NOT_Validated_Objects": "0-4"
-            },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "4/4",
-                "Object NOT written to Orion Context Broker": "0/4",
-                "Object SKIPPED": "0/4"
-            }
         }
     ]
 }

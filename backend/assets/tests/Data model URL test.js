@@ -13,7 +13,11 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
             "e": "a",
             "f": "a"
         },
-        "dataModelURL": "http://localhost:12345/assets/schema.json"
+        "dataModelURL": "http://localhost:12345/assets/schema.json",
+        "config": {
+            "delimiter": ";", "NGSI_entity": false,
+            "writers": []
+        }
     },
     response: [
         {
@@ -26,11 +30,7 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
                 "Mapped_and_Validated_Objects": "1-1",
                 "Mapped_and_NOT_Validated_Objects": "0-1"
             },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "1/1",
-                "Object NOT written to Orion Context Broker": "0/1",
-                "Object SKIPPED": "0/1"
-            }
+            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

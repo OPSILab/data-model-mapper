@@ -7,8 +7,6 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
     },
     response: [
         {
-            "id": "poi123",
-            "type": "PointOfInterest", // not sure if type should appear in output
             "name": "Central Park",
             "description": "insegna (superficie_venditasq) - posto_speciale_cf,posto_speciale_cf,attivita_prevalente,settore_merceologico,settore_storico_n,settore_storico_preval,settore_storico_s",
             "address": {
@@ -18,7 +16,8 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
             },
             "category": "123",
             "source": "http://dati.comune.milano.it/dataset/ds49_economia_esercizi_vicinato_sede_fissa_2015",
-            "entitySourceId": "ds49"
+            "id": "urn:ngsi-ld:PointOfInterest:gabriele.percoco@demetrix.it:ds49-1",
+            "type": "PointOfInterest"
         },
         {
             "MAPPING_REPORT": {

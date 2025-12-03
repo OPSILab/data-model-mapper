@@ -22,12 +22,12 @@ module.exports = {
                 "identifier": "ID1",
                 "title": "serviceTitle1",
                 "status": "Completed",
-                "keyword": ["key","key0","key1"],
+                "keyword": ["key", "key0", "key1"],
                 "description": {
                     "locale": "alb1",
                     "description": "albania1"
                 },
-                "hasCost": [{identifier: "e", code: "EUR", hasCost: 3, description: [{locale: "af", description: 3}], ifAccessedThrough: "RESTService"}],
+                "hasCost": [{ identifier: "e", code: "EUR", hasCost: 3, description: [{ locale: "af", description: 3 }], ifAccessedThrough: "RESTService" }],
                 "processingTime": "P1Y1W1D",
                 "hasCompetentAuthority": {
                     "identifier": "identifier1",
@@ -87,7 +87,9 @@ module.exports = {
                 }
             },
             "hasUsageRule": ["usageId", "usageName", "usageType"],
-            "isPersonalDataHandling": ["isPersonalDataHandling0","isPersonalDataHandling1"]
+            "isPersonalDataHandling": ["isPersonalDataHandling0", "isPersonalDataHandling1"],
+            "id": "urn:ngsi-ld:identifier:gabriele.percoco@demetrix.it:serviceModel",
+            "type": "identifier"
         },
 
         {

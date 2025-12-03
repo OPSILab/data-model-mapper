@@ -20,7 +20,9 @@ module.exports = {
     },
     response: [
         {
-            "FieldOut": "value "
+            "FieldOut": "value ",
+            "id": "urn:ngsi-ld:Spotted:gabriele.percoco@demetrix.it:MongoID-1",
+            "type": "Spotted"
         },
         {
             "MAPPING_REPORT": {

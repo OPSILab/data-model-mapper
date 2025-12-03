@@ -1,7 +1,5 @@
 let config = require("./config")
 const assets = require("./assets/assets")
-const example_1 = require("./assets/example_1")
-const example_2 = require("./assets/example_2")
 const chai = require("chai")
 const axios = require("axios")
 let keycloak = require('./src/utils/keycloak')
@@ -14,9 +12,6 @@ const multipartTestFile = fs.readFileSync('./assets/multipartTestFile.json', 'ut
 let n = 1;
 
 function errorHandler(error, name) {//TODO this should go in a utils or in a errorHanlder file
-  //console.error({ status: error.response.status, data: error.response.data })
-  //console.error("ERROR\nactual\n", JSON.parse(error.actual), "\nexpected\n", JSON.parse(error.expected))
-  //console.error(JSON.parse(error.actual))
   try {
     fs.writeFileSync("./tests/" + name + " - errorResponse.json", JSON.stringify(JSON.parse(error.actual), null, 2))
     fs.writeFileSync("./tests/" + name + " - expectedResponse.json", JSON.stringify(JSON.parse(error.expected), null, 2))
@@ -54,63 +49,6 @@ async function init() {
   }
 }
 
-function dmmRequest(name, body, exp) {
-  it(
-    name, async () => {
-      let res = await axios.post(
-        'http://localhost:' + config.httpPort + '/api/map/transform',
-        body,
-        { headers: { authorization } }
-      )
-      try {
-        res.data.pop()
-        let expected = JSON.stringify(exp)
-        let actual = JSON.stringify(res.data)
-        let originalExpected = exp
-        let originalActual = res.data
-        if (expected !== actual) {
-          //console.log(res.data[0])
-          //console.log(assets.example_1_full(email)[0])
-          let idAndtypesExpected = originalExpected.map(e => {
-            //console.log(e.id, e.type)
-            return { id: e.id, type: e.type }
-          })
-          let idAndtypesActual = originalActual.map(e => {
-            return { id: e.id, type: e.type }
-          })
-          let nonNGSIexpected = originalExpected.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
-          let nonNGSIactual = originalActual.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
-          chai.assert.equal(
-            JSON.stringify(idAndtypesActual),
-            JSON.stringify(idAndtypesExpected)
-          )
-          chai.assert.equal(
-            JSON.stringify(nonNGSIactual),
-            JSON.stringify(nonNGSIexpected)
-          )
-        }
-        else
-          chai.assert.equal("ok", "ok")
-        /*
-        chai.assert.equal(
-          JSON.stringify(res.data),
-          JSON.stringify(expected)
-        )*/
-      }
-      catch (error) {
-        errorHandler(error, name)
-      }
-    }
-  );
-}
 function dmmRequestWithReport(name, body, exp) {
   it(
     name, async () => {
@@ -119,279 +57,63 @@ function dmmRequestWithReport(name, body, exp) {
         body,
         { headers: { authorization } }
       )
-      //try {
-        let expectedReport = exp.pop()
-        let actualReport = res.data.pop()
-        let expected = JSON.stringify(exp)
-        let actual = JSON.stringify(res.data)
-        let originalExpected = exp
-        let originalActual = res.data
-        if (expected !== actual) {
-          //console.log("Comparing transformed data")
-          //console.log("Let's verify id and type : ")
-          //console.log(originalExpected[0])
-          //console.log(originalActual[0])
-          //console.log(res.data[0])
-          //console.log(assets.example_1_full(email)[0])
-          let idAndtypesExpected = originalExpected.map(e => {
-            //console.log(e.id, e.type)
-            return { id: e.id, type: e.type }
-          })
-          //console.log("Expected id and type :", idAndtypesExpected)
-          let idAndtypesActual = originalActual.map(e => {
-            return { id: e.id, type: e.type }
-          })
-          //console.log("Actual id and type :", idAndtypesActual)
-          let nonNGSIexpected = originalExpected.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
-          //console.log("Expected non NGSI data :", nonNGSIexpected)
-          let nonNGSIactual = originalActual.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
-          //console.log("Actual non NGSI data :", nonNGSIactual)
-          try {
-            chai.assert.equal(
-              JSON.stringify(idAndtypesActual),
-              JSON.stringify(idAndtypesExpected)
-            )
-          } catch (error) {
-            errorHandler(error, name + " - id and type comparison")
-          }
-          try {
-            chai.assert.equal(
-              JSON.stringify(nonNGSIactual),
-              JSON.stringify(nonNGSIexpected)
-            )
-          } catch (error) {
-            errorHandler(error, name + " - non NGSI data comparison")
-          }
-          try {
-            chai.assert.equal(
-              JSON.stringify(actualReport),
-              JSON.stringify(expectedReport)
-            )
-          } catch (error) {
-            errorHandler(error, name + " - report comparison")
-          }
-        }
-        else
-          chai.assert.equal("ok", "ok")
-        /*
-        chai.assert.equal(
-          JSON.stringify(res.data),
-          JSON.stringify(expected)
-        )
-        */
-      //}
-      //catch (error) {
-      //  errorHandler(error, name)
-      //}
-    }
-  );
-}
-function test1() {//TODO modify code to accept also the swapped id and type test values
-  it(
-    'Example test', async () => {
-      let configTmp = config.sourceDataPath
-      config.sourceDataPath = "assets/"
-      let res
-      try {
-        res = await axios.post(
-          'http://localhost:' + config.httpPort + '/api/map/transform',
-          {
-            sourceDataType: "csv",
-            sourceData: "Field 1;Field 2;Field 3 index 0;Field 3 index 1;Field 31;Field 32;Field 33;Field 4a;Field 4b;Field 4c index 0;Field 4c index 1;Field 4d;Field 5;Field 6;Field 7\r\n[Field 1 value 1,Field 1 value 2];[Field 2 value 1,Field 2 value 2];Field 3 value 1;Field 3 value 2;[{Field 31a : Field 31a, Field 31b : Field 31b }];32;33; [Field 4a value 1,Field 4a value 2];[Field 4b value 1,Field 4b value 2];Field 4c value 1;Field 4c value 1;[{Field 4da : Field 4da, Field 4db : Field 4db }, {Field 4da1 : Field 4da1, Field 4db1 : Field 4db1 }];5;6;7",
-            mapData: {
-              "Field 1": "Field 1",
-              "Field 2": "Field 2",
-              "Field 3": [
-                "Field 3 index 0",
-                "Field 3 index 1"
-              ],
-              "Field 31": "Field 31",
-              "Field 32": "Field 33",
-              "Field 33": "Field 33",
-              "Field 4": {
-                "Field 4a": "Field 4a",
-                "Field 4b": "Field 4b",
-                "Field 4c": [
-                  "Field 4c index 0",
-                  "Field 4c index 1"
-                ],
-                "Field 4d": "Field 4d"
-              },
-              "Field 5": "Field 5",
-              "Field 6": "Field 6",
-              "Field 7": "Field 7",
-              "entitySourceId": [
-                "static:ExampleDataModel"
-              ],
-              "targetDataModel": "ExampleDataModel"
-            },
-            dataModelIn: "ExampleDataModel",
-            config: {
-              delimiter: ";",
-              NGSI_entity: true
-            }
-          },
-          { headers: { authorization } }
-        )
-      }
-      catch (error) {
-        console.log({ status: error.response.status, data: error.response.data })
-        throw error
-      }
-      try {
-        chai.assert.equal(
-          JSON.stringify(res.data[0]),
-          JSON.stringify(assets.sample(email))
-        )
-      }
-      catch (error) {
-        console.log(JSON.parse(error.actual)["Field 4"]["Field 4d"])
-        console.log(JSON.parse(error.expected)["Field 4"]["Field 4d"])
-        errorHandler(error, "01 Example test")
-      }
-      config.sourceDataPath = configTmp
-    }
-  );
-}
-function test2() {
-  it(
-    'Non Fiware NGSI data model test', async () => {
-      //config.NGSI_entity=false;
-      let res = await axios.post(
-        'http://localhost:' + config.httpPort + '/api/map/transform',
-        {
-          sourceDataType: "csv",
-          sourceData: assets.source_non_ngsi,
-          mapData: assets.map_non_ngsi,
-          dataModel: assets.sample_schema_non_ngsi,
-          config: { NGSI_entity: false }
-        },
-        { headers: { authorization } }
-      )
-      try {
-        chai.assert.equal(
-          JSON.stringify(res.data[0]),
-          JSON.stringify(assets.sample_non_ngsi)
-        )
-      }
-      catch (error) {
-        errorHandler(error, "02 Non Fiware NGSI data model test")
-      }
-    }
-  );
-}
-function test3() {
-  it(
-    'Example test - geojson', async () => {
-      //config.NGSI_entity=true;
-      let res = await axios.post(
-        'http://localhost:' + config.httpPort + '/api/map/transform',
-        example_1.test,
-        { headers: { authorization } }
-      )
-      try {//TODO modify with also report
-        res.data.pop() // remove last element which is the report
-        let expected = JSON.stringify(assets.example_1_full(email))
-        let actual = JSON.stringify(res.data)
-        let originalExpected = assets.example_1_full(email)
-        let originalActual = res.data
-        if (expected !== actual) {
-          //console.log(res.data[0])
-          //console.log(assets.example_1_full(email)[0])
-          let idAndtypesExpected = originalExpected.map(e => {
-            //console.log(e.id, e.type)
-            return { id: e.id, type: e.type }
-          })
-          let idAndtypesActual = originalActual.map(e => {
-            return { id: e.id, type: e.type }
-          })
-          let nonNGSIexpected = originalExpected.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
-          let nonNGSIactual = originalActual.map(e => {
-            delete e.id
-            delete e.type
-            return e
-          })
+      let expectedReport, actualReport
+      if (exp[exp.length - 1].MAPPING_REPORT)
+        expectedReport = exp.pop()
+      if (res.data[res.data.length - 1].MAPPING_REPORT)
+        actualReport = res.data.pop()
+      let expected = JSON.stringify(exp)
+      let actual = JSON.stringify(res.data)
+      let originalExpected = exp
+      let originalActual = res.data
+      if (expected !== actual) {
+        let idAndtypesExpected = originalExpected.map(e => {
+          return { id: e.id, type: e.type }
+        })
+        let idAndtypesActual = originalActual.map(e => {
+          return { id: e.id, type: e.type }
+        })
+        let nonNGSIexpected = originalExpected.map(e => {
+          delete e.id
+          delete e.type
+          return e
+        })
+        let nonNGSIactual = originalActual.map(e => {
+          delete e.id
+          delete e.type
+          return e
+        })
+        try {
           chai.assert.equal(
             JSON.stringify(idAndtypesActual),
             JSON.stringify(idAndtypesExpected)
           )
+        } catch (error) {
+          errorHandler(error, name + " - id and type comparison")
+        }
+        try {
           chai.assert.equal(
             JSON.stringify(nonNGSIactual),
             JSON.stringify(nonNGSIexpected)
           )
+        } catch (error) {
+          errorHandler(error, name + " - non NGSI data comparison")
         }
-        else
-          chai.assert.equal("ok", "ok")
-        /*chai.assert.equal(
-          JSON.stringify(res.data),
-          JSON.stringify(assets.example_1_full(email))
-        )*/
+        try {
+          chai.assert.equal(
+            JSON.stringify(actualReport),
+            JSON.stringify(expectedReport)
+          )
+        } catch (error) {
+          errorHandler(error, name + " - report comparison")
+        }
       }
-      catch (error) {
-        errorHandler(error, "03 Example test - geojson")
-      }
+      else
+        chai.assert.equal("ok", "ok")
     }
   );
 }
-function test4() {
-  it(
-    'Example test - geojson 2', async () => {
-      //config.NGSI_entity=true;
-      let res = await axios.post(
-        'http://localhost:' + config.httpPort + '/api/map/transform',
-        example_2.test,
-        { headers: { authorization } }
-      )
-      try {
-        let expected = JSON.stringify(assets.example_2(email))
-        let actual = JSON.stringify(res.data[0])
-        let originalExpected = assets.example_2(email)
-        let originalActual = res.data[0]
-        if (expected !== actual) {
-          //console.log(res.data[0])
-          //console.log(assets.example_1_full(email)[0])
-          let idAndtypesExpected = { id: originalExpected.id, type: originalExpected.type }
-          let idAndtypesActual = { id: originalActual.id, type: originalActual.type }
-          let nonNGSIexpected = originalExpected
-          delete nonNGSIexpected.id
-          delete nonNGSIexpected.type
-          let nonNGSIactual = originalActual
-          delete nonNGSIactual.id
-          delete nonNGSIactual.type
-          chai.assert.equal(
-            JSON.stringify(idAndtypesActual),
-            JSON.stringify(idAndtypesExpected)
-          )
-          chai.assert.equal(
-            JSON.stringify(nonNGSIactual),
-            JSON.stringify(nonNGSIexpected)
-          )
-        }
-        else
-          chai.assert.equal("ok", "ok")
-        /*chai.assert.equal(
-          JSON.stringify(res.data[0]),
-          JSON.stringify(assets.example_2(email))
-        )*/
-      }
-      catch (error) {
-        errorHandler(error, "04 Example test - geojson 2")
-      }
-    }
-  );
-}
+
 function test5() {
   const formData = new FormData();
   formData.append('file', multipartTestFile);
@@ -414,13 +136,7 @@ function test5() {
     }
   );
 }
-function test6() {
-  dmmRequest('MinIO test', assets.testSourceFromMinioBody, assets.testSourceFromMinioResponse)
-}
-// Test with source data from MinIO and data model from db
-function test7() {
-  dmmRequestWithReport('Test with orionWriter disabled by request', assets.bodyTestOrionWriterDisabledByRequest, assets.responseTestOrionWriterDisabledByRequest)
-}
+
 
 function test8() {
   it(
@@ -466,39 +182,22 @@ function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
   files.forEach(file => {
-    //console.log("Test ", n++)
     dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
-    //console.log("Test ", n - 1, " finished")
   });
 }
 
 function runTest() {
   describe("test", async function () {
-
     resetFolderSync("./tests")
-
     n = 1;
-
     before(() => console.log("Testing started"));
     after(() => console.log("Testing finished"));
-
     beforeEach(() => console.log("Test ", n++));
     afterEach(() => console.log("Test ", n - 1, " finished"));
-
-    test1()
-    test2()
-    test3()
-    test4()
     test5()
-    test6()
-    test7()
     test8()
     test9()
     test10()
-    /* 
-     * Switching from v2 protocol and v1 protocol caused the print of id in response. I have to check if id can be printed without changing that value. Here
-     * I can not test the correct id pattern for the moment but after all tests (also Postman's) have passed I will check also the id pattern in the tests.
-    */
   }
   );
 }

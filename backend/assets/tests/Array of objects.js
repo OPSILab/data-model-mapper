@@ -3,7 +3,11 @@ module.exports = {
         "sourceDataIn": "arrayofObjectTestSource.csv",
         "mapPathIn": "arrayofObjectTestMap.json",
         "dataModelIn": "arrayofObjectTest",
-        "csvDelimiter": ";"
+        "csvDelimiter": ";",
+        "config": {
+            "NGSI_entity": false,
+            "writers": []
+        }
     },
     response: [
         {
@@ -11,9 +15,7 @@ module.exports = {
                 {
                     "Field": "Value",
                 },
-            ],
-            "id": "urn:ngsi-ld:Thing:gabriele.percoco@demetrix.it:input/-1",
-            "type": "Thing"
+            ]
         },
         {
             "MAPPING_REPORT": {
@@ -21,11 +23,7 @@ module.exports = {
                 "Mapped_and_Validated_Objects": "1-1",
                 "Mapped_and_NOT_Validated_Objects": "0-1"
             },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "1/1",
-                "Object NOT written to Orion Context Broker": "0/1",
-                "Object SKIPPED": "0/1"
-            }
+            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

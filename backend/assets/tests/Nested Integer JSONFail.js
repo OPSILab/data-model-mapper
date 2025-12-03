@@ -2,7 +2,8 @@ module.exports = {
     body: {
         "sourceDataIn": "test//NestedIntegerCSVFail//source.json",
         "mapPathIn": "test//NestedIntegerCSVFail//map.json",
-        "dataModelIn": "Test"
+        "dataModelIn": "Test",
+        "config" : {writers : []}
     },
     response: [
         {
@@ -24,7 +25,9 @@ module.exports = {
                         }
                     }
                 }
-            }
+            },
+            "id": "urn:ngsi-ld:Test:gabriele.percoco@demetrix.it:test",
+            "type": "Test"
         },
         {
             "MAPPING_REPORT": {
@@ -32,11 +35,7 @@ module.exports = {
                 "Mapped_and_Validated_Objects": "1-1",
                 "Mapped_and_NOT_Validated_Objects": "0-1"
             },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "1/1",
-                "Object NOT written to Orion Context Broker": "0/1",
-                "Object SKIPPED": "0/1"
-            }
+            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

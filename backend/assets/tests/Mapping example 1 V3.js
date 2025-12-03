@@ -182,19 +182,26 @@ module.exports = {
             "id": "urn:ngsi-ld:DataModel:gabriele.percoco@demetrix.it:002SanBabila"
         },
         {
-            "error": "Cannot read properties of undefined (reading 'BIKE_SH')",
-            "tips": "Try to set disableAjv=true in config.js"
+            "location": {
+                "type": "Point",
+                "coordinates": [
+                    9.175674275275924,
+                    45.46800482576666
+                ]
+            },
+            "id": "urn:ngsi-ld:DataModel:gabriele.percoco@demetrix.it:input/-3",
+            "type": "DataModel"
         },
         {
             "MAPPING_REPORT": {
                 "Processed_objects": 3,
-                "Mapped_and_Validated_Objects": "3-3",
-                "Mapped_and_NOT_Validated_Objects": "0-3"
+                "Mapped_and_Validated_Objects": "2-3",
+                "Mapped_and_NOT_Validated_Objects": "1-3"
             },
             "ORION_REPORT": {
-                "Object written to Orion Context Broker": "3/3",
-                "Object NOT written to Orion Context Broker": "0/3",
-                "Object SKIPPED": "0/3"
+                "Object written to Orion Context Broker": "2/2",
+                "Object NOT written to Orion Context Broker": "0/2",
+                "Object SKIPPED": "0/2"
             }
         }
     ]

@@ -44,417 +44,617 @@ module.exports = {
         }
     },
     response: [
-        {
-            "e": "attraversamento",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "marciapiede",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "marciapiede",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "marciapiede",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "marciapiede",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "attraversamento",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "sottopasso",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "sottopasso",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "marciapiede",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "attraversamento",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "attraversamento",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "attraversamento",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "parco o area verde",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "attraversamento",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "bidirezionale"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "attraversamento",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "carreggiata",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "e": "parterre",
-            "f": "monodirezionale - concorde"
-        },
-        {
-            "MAPPING_REPORT": {
-                "Processed_objects": 3722,
-                "Mapped_and_Validated_Objects": "100-3722",
-                "Mapped_and_NOT_Validated_Objects": "3622-3722"
-            },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "100/100",
-                "Object NOT written to Orion Context Broker": "0/100",
-                "Object SKIPPED": "0/100"
-            }
+    {
+        "e": "attraversamento",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9001",
+        "type": "Thing"
+    },
+    {
+        "e": "marciapiede",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9002",
+        "type": "Thing"
+    },
+    {
+        "e": "marciapiede",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9003",
+        "type": "Thing"
+    },
+    {
+        "e": "marciapiede",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9004",
+        "type": "Thing"
+    },
+    {
+        "e": "marciapiede",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9005",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9006",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9009",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9011",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9012",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9013",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9014",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9015",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9017",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9018",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9020",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9021",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9022",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9023",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9024",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9026",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9027",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9028",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9029",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9030",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9031",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9032",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9033",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9034",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9035",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9036",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9037",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9038",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9039",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9040",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9041",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9042",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9043",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9045",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9049",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9050",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9054",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9061",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9062",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9063",
+        "type": "Thing"
+    },
+    {
+        "e": "sottopasso",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9071",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9075",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9076",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9077",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9081",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9083",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9084",
+        "type": "Thing"
+    },
+    {
+        "e": "sottopasso",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9085",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9087",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9088",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9091",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9092",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9093",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9094",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9095",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9096",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9097",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9103",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9104",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9105",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9106",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9107",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9114",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9115",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9116",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9120",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9121",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9122",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9124",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9125",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9126",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9127",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9130",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9131",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9133",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9134",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9138",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9142",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9143",
+        "type": "Thing"
+    },
+    {
+        "e": "marciapiede",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9150",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9151",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9153",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9157",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9158",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9159",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9160",
+        "type": "Thing"
+    },
+    {
+        "e": "parco o area verde",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9161",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9162",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9163",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "bidirezionale",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9164",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9165",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9166",
+        "type": "Thing"
+    },
+    {
+        "e": "attraversamento",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9167",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9171",
+        "type": "Thing"
+    },
+    {
+        "e": "carreggiata",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9172",
+        "type": "Thing"
+    },
+    {
+        "e": "parterre",
+        "f": "monodirezionale - concorde",
+        "id": "urn:ngsi-ld:Thing:SomeRZ:SomeService:CSV:9174",
+        "type": "Thing"
+    },
+    {
+        "MAPPING_REPORT": {
+            "Processed_objects": 3722,
+            "Mapped_and_Validated_Objects": "100-3722",
+            "Mapped_and_NOT_Validated_Objects": "3622-3722"
+        },
+        "ORION_REPORT": {
+            "Object written to Orion Context Broker": "100/100",
+            "Object NOT written to Orion Context Broker": "0/100",
+            "Object SKIPPED": "0/100"
         }
-    ]
+    }
+]
 }

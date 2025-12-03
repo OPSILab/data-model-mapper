@@ -26,7 +26,9 @@ module.exports = {
             "b": "value a",
             "c": {
                 "c": "value a"
-            }
+            },
+            "id": "urn:ngsi-ld:Spotted:gabriele.percoco@demetrix.it:MongoID-1",
+            "type": "Spotted"
         },
         {
             "MAPPING_REPORT": {

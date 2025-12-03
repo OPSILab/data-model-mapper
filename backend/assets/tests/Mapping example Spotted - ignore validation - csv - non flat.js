@@ -36,7 +36,9 @@ module.exports = {
                 },
                 "location": "(45.48098764714976, 9.187030518678496)",
                 "name": ""
-            }
+            },
+            "id": "urn:ngsi-ld:Spotted:gabriele.percoco@demetrix.it:bike644001489880d4d150286f56-1",
+            "type": "Spotted"
         },
         {
             "dataset": "cycle_paths",
@@ -48,19 +50,9 @@ module.exports = {
                 },
                 "location": "(45.43927155468637, 9.241944649071282)",
                 "name": ""
-            }
-        },
-        {
-            "dataset": "cycle_paths",
-            "fields": {
-                "address": {
-                    "addressCountry": "",
-                    "addressLocality": "",
-                    "streetAddress": "VIA GIACOMO MEDICI DEL VASCELLO"
-                },
-                "location": "(45.440019926885114, 9.239956172669872)",
-                "name": ""
-            }
+            },
+            "id": "urn:ngsi-ld:Spotted:gabriele.percoco@demetrix.it:bike644001489880d4d150286f56-2",
+            "type": "Spotted"
         },
         {
             "MAPPING_REPORT": {

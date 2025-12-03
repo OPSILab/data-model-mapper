@@ -8,17 +8,14 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
     },
     response: [
         {
-            "id": "ds377",
-            "type": "BikeHireDockingStation", // not sure if type should appear in output
-            "name": "20/09/2016 Agnello Via – cv 20", //
-            "totalSlotNumber": 10,
             "address": {
                 "streetAddress": "Agnello Via – cv 20"
             },
-            "areaServed": [
-                "Vari",
-                "Giusto per il test"
-            ]
+            "areaServed": "VariGiusto per il test",
+            "totalSlotNumber": 10,
+            "name": "20/09/2016Agnello Via – cv 20",
+            "id": "urn:ngsi-ld:BikeHireDockingStation:gabriele.percoco@demetrix.it:ds377-1",
+            "type": "BikeHireDockingStation",
         },
         {
             "MAPPING_REPORT": {

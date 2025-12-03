@@ -164,7 +164,7 @@ module.exports = {
             if (message == "delete") {
                 //this[id] = null
                 if (!req.query.streamMode) {
-                    let outputFile = globalConfig.mappingReport ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    let outputFile = (req.body.config.mappingReport !== false && globalConfig.mappingReport) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
                 }
                 delete this[id]

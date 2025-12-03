@@ -28,7 +28,9 @@ module.exports = {
     response: [
         {
             "e": "1",
-            "f": "1"
+            "f": "1",
+            "id": "urn:ngsi-ld:Thing:gabriele.percoco@demetrix.it:1",
+            "type": "Thing"
         },
         {
             "MAPPING_REPORT": {

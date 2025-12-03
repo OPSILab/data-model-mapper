@@ -365,8 +365,11 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                         parsedSourceKey = encodingHandler(normSourceKey, source)//TODO align if not yet
                     else if (normSourceKey.includes('.'))
                         parsedSourceKey = extractFromNestedField(source, normSourceKey)
-                    else
+                    else {
                         parsedSourceKey = source[parsedSourceKey]
+                        if (typeof parsedSourceKey == "number")
+                            parsedSourceKey = parsedSourceKey.toString()
+                    }
                 }
                 else {
                     logger.error("No schemaDestKey")

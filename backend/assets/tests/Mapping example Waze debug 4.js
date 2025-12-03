@@ -6474,7 +6474,8 @@ module.exports = {
             }
         },
         "config": {
-            "disableAjv": true
+            "disableAjv": true,
+            "rowEnd": 3
         }
     },
     response: [
@@ -6513,8 +6514,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:13.880Z",
             "dateObserved": "1759925413880",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napoca",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 94273304,
@@ -6736,7 +6737,7 @@ module.exports = {
             "dateModified": "2025-10-08T11:18:36.659Z",
             "dateObserved": "1759922316659",
             "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:SubCoastă"
         },
         {
             "laneId": 101712790,
@@ -6773,3397 +6774,483 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:01:38.076Z",
             "dateObserved": "1759924898076",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 101062286,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Dâmboviței"
-            },
-            "averageVehicleSpeed": 4.17,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.623256,
-                        46.781048
-                    ],
-                    [
-                        23.623144,
-                        46.781022
-                    ],
-                    [
-                        23.62281,
-                        46.780946
-                    ],
-                    [
-                        23.622143,
-                        46.780793
-                    ],
-                    [
-                        23.621603,
-                        46.78067
-                    ],
-                    [
-                        23.621099,
-                        46.780555
-                    ],
-                    [
-                        23.62013,
-                        46.78031
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:58:12.375Z",
-            "dateObserved": "1759924692375",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103613860,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Emil Isac"
-            },
-            "averageVehicleSpeed": 6.47,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.583807,
-                        46.771913
-                    ],
-                    [
-                        23.584117,
-                        46.771797
-                    ],
-                    [
-                        23.584438,
-                        46.77174
-                    ],
-                    [
-                        23.584582,
-                        46.771579
-                    ],
-                    [
-                        23.584829,
-                        46.771046
-                    ],
-                    [
-                        23.584894,
-                        46.770858
-                    ],
-                    [
-                        23.585069,
-                        46.770225
-                    ],
-                    [
-                        23.585107,
-                        46.770086
-                    ],
-                    [
-                        23.585261,
-                        46.769372
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:00.666Z",
-            "dateObserved": "1759925580666",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 92201460,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Traian Vuia"
-            },
-            "averageVehicleSpeed": 20.69,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.661454,
-                        46.783263
-                    ],
-                    [
-                        23.660547,
-                        46.783843
-                    ],
-                    [
-                        23.659596,
-                        46.784468
-                    ],
-                    [
-                        23.65943,
-                        46.784561
-                    ],
-                    [
-                        23.659315,
-                        46.784612
-                    ],
-                    [
-                        23.658954,
-                        46.784744
-                    ],
-                    [
-                        23.658656,
-                        46.784806
-                    ],
-                    [
-                        23.658424,
-                        46.784804
-                    ],
-                    [
-                        23.658251,
-                        46.784804
-                    ],
-                    [
-                        23.657908,
-                        46.784777
-                    ],
-                    [
-                        23.656631,
-                        46.784639
-                    ],
-                    [
-                        23.655927,
-                        46.784525
-                    ],
-                    [
-                        23.654563,
-                        46.78425
-                    ],
-                    [
-                        23.654337,
-                        46.784194
-                    ],
-                    [
-                        23.654038,
-                        46.784168
-                    ],
-                    [
-                        23.653785,
-                        46.784157
-                    ],
-                    [
-                        23.653384,
-                        46.784164
-                    ],
-                    [
-                        23.652948,
-                        46.784186
-                    ],
-                    [
-                        23.652269,
-                        46.784219
-                    ],
-                    [
-                        23.651686,
-                        46.784252
-                    ],
-                    [
-                        23.651504,
-                        46.784259
-                    ],
-                    [
-                        23.650829,
-                        46.784263
-                    ],
-                    [
-                        23.649916,
-                        46.784236
-                    ],
-                    [
-                        23.648794,
-                        46.784203
-                    ],
-                    [
-                        23.648008,
-                        46.78418
-                    ],
-                    [
-                        23.647706,
-                        46.784172
-                    ],
-                    [
-                        23.646813,
-                        46.78414
-                    ],
-                    [
-                        23.646387,
-                        46.784126
-                    ],
-                    [
-                        23.646156,
-                        46.784118
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:06:17.104Z",
-            "dateObserved": "1759921577104",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103661218,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Aviator Bădescu"
-            },
-            "averageVehicleSpeed": 8.14,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.597798,
-                        46.763163
-                    ],
-                    [
-                        23.597097,
-                        46.763367
-                    ],
-                    [
-                        23.595609,
-                        46.764014
-                    ],
-                    [
-                        23.595566,
-                        46.764106
-                    ],
-                    [
-                        23.595641,
-                        46.764592
-                    ],
-                    [
-                        23.59582,
-                        46.764934
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:06.134Z",
-            "dateObserved": "1759925586134",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102659852,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Horea"
-            },
-            "averageVehicleSpeed": 23.12,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.587691,
-                        46.774325
-                    ],
-                    [
-                        23.587475,
-                        46.774641
-                    ],
-                    [
-                        23.587407,
-                        46.774787
-                    ],
-                    [
-                        23.587389,
-                        46.774833
-                    ],
-                    [
-                        23.587369,
-                        46.775004
-                    ],
-                    [
-                        23.58721,
-                        46.776538
-                    ],
-                    [
-                        23.587204,
-                        46.776791
-                    ],
-                    [
-                        23.587229,
-                        46.777187
-                    ],
-                    [
-                        23.587265,
-                        46.777493
-                    ],
-                    [
-                        23.587313,
-                        46.777924
-                    ],
-                    [
-                        23.587277,
-                        46.778523
-                    ],
-                    [
-                        23.587295,
-                        46.779139
-                    ],
-                    [
-                        23.587318,
-                        46.779609
-                    ],
-                    [
-                        23.587396,
-                        46.780501
-                    ],
-                    [
-                        23.587433,
-                        46.780864
-                    ],
-                    [
-                        23.587519,
-                        46.781738
-                    ],
-                    [
-                        23.587569,
-                        46.782526
-                    ],
-                    [
-                        23.587579,
-                        46.782718
-                    ],
-                    [
-                        23.587589,
-                        46.78305
-                    ],
-                    [
-                        23.587603,
-                        46.783938
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:09.291Z",
-            "dateObserved": "1759925229291",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103234866,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Emil Racoviță"
-            },
-            "averageVehicleSpeed": 14.17,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.586325,
-                        46.774712
-                    ],
-                    [
-                        23.586277,
-                        46.774747
-                    ],
-                    [
-                        23.586028,
-                        46.774879
-                    ],
-                    [
-                        23.584622,
-                        46.776563
-                    ],
-                    [
-                        23.584354,
-                        46.776885
-                    ],
-                    [
-                        23.583363,
-                        46.778543
-                    ],
-                    [
-                        23.583286,
-                        46.778653
-                    ],
-                    [
-                        23.58287,
-                        46.779069
-                    ],
-                    [
-                        23.582409,
-                        46.779506
-                    ],
-                    [
-                        23.582294,
-                        46.77965
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:10:12.388Z",
-            "dateObserved": "1759925412388",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 75604628,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Victor Babeș"
-            },
-            "averageVehicleSpeed": 4.52,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.584725,
-                        46.763416
-                    ],
-                    [
-                        23.584879,
-                        46.763929
-                    ],
-                    [
-                        23.58507,
-                        46.76453
-                    ],
-                    [
-                        23.585137,
-                        46.764745
-                    ],
-                    [
-                        23.585172,
-                        46.764905
-                    ],
-                    [
-                        23.58525,
-                        46.765246
-                    ],
-                    [
-                        23.585342,
-                        46.765808
-                    ],
-                    [
-                        23.585393,
-                        46.76659
-                    ],
-                    [
-                        23.585437,
-                        46.766761
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T08:33:28.586Z",
-            "dateObserved": "1759912408586",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99029488,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Sânnicoară",
-                "streetAddress": "DN1C - Str. Clujului"
-            },
-            "averageVehicleSpeed": 41.28,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.715992,
-                        46.783955
-                    ],
-                    [
-                        23.717573,
-                        46.784246
-                    ],
-                    [
-                        23.718301,
-                        46.784385
-                    ],
-                    [
-                        23.718486,
-                        46.784428
-                    ],
-                    [
-                        23.718792,
-                        46.784503
-                    ],
-                    [
-                        23.719279,
-                        46.784637
-                    ],
-                    [
-                        23.719824,
-                        46.784798
-                    ],
-                    [
-                        23.72166,
-                        46.78537
-                    ],
-                    [
-                        23.722606,
-                        46.785672
-                    ],
-                    [
-                        23.723686,
-                        46.786011
-                    ],
-                    [
-                        23.724309,
-                        46.786207
-                    ],
-                    [
-                        23.726167,
-                        46.786793
-                    ],
-                    [
-                        23.727761,
-                        46.787297
-                    ],
-                    [
-                        23.728505,
-                        46.787528
-                    ],
-                    [
-                        23.72936,
-                        46.787807
-                    ],
-                    [
-                        23.729489,
-                        46.787848
-                    ],
-                    [
-                        23.729747,
-                        46.787931
-                    ],
-                    [
-                        23.73069,
-                        46.788235
-                    ],
-                    [
-                        23.731205,
-                        46.788401
-                    ],
-                    [
-                        23.731832,
-                        46.788602
-                    ],
-                    [
-                        23.732031,
-                        46.788666
-                    ],
-                    [
-                        23.734196,
-                        46.789366
-                    ],
-                    [
-                        23.734586,
-                        46.789489
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:46:14.272Z",
-            "dateObserved": "1759923974272",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103648442,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Primăverii"
-            },
-            "averageVehicleSpeed": 22.72,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.557019,
-                        46.759843
-                    ],
-                    [
-                        23.557176,
-                        46.759662
-                    ],
-                    [
-                        23.557251,
-                        46.759536
-                    ],
-                    [
-                        23.55728,
-                        46.759443
-                    ],
-                    [
-                        23.557279,
-                        46.759307
-                    ],
-                    [
-                        23.557149,
-                        46.759014
-                    ],
-                    [
-                        23.556936,
-                        46.758579
-                    ],
-                    [
-                        23.55682,
-                        46.758381
-                    ],
-                    [
-                        23.556719,
-                        46.758171
-                    ],
-                    [
-                        23.556632,
-                        46.75793
-                    ],
-                    [
-                        23.556513,
-                        46.757435
-                    ],
-                    [
-                        23.556512,
-                        46.757013
-                    ],
-                    [
-                        23.556499,
-                        46.75671
-                    ],
-                    [
-                        23.556439,
-                        46.756288
-                    ],
-                    [
-                        23.556384,
-                        46.755802
-                    ],
-                    [
-                        23.556329,
-                        46.755499
-                    ],
-                    [
-                        23.556192,
-                        46.755327
-                    ],
-                    [
-                        23.556027,
-                        46.755175
-                    ],
-                    [
-                        23.555777,
-                        46.755006
-                    ],
-                    [
-                        23.555254,
-                        46.754772
-                    ],
-                    [
-                        23.554983,
-                        46.75468
-                    ],
-                    [
-                        23.554614,
-                        46.754538
-                    ],
-                    [
-                        23.554158,
-                        46.754427
-                    ],
-                    [
-                        23.552863,
-                        46.754222
-                    ],
-                    [
-                        23.551507,
-                        46.754005
-                    ],
-                    [
-                        23.551073,
-                        46.753894
-                    ],
-                    [
-                        23.550618,
-                        46.753724
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:01.318Z",
-            "dateObserved": "1759925581318",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 97418070,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Oașului"
-            },
-            "averageVehicleSpeed": 14.19,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.601444,
-                        46.794946
-                    ],
-                    [
-                        23.602371,
-                        46.79534
-                    ],
-                    [
-                        23.60266,
-                        46.7955
-                    ],
-                    [
-                        23.602735,
-                        46.795561
-                    ],
-                    [
-                        23.603008,
-                        46.795842
-                    ],
-                    [
-                        23.603279,
-                        46.796073
-                    ],
-                    [
-                        23.603968,
-                        46.79657
-                    ],
-                    [
-                        23.604741,
-                        46.797132
-                    ],
-                    [
-                        23.605036,
-                        46.797347
-                    ],
-                    [
-                        23.605129,
-                        46.797415
-                    ],
-                    [
-                        23.60578,
-                        46.797889
-                    ],
-                    [
-                        23.606188,
-                        46.79818
-                    ],
-                    [
-                        23.606605,
-                        46.798478
-                    ],
-                    [
-                        23.607066,
-                        46.79882
-                    ],
-                    [
-                        23.607425,
-                        46.798959
-                    ],
-                    [
-                        23.60764,
-                        46.799002
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:37:04.718Z",
-            "dateObserved": "1759923424718",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103125180,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Calea Someșeni"
-            },
-            "averageVehicleSpeed": 18.29,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.648098,
-                        46.77915
-                    ],
-                    [
-                        23.647557,
-                        46.779385
-                    ],
-                    [
-                        23.647438,
-                        46.779436
-                    ],
-                    [
-                        23.646169,
-                        46.779939
-                    ],
-                    [
-                        23.646091,
-                        46.77997
-                    ],
-                    [
-                        23.645555,
-                        46.780186
-                    ],
-                    [
-                        23.645311,
-                        46.780284
-                    ],
-                    [
-                        23.644812,
-                        46.780485
-                    ],
-                    [
-                        23.644687,
-                        46.780535
-                    ],
-                    [
-                        23.643947,
-                        46.780834
-                    ],
-                    [
-                        23.643596,
-                        46.780975
-                    ],
-                    [
-                        23.643195,
-                        46.781137
-                    ],
-                    [
-                        23.642812,
-                        46.781291
-                    ],
-                    [
-                        23.641919,
-                        46.781651
-                    ],
-                    [
-                        23.641126,
-                        46.781979
-                    ],
-                    [
-                        23.640816,
-                        46.78209
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:10:07.482Z",
-            "dateObserved": "1759925407482",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102242818,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Dacia"
-            },
-            "averageVehicleSpeed": 4.29,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.589692,
-                        46.775949
-                    ],
-                    [
-                        23.589115,
-                        46.775565
-                    ],
-                    [
-                        23.588698,
-                        46.775302
-                    ],
-                    [
-                        23.588381,
-                        46.775138
-                    ],
-                    [
-                        23.587407,
-                        46.774787
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:04:18.053Z",
-            "dateObserved": "1759925058053",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 1726062334,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Baba Novac"
-            },
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.595499,
-                        46.77142
-                    ],
-                    [
-                        23.595205,
-                        46.771927
-                    ],
-                    [
-                        23.594967,
-                        46.772392
-                    ]
-                ]
-            },
-            "dateModified": "2025-09-23T10:55:46.147Z",
-            "dateObserved": "1758624946147",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99537870,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Calea Florești"
-            },
-            "averageVehicleSpeed": 10.56,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.551813,
-                        46.759012
-                    ],
-                    [
-                        23.550654,
-                        46.75873
-                    ],
-                    [
-                        23.54998,
-                        46.758579
-                    ],
-                    [
-                        23.549416,
-                        46.758452
-                    ],
-                    [
-                        23.547533,
-                        46.75803
-                    ],
-                    [
-                        23.546486,
-                        46.757858
-                    ],
-                    [
-                        23.544472,
-                        46.757465
-                    ],
-                    [
-                        23.543975,
-                        46.757342
-                    ],
-                    [
-                        23.542989,
-                        46.757115
-                    ],
-                    [
-                        23.541938,
-                        46.756872
-                    ],
-                    [
-                        23.540862,
-                        46.75663
-                    ],
-                    [
-                        23.53958,
-                        46.756306
-                    ],
-                    [
-                        23.536461,
-                        46.755527
-                    ],
-                    [
-                        23.534444,
-                        46.755048
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:49:15.622Z",
-            "dateObserved": "1759924155622",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99037760,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Piața Mihai Viteazul"
-            },
-            "averageVehicleSpeed": 5.04,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.590632,
-                        46.775629
-                    ],
-                    [
-                        23.589905,
-                        46.775062
-                    ],
-                    [
-                        23.589719,
-                        46.774917
-                    ],
-                    [
-                        23.587997,
-                        46.7738
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:46:18.700Z",
-            "dateObserved": "1759923978700",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102699062,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Bună Ziua"
-            },
-            "averageVehicleSpeed": 24.35,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.593975,
-                        46.747252
-                    ],
-                    [
-                        23.594372,
-                        46.747338
-                    ],
-                    [
-                        23.594544,
-                        46.747374
-                    ],
-                    [
-                        23.595218,
-                        46.747548
-                    ],
-                    [
-                        23.596017,
-                        46.747754
-                    ],
-                    [
-                        23.596142,
-                        46.747782
-                    ],
-                    [
-                        23.59643,
-                        46.747847
-                    ],
-                    [
-                        23.596922,
-                        46.747959
-                    ],
-                    [
-                        23.597595,
-                        46.748101
-                    ],
-                    [
-                        23.597814,
-                        46.748148
-                    ],
-                    [
-                        23.598475,
-                        46.748309
-                    ],
-                    [
-                        23.599085,
-                        46.748458
-                    ],
-                    [
-                        23.599473,
-                        46.748547
-                    ],
-                    [
-                        23.600106,
-                        46.748695
-                    ],
-                    [
-                        23.600406,
-                        46.748765
-                    ],
-                    [
-                        23.601059,
-                        46.748918
-                    ],
-                    [
-                        23.601502,
-                        46.749021
-                    ],
-                    [
-                        23.601883,
-                        46.74911
-                    ],
-                    [
-                        23.602336,
-                        46.749219
-                    ],
-                    [
-                        23.602642,
-                        46.749288
-                    ],
-                    [
-                        23.602809,
-                        46.749327
-                    ],
-                    [
-                        23.603039,
-                        46.749384
-                    ],
-                    [
-                        23.603635,
-                        46.749523
-                    ],
-                    [
-                        23.604341,
-                        46.749688
-                    ],
-                    [
-                        23.605048,
-                        46.749849
-                    ],
-                    [
-                        23.60572,
-                        46.749993
-                    ],
-                    [
-                        23.606334,
-                        46.750131
-                    ],
-                    [
-                        23.60641,
-                        46.750148
-                    ],
-                    [
-                        23.60661,
-                        46.750193
-                    ],
-                    [
-                        23.607279,
-                        46.750315
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:08.732Z",
-            "dateObserved": "1759925228732",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99522242,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Donath"
-            },
-            "averageVehicleSpeed": 29.2,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.56134,
-                        46.772934
-                    ],
-                    [
-                        23.560972,
-                        46.772868
-                    ],
-                    [
-                        23.560106,
-                        46.772712
-                    ],
-                    [
-                        23.559737,
-                        46.772646
-                    ],
-                    [
-                        23.558818,
-                        46.772481
-                    ],
-                    [
-                        23.556079,
-                        46.771991
-                    ],
-                    [
-                        23.555958,
-                        46.771966
-                    ],
-                    [
-                        23.555033,
-                        46.771766
-                    ],
-                    [
-                        23.553777,
-                        46.771497
-                    ],
-                    [
-                        23.552895,
-                        46.771286
-                    ],
-                    [
-                        23.552777,
-                        46.771245
-                    ],
-                    [
-                        23.551657,
-                        46.770786
-                    ],
-                    [
-                        23.550795,
-                        46.770374
-                    ],
-                    [
-                        23.55016,
-                        46.770047
-                    ],
-                    [
-                        23.549502,
-                        46.769647
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:49:13.913Z",
-            "dateObserved": "1759924153913",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 93276834,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Fabricii"
-            },
-            "averageVehicleSpeed": 6.46,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.615722,
-                        46.789652
-                    ],
-                    [
-                        23.61586,
-                        46.790122
-                    ],
-                    [
-                        23.615966,
-                        46.790595
-                    ],
-                    [
-                        23.615988,
-                        46.790742
-                    ],
-                    [
-                        23.616007,
-                        46.791042
-                    ],
-                    [
-                        23.616,
-                        46.791322
-                    ],
-                    [
-                        23.615978,
-                        46.791565
-                    ],
-                    [
-                        23.615928,
-                        46.791866
-                    ],
-                    [
-                        23.615842,
-                        46.792152
-                    ],
-                    [
-                        23.615654,
-                        46.792616
-                    ],
-                    [
-                        23.615385,
-                        46.793074
-                    ],
-                    [
-                        23.614835,
-                        46.793879
-                    ],
-                    [
-                        23.614051,
-                        46.795074
-                    ],
-                    [
-                        23.613899,
-                        46.795307
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:12:33.106Z",
-            "dateObserved": "1759921953106",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99091544,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Tudor Vladimirescu"
-            },
-            "averageVehicleSpeed": 11.72,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.557749,
-                        46.783484
-                    ],
-                    [
-                        23.557972,
-                        46.783381
-                    ],
-                    [
-                        23.558259,
-                        46.783282
-                    ],
-                    [
-                        23.558455,
-                        46.783192
-                    ],
-                    [
-                        23.558875,
-                        46.783001
-                    ],
-                    [
-                        23.559722,
-                        46.782683
-                    ],
-                    [
-                        23.560847,
-                        46.782289
-                    ],
-                    [
-                        23.561251,
-                        46.782151
-                    ],
-                    [
-                        23.562296,
-                        46.781792
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:46:18.454Z",
-            "dateObserved": "1759923978454",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102148900,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Constanța"
-            },
-            "averageVehicleSpeed": 6.47,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.593508,
-                        46.776588
-                    ],
-                    [
-                        23.594348,
-                        46.775585
-                    ],
-                    [
-                        23.595096,
-                        46.774729
-                    ],
-                    [
-                        23.595254,
-                        46.774558
-                    ],
-                    [
-                        23.595717,
-                        46.774059
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:04:12.756Z",
-            "dateObserved": "1759925052756",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 100598348,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Republicii"
-            },
-            "averageVehicleSpeed": 13.03,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.59143,
-                        46.760326
-                    ],
-                    [
-                        23.591108,
-                        46.760554
-                    ],
-                    [
-                        23.590599,
-                        46.761212
-                    ],
-                    [
-                        23.589866,
-                        46.761981
-                    ],
-                    [
-                        23.589619,
-                        46.762225
-                    ],
-                    [
-                        23.589458,
-                        46.762339
-                    ],
-                    [
-                        23.589248,
-                        46.762442
-                    ],
-                    [
-                        23.589001,
-                        46.762545
-                    ],
-                    [
-                        23.588835,
-                        46.762636
-                    ],
-                    [
-                        23.58868,
-                        46.762747
-                    ],
-                    [
-                        23.58853,
-                        46.762886
-                    ],
-                    [
-                        23.588428,
-                        46.763044
-                    ],
-                    [
-                        23.588132,
-                        46.763615
-                    ],
-                    [
-                        23.588044,
-                        46.763888
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:55:28.717Z",
-            "dateObserved": "1759924528717",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 87598208,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "VOCE - Centura Cluj Est"
-            },
-            "averageVehicleSpeed": 10.94,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.710198,
-                        46.785656
-                    ],
-                    [
-                        23.710419,
-                        46.785698
-                    ],
-                    [
-                        23.7122,
-                        46.785983
-                    ],
-                    [
-                        23.712794,
-                        46.786067
-                    ],
-                    [
-                        23.713253,
-                        46.786172
-                    ],
-                    [
-                        23.713772,
-                        46.786329
-                    ],
-                    [
-                        23.714035,
-                        46.786443
-                    ],
-                    [
-                        23.714585,
-                        46.786716
-                    ],
-                    [
-                        23.71534,
-                        46.787215
-                    ],
-                    [
-                        23.715956,
-                        46.787642
-                    ],
-                    [
-                        23.716176,
-                        46.78781
-                    ],
-                    [
-                        23.716653,
-                        46.788244
-                    ],
-                    [
-                        23.716835,
-                        46.788458
-                    ],
-                    [
-                        23.717112,
-                        46.78886
-                    ],
-                    [
-                        23.717221,
-                        46.78907
-                    ],
-                    [
-                        23.717326,
-                        46.789241
-                    ],
-                    [
-                        23.717427,
-                        46.78952
-                    ],
-                    [
-                        23.717556,
-                        46.790238
-                    ],
-                    [
-                        23.717599,
-                        46.790664
-                    ],
-                    [
-                        23.717845,
-                        46.793533
-                    ],
-                    [
-                        23.717924,
-                        46.794855
-                    ],
-                    [
-                        23.717931,
-                        46.795157
-                    ],
-                    [
-                        23.717892,
-                        46.795639
-                    ],
-                    [
-                        23.717786,
-                        46.796096
-                    ],
-                    [
-                        23.717676,
-                        46.796326
-                    ],
-                    [
-                        23.717544,
-                        46.796577
-                    ],
-                    [
-                        23.717365,
-                        46.796864
-                    ],
-                    [
-                        23.717178,
-                        46.797184
-                    ],
-                    [
-                        23.71713,
-                        46.797391
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T10:38:46.963Z",
-            "dateObserved": "1759919926963",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102621602,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Fabricii"
-            },
-            "averageVehicleSpeed": 2.03,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.613788,
-                        46.79546
-                    ],
-                    [
-                        23.613066,
-                        46.7965
-                    ],
-                    [
-                        23.612474,
-                        46.797377
-                    ],
-                    [
-                        23.612463,
-                        46.797461
-                    ],
-                    [
-                        23.612513,
-                        46.797511
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:10.914Z",
-            "dateObserved": "1759925230914",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 91660982,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "VOCNE - Centura Cluj Nord Est"
-            },
-            "averageVehicleSpeed": 17.97,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.681628,
-                        46.799588
-                    ],
-                    [
-                        23.684935,
-                        46.799498
-                    ],
-                    [
-                        23.685585,
-                        46.79948
-                    ],
-                    [
-                        23.689887,
-                        46.799458
-                    ],
-                    [
-                        23.69317,
-                        46.799127
-                    ],
-                    [
-                        23.695498,
-                        46.798841
-                    ],
-                    [
-                        23.700186,
-                        46.798136
-                    ],
-                    [
-                        23.702879,
-                        46.797663
-                    ],
-                    [
-                        23.704243,
-                        46.797445
-                    ],
-                    [
-                        23.70507,
-                        46.797254
-                    ],
-                    [
-                        23.706185,
-                        46.796996
-                    ],
-                    [
-                        23.707497,
-                        46.796689
-                    ],
-                    [
-                        23.708327,
-                        46.796502
-                    ],
-                    [
-                        23.708955,
-                        46.796405
-                    ],
-                    [
-                        23.709507,
-                        46.796366
-                    ],
-                    [
-                        23.710101,
-                        46.796356
-                    ],
-                    [
-                        23.710671,
-                        46.796386
-                    ],
-                    [
-                        23.711272,
-                        46.796447
-                    ],
-                    [
-                        23.712722,
-                        46.79672
-                    ],
-                    [
-                        23.713787,
-                        46.79692
-                    ],
-                    [
-                        23.714977,
-                        46.797143
-                    ],
-                    [
-                        23.716055,
-                        46.797337
-                    ],
-                    [
-                        23.716513,
-                        46.797381
-                    ],
-                    [
-                        23.716703,
-                        46.797363
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:03:09.743Z",
-            "dateObserved": "1759921389743",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 87695610,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Fabricii"
-            },
-            "averageVehicleSpeed": 8.69,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.613095,
-                        46.783681
-                    ],
-                    [
-                        23.612953,
-                        46.782932
-                    ],
-                    [
-                        23.612981,
-                        46.782619
-                    ],
-                    [
-                        23.613076,
-                        46.782271
-                    ],
-                    [
-                        23.613223,
-                        46.781879
-                    ],
-                    [
-                        23.61402,
-                        46.780052
-                    ],
-                    [
-                        23.614411,
-                        46.778937
-                    ],
-                    [
-                        23.614485,
-                        46.77863
-                    ],
-                    [
-                        23.614418,
-                        46.778445
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T10:38:49.847Z",
-            "dateObserved": "1759919929847",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 100624190,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Borhanciului"
-            },
-            "averageVehicleSpeed": 10.3,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.649581,
-                        46.745376
-                    ],
-                    [
-                        23.650724,
-                        46.74444
-                    ],
-                    [
-                        23.650966,
-                        46.744242
-                    ],
-                    [
-                        23.651308,
-                        46.743414
-                    ],
-                    [
-                        23.651209,
-                        46.74302
-                    ],
-                    [
-                        23.651189,
-                        46.74298
-                    ],
-                    [
-                        23.650911,
-                        46.742401
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:55:14.826Z",
-            "dateObserved": "1759924514826",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103723366,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Alexandru Sahia"
-            },
-            "averageVehicleSpeed": 5.53,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.604638,
-                        46.792755
-                    ],
-                    [
-                        23.604894,
-                        46.79194
-                    ],
-                    [
-                        23.604998,
-                        46.791708
-                    ],
-                    [
-                        23.605163,
-                        46.791401
-                    ],
-                    [
-                        23.605327,
-                        46.79113
-                    ],
-                    [
-                        23.605421,
-                        46.791047
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:04.174Z",
-            "dateObserved": "1759925584174",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102613844,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Nicolae Bălcescu"
-            },
-            "averageVehicleSpeed": 8.23,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.59809,
-                        46.776038
-                    ],
-                    [
-                        23.597242,
-                        46.775922
-                    ],
-                    [
-                        23.596945,
-                        46.775832
-                    ],
-                    [
-                        23.596703,
-                        46.775712
-                    ],
-                    [
-                        23.596381,
-                        46.775467
-                    ],
-                    [
-                        23.595947,
-                        46.775098
-                    ],
-                    [
-                        23.595789,
-                        46.775008
-                    ],
-                    [
-                        23.595096,
-                        46.774729
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:12.231Z",
-            "dateObserved": "1759925232231",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103683556,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Regele Ferdinand"
-            },
-            "averageVehicleSpeed": 6.71,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.587281,
-                        46.774728
-                    ],
-                    [
-                        23.587405,
-                        46.774451
-                    ],
-                    [
-                        23.587559,
-                        46.774252
-                    ],
-                    [
-                        23.587997,
-                        46.7738
-                    ],
-                    [
-                        23.58808,
-                        46.773699
-                    ],
-                    [
-                        23.588416,
-                        46.773277
-                    ],
-                    [
-                        23.588704,
-                        46.77295
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:00.139Z",
-            "dateObserved": "1759925580139",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 1857969908,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Florești"
-            },
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.531507,
-                        46.754157
-                    ],
-                    [
-                        23.53144,
-                        46.75406
-                    ],
-                    [
-                        23.531219,
-                        46.753987
-                    ],
-                    [
-                        23.531128,
-                        46.753888
-                    ],
-                    [
-                        23.531164,
-                        46.753787
-                    ],
-                    [
-                        23.531348,
-                        46.753752
-                    ],
-                    [
-                        23.531692,
-                        46.75383
-                    ],
-                    [
-                        23.531878,
-                        46.753792
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-04T06:18:15.858Z",
-            "dateObserved": "1759558695858",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103594082,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Traian"
-            },
-            "averageVehicleSpeed": 16.42,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.592219,
-                        46.782063
-                    ],
-                    [
-                        23.59188,
-                        46.781239
-                    ],
-                    [
-                        23.591779,
-                        46.78075
-                    ],
-                    [
-                        23.591725,
-                        46.780396
-                    ],
-                    [
-                        23.5917,
-                        46.780087
-                    ],
-                    [
-                        23.59166,
-                        46.779612
-                    ],
-                    [
-                        23.591606,
-                        46.779146
-                    ],
-                    [
-                        23.591551,
-                        46.778813
-                    ],
-                    [
-                        23.591478,
-                        46.778372
-                    ],
-                    [
-                        23.591442,
-                        46.77815
-                    ],
-                    [
-                        23.591414,
-                        46.777982
-                    ],
-                    [
-                        23.591341,
-                        46.777542
-                    ],
-                    [
-                        23.591218,
-                        46.777252
-                    ],
-                    [
-                        23.591089,
-                        46.77702
-                    ],
-                    [
-                        23.590874,
-                        46.776796
-                    ],
-                    [
-                        23.58999,
-                        46.776132
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:00.521Z",
-            "dateObserved": "1759925580521",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 94358990,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Bd. Muncii"
-            },
-            "averageVehicleSpeed": 6.12,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.611616,
-                        46.797956
-                    ],
-                    [
-                        23.610794,
-                        46.798235
-                    ],
-                    [
-                        23.610264,
-                        46.798412
-                    ],
-                    [
-                        23.60941,
-                        46.798729
-                    ],
-                    [
-                        23.608997,
-                        46.798855
-                    ],
-                    [
-                        23.608096,
-                        46.799079
-                    ],
-                    [
-                        23.607922,
-                        46.799113
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:18:37.549Z",
-            "dateObserved": "1759922317549",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 91179702,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Paris"
-            },
-            "averageVehicleSpeed": 4.78,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.598,
-                        46.777632
-                    ],
-                    [
-                        23.597888,
-                        46.77742
-                    ],
-                    [
-                        23.597841,
-                        46.77718
-                    ],
-                    [
-                        23.59786,
-                        46.776592
-                    ],
-                    [
-                        23.597972,
-                        46.776268
-                    ],
-                    [
-                        23.59809,
-                        46.776038
-                    ],
-                    [
-                        23.598506,
-                        46.775527
-                    ],
-                    [
-                        23.598632,
-                        46.775367
-                    ],
-                    [
-                        23.598857,
-                        46.775005
-                    ],
-                    [
-                        23.599487,
-                        46.774032
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:00:01.330Z",
-            "dateObserved": "1759921201330",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99021498,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Apahida",
-                "streetAddress": "DN1C - Str. Libertății"
-            },
-            "averageVehicleSpeed": 39.64,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.734586,
-                        46.789489
-                    ],
-                    [
-                        23.73494,
-                        46.7896
-                    ],
-                    [
-                        23.735298,
-                        46.789712
-                    ],
-                    [
-                        23.735914,
-                        46.789914
-                    ],
-                    [
-                        23.736362,
-                        46.790061
-                    ],
-                    [
-                        23.736818,
-                        46.79021
-                    ],
-                    [
-                        23.737288,
-                        46.790364
-                    ],
-                    [
-                        23.737531,
-                        46.790443
-                    ],
-                    [
-                        23.737894,
-                        46.790562
-                    ],
-                    [
-                        23.738496,
-                        46.790759
-                    ],
-                    [
-                        23.738784,
-                        46.790854
-                    ],
-                    [
-                        23.739375,
-                        46.791039
-                    ],
-                    [
-                        23.74304,
-                        46.792199
-                    ],
-                    [
-                        23.744576,
-                        46.792696
-                    ],
-                    [
-                        23.745727,
-                        46.793068
-                    ],
-                    [
-                        23.746308,
-                        46.793306
-                    ],
-                    [
-                        23.746621,
-                        46.793447
-                    ],
-                    [
-                        23.746725,
-                        46.793512
-                    ],
-                    [
-                        23.748561,
-                        46.794979
-                    ],
-                    [
-                        23.749312,
-                        46.795565
-                    ],
-                    [
-                        23.750068,
-                        46.796139
-                    ],
-                    [
-                        23.753392,
-                        46.798756
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:46:14.291Z",
-            "dateObserved": "1759923974291",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103723340,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Mărginașă"
-            },
-            "averageVehicleSpeed": 2.44,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.573454,
-                        46.761875
-                    ],
-                    [
-                        23.573262,
-                        46.762201
-                    ],
-                    [
-                        23.573068,
-                        46.762586
-                    ],
-                    [
-                        23.573075,
-                        46.762806
-                    ],
-                    [
-                        23.57295,
-                        46.763005
-                    ],
-                    [
-                        23.572681,
-                        46.763116
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:03.987Z",
-            "dateObserved": "1759925583987",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 99526026,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Frunzișului"
-            },
-            "averageVehicleSpeed": 11.8,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.571171,
-                        46.75125
-                    ],
-                    [
-                        23.571076,
-                        46.751489
-                    ],
-                    [
-                        23.570937,
-                        46.751667
-                    ],
-                    [
-                        23.570801,
-                        46.751819
-                    ],
-                    [
-                        23.570595,
-                        46.752002
-                    ],
-                    [
-                        23.570302,
-                        46.752179
-                    ],
-                    [
-                        23.568729,
-                        46.752753
-                    ],
-                    [
-                        23.568519,
-                        46.752867
-                    ],
-                    [
-                        23.5682,
-                        46.753116
-                    ],
-                    [
-                        23.567949,
-                        46.753394
-                    ],
-                    [
-                        23.567757,
-                        46.75371
-                    ],
-                    [
-                        23.567546,
-                        46.754124
-                    ],
-                    [
-                        23.567404,
-                        46.754416
-                    ],
-                    [
-                        23.567271,
-                        46.75469
-                    ],
-                    [
-                        23.567035,
-                        46.755166
-                    ],
-                    [
-                        23.566937,
-                        46.755298
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:49:12.451Z",
-            "dateObserved": "1759924152451",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 96873646,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Calea Moților"
-            },
-            "averageVehicleSpeed": 18.66,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.585433,
-                        46.768991
-                    ],
-                    [
-                        23.584978,
-                        46.768751
-                    ],
-                    [
-                        23.584826,
-                        46.768671
-                    ],
-                    [
-                        23.584157,
-                        46.768319
-                    ],
-                    [
-                        23.584001,
-                        46.768237
-                    ],
-                    [
-                        23.583793,
-                        46.768128
-                    ],
-                    [
-                        23.582771,
-                        46.767589
-                    ],
-                    [
-                        23.582002,
-                        46.767211
-                    ],
-                    [
-                        23.581166,
-                        46.766799
-                    ],
-                    [
-                        23.58006,
-                        46.766321
-                    ],
-                    [
-                        23.57971,
-                        46.766195
-                    ],
-                    [
-                        23.579192,
-                        46.766027
-                    ],
-                    [
-                        23.578771,
-                        46.765889
-                    ],
-                    [
-                        23.578024,
-                        46.765647
-                    ],
-                    [
-                        23.576421,
-                        46.765087
-                    ],
-                    [
-                        23.574963,
-                        46.76465
-                    ],
-                    [
-                        23.574794,
-                        46.764565
-                    ],
-                    [
-                        23.574621,
-                        46.764473
-                    ],
-                    [
-                        23.574332,
-                        46.764318
-                    ],
-                    [
-                        23.57386,
-                        46.763999
-                    ],
-                    [
-                        23.573513,
-                        46.763738
-                    ],
-                    [
-                        23.573018,
-                        46.763309
-                    ],
-                    [
-                        23.57285,
-                        46.763195
-                    ],
-                    [
-                        23.572681,
-                        46.763116
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:34:00.646Z",
-            "dateObserved": "1759923240646",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102610420,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Avram Iancu"
-            },
-            "averageVehicleSpeed": 9.28,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.587799,
-                        46.766338
-                    ],
-                    [
-                        23.588737,
-                        46.766339
-                    ],
-                    [
-                        23.589265,
-                        46.766329
-                    ],
-                    [
-                        23.589586,
-                        46.766326
-                    ],
-                    [
-                        23.589863,
-                        46.766302
-                    ],
-                    [
-                        23.590296,
-                        46.76626
-                    ],
-                    [
-                        23.591207,
-                        46.766344
-                    ],
-                    [
-                        23.591794,
-                        46.766423
-                    ],
-                    [
-                        23.593062,
-                        46.766695
-                    ],
-                    [
-                        23.594536,
-                        46.76701
-                    ],
-                    [
-                        23.595649,
-                        46.767235
-                    ],
-                    [
-                        23.597501,
-                        46.767647
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:13.452Z",
-            "dateObserved": "1759925233452",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103613760,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Sânnicoară",
-                "streetAddress": "DN1C - Str. Clujului"
-            },
-            "averageVehicleSpeed": 36.26,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.734196,
-                        46.789366
-                    ],
-                    [
-                        23.732031,
-                        46.788666
-                    ],
-                    [
-                        23.731832,
-                        46.788602
-                    ],
-                    [
-                        23.731205,
-                        46.788401
-                    ],
-                    [
-                        23.73069,
-                        46.788235
-                    ],
-                    [
-                        23.729747,
-                        46.787931
-                    ],
-                    [
-                        23.729489,
-                        46.787848
-                    ],
-                    [
-                        23.72936,
-                        46.787807
-                    ],
-                    [
-                        23.728505,
-                        46.787528
-                    ],
-                    [
-                        23.727761,
-                        46.787297
-                    ],
-                    [
-                        23.726167,
-                        46.786793
-                    ],
-                    [
-                        23.724309,
-                        46.786207
-                    ],
-                    [
-                        23.723686,
-                        46.786011
-                    ],
-                    [
-                        23.722606,
-                        46.785672
-                    ],
-                    [
-                        23.72166,
-                        46.78537
-                    ],
-                    [
-                        23.719824,
-                        46.784798
-                    ],
-                    [
-                        23.719279,
-                        46.784637
-                    ],
-                    [
-                        23.718792,
-                        46.784503
-                    ],
-                    [
-                        23.718486,
-                        46.784428
-                    ],
-                    [
-                        23.718301,
-                        46.784385
-                    ],
-                    [
-                        23.717573,
-                        46.784246
-                    ],
-                    [
-                        23.715992,
-                        46.783955
-                    ],
-                    [
-                        23.714041,
-                        46.783604
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:00.061Z",
-            "dateObserved": "1759925580061",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103160520,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Calea Dezmirului"
-            },
-            "averageVehicleSpeed": 20.87,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.68584,
-                        46.778151
-                    ],
-                    [
-                        23.686696,
-                        46.778209
-                    ],
-                    [
-                        23.687533,
-                        46.778266
-                    ],
-                    [
-                        23.687736,
-                        46.778279
-                    ],
-                    [
-                        23.68822,
-                        46.7784
-                    ],
-                    [
-                        23.690353,
-                        46.778999
-                    ],
-                    [
-                        23.690919,
-                        46.779157
-                    ],
-                    [
-                        23.69131,
-                        46.779249
-                    ],
-                    [
-                        23.691459,
-                        46.779278
-                    ],
-                    [
-                        23.691629,
-                        46.779299
-                    ],
-                    [
-                        23.692136,
-                        46.779311
-                    ],
-                    [
-                        23.693249,
-                        46.77933
-                    ],
-                    [
-                        23.693904,
-                        46.779344
-                    ],
-                    [
-                        23.69494,
-                        46.779395
-                    ],
-                    [
-                        23.695937,
-                        46.77947
-                    ],
-                    [
-                        23.69634,
-                        46.779506
-                    ],
-                    [
-                        23.696501,
-                        46.77952
-                    ],
-                    [
-                        23.697127,
-                        46.779571
-                    ],
-                    [
-                        23.697538,
-                        46.779602
-                    ],
-                    [
-                        23.698199,
-                        46.779648
-                    ],
-                    [
-                        23.698447,
-                        46.779664
-                    ],
-                    [
-                        23.699324,
-                        46.779719
-                    ],
-                    [
-                        23.699645,
-                        46.779737
-                    ],
-                    [
-                        23.700022,
-                        46.779758
-                    ],
-                    [
-                        23.700722,
-                        46.779797
-                    ],
-                    [
-                        23.701326,
-                        46.779818
-                    ],
-                    [
-                        23.701589,
-                        46.779763
-                    ],
-                    [
-                        23.701809,
-                        46.779645
-                    ],
-                    [
-                        23.702446,
-                        46.779185
-                    ],
-                    [
-                        23.702619,
-                        46.778972
-                    ],
-                    [
-                        23.702717,
-                        46.778771
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:10:05.809Z",
-            "dateObserved": "1759925405809",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 97499296,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. București"
-            },
-            "averageVehicleSpeed": 7.44,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.613348,
-                        46.781909
-                    ],
-                    [
-                        23.613223,
-                        46.781879
-                    ],
-                    [
-                        23.612306,
-                        46.781757
-                    ],
-                    [
-                        23.612171,
-                        46.781739
-                    ],
-                    [
-                        23.611417,
-                        46.781635
-                    ],
-                    [
-                        23.611314,
-                        46.781621
-                    ],
-                    [
-                        23.609533,
-                        46.781387
-                    ],
-                    [
-                        23.608445,
-                        46.781233
-                    ],
-                    [
-                        23.607666,
-                        46.781126
-                    ],
-                    [
-                        23.607528,
-                        46.781105
-                    ],
-                    [
-                        23.606703,
-                        46.780972
-                    ],
-                    [
-                        23.606184,
-                        46.780888
-                    ],
-                    [
-                        23.604952,
-                        46.78072
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T11:37:01.891Z",
-            "dateObserved": "1759923421891",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102695406,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Plevnei"
-            },
-            "averageVehicleSpeed": 27.26,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.629348,
-                        46.787615
-                    ],
-                    [
-                        23.630183,
-                        46.787559
-                    ],
-                    [
-                        23.631232,
-                        46.787488
-                    ],
-                    [
-                        23.631411,
-                        46.787476
-                    ],
-                    [
-                        23.632962,
-                        46.787371
-                    ],
-                    [
-                        23.633512,
-                        46.787334
-                    ],
-                    [
-                        23.635964,
-                        46.787169
-                    ],
-                    [
-                        23.637399,
-                        46.787072
-                    ],
-                    [
-                        23.638359,
-                        46.787007
-                    ],
-                    [
-                        23.638735,
-                        46.786982
-                    ],
-                    [
-                        23.639278,
-                        46.786945
-                    ],
-                    [
-                        23.640953,
-                        46.786819
-                    ],
-                    [
-                        23.642527,
-                        46.786688
-                    ],
-                    [
-                        23.644084,
-                        46.786562
-                    ],
-                    [
-                        23.645883,
-                        46.786425
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:07:10.720Z",
-            "dateObserved": "1759925230720",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103160786,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Puieților"
-            },
-            "averageVehicleSpeed": 6.3,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.597733,
-                        46.793074
-                    ],
-                    [
-                        23.597927,
-                        46.792845
-                    ],
-                    [
-                        23.598298,
-                        46.792407
-                    ],
-                    [
-                        23.598653,
-                        46.791988
-                    ],
-                    [
-                        23.599083,
-                        46.791533
-                    ],
-                    [
-                        23.599225,
-                        46.79149
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:10:08.672Z",
-            "dateObserved": "1759925408672",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103195614,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Giuseppe Garibaldi"
-            },
-            "averageVehicleSpeed": 5.6,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.565695,
-                        46.770717
-                    ],
-                    [
-                        23.566017,
-                        46.770167
-                    ],
-                    [
-                        23.566176,
-                        46.770013
-                    ],
-                    [
-                        23.566391,
-                        46.769913
-                    ],
-                    [
-                        23.566674,
-                        46.769733
-                    ],
-                    [
-                        23.567234,
-                        46.769217
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:10:11.215Z",
-            "dateObserved": "1759925411215",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 102129388,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Str. Decebal"
-            },
-            "averageVehicleSpeed": 7.3,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.58935,
-                        46.779132
-                    ],
-                    [
-                        23.589255,
-                        46.778924
-                    ],
-                    [
-                        23.589225,
-                        46.778798
-                    ],
-                    [
-                        23.589222,
-                        46.778672
-                    ],
-                    [
-                        23.589269,
-                        46.77847
-                    ],
-                    [
-                        23.589352,
-                        46.77812
-                    ],
-                    [
-                        23.589515,
-                        46.777431
-                    ],
-                    [
-                        23.589742,
-                        46.776576
-                    ],
-                    [
-                        23.58999,
-                        46.776132
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:04:15.488Z",
-            "dateObserved": "1759925055488",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 103648726,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca"
-            },
-            "averageVehicleSpeed": 4.87,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.639149,
-                        46.781277
-                    ],
-                    [
-                        23.639002,
-                        46.781704
-                    ],
-                    [
-                        23.638951,
-                        46.781856
-                    ],
-                    [
-                        23.638805,
-                        46.781848
-                    ],
-                    [
-                        23.637467,
-                        46.781752
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T12:13:03.422Z",
-            "dateObserved": "1759925583422",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
-        },
-        {
-            "laneId": 82655122,
-            "address": {
-                "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca",
-                "streetAddress": "Bd. 21 Decembrie 1989"
-            },
-            "averageVehicleSpeed": 12.19,
-            "location": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        23.614037,
-                        46.778286
-                    ],
-                    [
-                        23.610127,
-                        46.777532
-                    ],
-                    [
-                        23.609666,
-                        46.777449
-                    ],
-                    [
-                        23.608224,
-                        46.777144
-                    ],
-                    [
-                        23.608041,
-                        46.777102
-                    ],
-                    [
-                        23.60709,
-                        46.776819
-                    ],
-                    [
-                        23.606852,
-                        46.776739
-                    ],
-                    [
-                        23.606348,
-                        46.776526
-                    ],
-                    [
-                        23.605018,
-                        46.776019
-                    ],
-                    [
-                        23.604771,
-                        46.775913
-                    ],
-                    [
-                        23.604362,
-                        46.775743
-                    ],
-                    [
-                        23.603783,
-                        46.775558
-                    ],
-                    [
-                        23.603663,
-                        46.775519
-                    ],
-                    [
-                        23.603451,
-                        46.775451
-                    ],
-                    [
-                        23.602698,
-                        46.775193
-                    ],
-                    [
-                        23.601826,
-                        46.774882
-                    ],
-                    [
-                        23.601331,
-                        46.774699
-                    ],
-                    [
-                        23.599487,
-                        46.774032
-                    ],
-                    [
-                        23.59635,
-                        46.772794
-                    ],
-                    [
-                        23.595459,
-                        46.772534
-                    ],
-                    [
-                        23.594967,
-                        46.772392
-                    ],
-                    [
-                        23.593123,
-                        46.771868
-                    ],
-                    [
-                        23.5918,
-                        46.771527
-                    ],
-                    [
-                        23.591266,
-                        46.771381
-                    ],
-                    [
-                        23.590003,
-                        46.770954
-                    ]
-                ]
-            },
-            "dateModified": "2025-10-08T10:00:45.773Z",
-            "dateObserved": "1759917645773",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:city"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napoca",
+            "type": "TrafficFlowObserved"
         },
         {
             "MAPPING_REPORT": {
                 "Processed_objects": 50,
-                "Mapped_and_Validated_Objects": "50-50",
-                "Mapped_and_NOT_Validated_Objects": "0-50"
+                "Mapped_and_Validated_Objects": "3-50",
+                "Mapped_and_NOT_Validated_Objects": "47-50"
             },
             "ORION_REPORT": {
-                "Object written to Orion Context Broker": "50/50",
-                "Object NOT written to Orion Context Broker": "0/50",
-                "Object SKIPPED": "0/50"
+                "Object written to Orion Context Broker": "2/3",
+                "Object NOT written to Orion Context Broker": "1/3",
+                "Object SKIPPED": "0/3",
+                "details": [
+                    {
+                        "count": "2",
+                        "response": {
+                            "error": "BadRequest",
+                            "description": "Invalid characters in entity id"
+                        },
+                        "status": 400,
+                        "bodyRequest": {
+                            "laneId": 94273304,
+                            "address": {
+                                "addressCountry": "RO",
+                                "addressLocality": "Sub Coastă",
+                                "streetAddress": "VOCE - Centura Cluj Est"
+                            },
+                            "averageVehicleSpeed": 19.19,
+                            "location": {
+                                "type": "LineString",
+                                "coordinates": [
+                                    [
+                                        23.744008,
+                                        46.82195
+                                    ],
+                                    [
+                                        23.743792,
+                                        46.82177
+                                    ],
+                                    [
+                                        23.743736,
+                                        46.821728
+                                    ],
+                                    [
+                                        23.743582,
+                                        46.821581
+                                    ],
+                                    [
+                                        23.743513,
+                                        46.821499
+                                    ],
+                                    [
+                                        23.743453,
+                                        46.821426
+                                    ],
+                                    [
+                                        23.743259,
+                                        46.821107
+                                    ],
+                                    [
+                                        23.742995,
+                                        46.820632
+                                    ],
+                                    [
+                                        23.74241,
+                                        46.819725
+                                    ],
+                                    [
+                                        23.742029,
+                                        46.819157
+                                    ],
+                                    [
+                                        23.741623,
+                                        46.818669
+                                    ],
+                                    [
+                                        23.740957,
+                                        46.817968
+                                    ],
+                                    [
+                                        23.740399,
+                                        46.817458
+                                    ],
+                                    [
+                                        23.739082,
+                                        46.816349
+                                    ],
+                                    [
+                                        23.738732,
+                                        46.816011
+                                    ],
+                                    [
+                                        23.738444,
+                                        46.815715
+                                    ],
+                                    [
+                                        23.738128,
+                                        46.815348
+                                    ],
+                                    [
+                                        23.737853,
+                                        46.815002
+                                    ],
+                                    [
+                                        23.737721,
+                                        46.814819
+                                    ],
+                                    [
+                                        23.737554,
+                                        46.814588
+                                    ],
+                                    [
+                                        23.737331,
+                                        46.814231
+                                    ],
+                                    [
+                                        23.73713,
+                                        46.813883
+                                    ],
+                                    [
+                                        23.736953,
+                                        46.813541
+                                    ],
+                                    [
+                                        23.7368,
+                                        46.813208
+                                    ],
+                                    [
+                                        23.736397,
+                                        46.812107
+                                    ],
+                                    [
+                                        23.735574,
+                                        46.810002
+                                    ],
+                                    [
+                                        23.735222,
+                                        46.809071
+                                    ],
+                                    [
+                                        23.735106,
+                                        46.808806
+                                    ],
+                                    [
+                                        23.734981,
+                                        46.80856
+                                    ],
+                                    [
+                                        23.734719,
+                                        46.808104
+                                    ],
+                                    [
+                                        23.734397,
+                                        46.807665
+                                    ],
+                                    [
+                                        23.734139,
+                                        46.807371
+                                    ],
+                                    [
+                                        23.73388,
+                                        46.807099
+                                    ],
+                                    [
+                                        23.733525,
+                                        46.806779
+                                    ],
+                                    [
+                                        23.732888,
+                                        46.80628
+                                    ],
+                                    [
+                                        23.732555,
+                                        46.806055
+                                    ],
+                                    [
+                                        23.732194,
+                                        46.805845
+                                    ],
+                                    [
+                                        23.728446,
+                                        46.803858
+                                    ],
+                                    [
+                                        23.727413,
+                                        46.803206
+                                    ],
+                                    [
+                                        23.726834,
+                                        46.802799
+                                    ],
+                                    [
+                                        23.724439,
+                                        46.801042
+                                    ],
+                                    [
+                                        23.72355,
+                                        46.800406
+                                    ],
+                                    [
+                                        23.722341,
+                                        46.799555
+                                    ],
+                                    [
+                                        23.722086,
+                                        46.799388
+                                    ],
+                                    [
+                                        23.721739,
+                                        46.799197
+                                    ],
+                                    [
+                                        23.721127,
+                                        46.798928
+                                    ],
+                                    [
+                                        23.719686,
+                                        46.798436
+                                    ],
+                                    [
+                                        23.718591,
+                                        46.798058
+                                    ],
+                                    [
+                                        23.717612,
+                                        46.797727
+                                    ],
+                                    [
+                                        23.717174,
+                                        46.797659
+                                    ],
+                                    [
+                                        23.717017,
+                                        46.797662
+                                    ]
+                                ]
+                            },
+                            "dateModified": "2025-10-08T11:18:36.659Z",
+                            "dateObserved": 1759922316659,
+                            "type": "TrafficFlowObserved",
+                            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:SubCoastă"
+                        }
+                    },
+                    {
+                        "count": "2",
+                        "error": {
+                            "response": {
+                                "error": "BadRequest",
+                                "description": "Invalid characters in entity id"
+                            },
+                            "status": 400,
+                            "bodyRequest": {
+                                "laneId": 94273304,
+                                "address": {
+                                    "addressCountry": "RO",
+                                    "addressLocality": "Sub Coastă",
+                                    "streetAddress": "VOCE - Centura Cluj Est"
+                                },
+                                "averageVehicleSpeed": 19.19,
+                                "location": {
+                                    "type": "LineString",
+                                    "coordinates": [
+                                        [
+                                            23.744008,
+                                            46.82195
+                                        ],
+                                        [
+                                            23.743792,
+                                            46.82177
+                                        ],
+                                        [
+                                            23.743736,
+                                            46.821728
+                                        ],
+                                        [
+                                            23.743582,
+                                            46.821581
+                                        ],
+                                        [
+                                            23.743513,
+                                            46.821499
+                                        ],
+                                        [
+                                            23.743453,
+                                            46.821426
+                                        ],
+                                        [
+                                            23.743259,
+                                            46.821107
+                                        ],
+                                        [
+                                            23.742995,
+                                            46.820632
+                                        ],
+                                        [
+                                            23.74241,
+                                            46.819725
+                                        ],
+                                        [
+                                            23.742029,
+                                            46.819157
+                                        ],
+                                        [
+                                            23.741623,
+                                            46.818669
+                                        ],
+                                        [
+                                            23.740957,
+                                            46.817968
+                                        ],
+                                        [
+                                            23.740399,
+                                            46.817458
+                                        ],
+                                        [
+                                            23.739082,
+                                            46.816349
+                                        ],
+                                        [
+                                            23.738732,
+                                            46.816011
+                                        ],
+                                        [
+                                            23.738444,
+                                            46.815715
+                                        ],
+                                        [
+                                            23.738128,
+                                            46.815348
+                                        ],
+                                        [
+                                            23.737853,
+                                            46.815002
+                                        ],
+                                        [
+                                            23.737721,
+                                            46.814819
+                                        ],
+                                        [
+                                            23.737554,
+                                            46.814588
+                                        ],
+                                        [
+                                            23.737331,
+                                            46.814231
+                                        ],
+                                        [
+                                            23.73713,
+                                            46.813883
+                                        ],
+                                        [
+                                            23.736953,
+                                            46.813541
+                                        ],
+                                        [
+                                            23.7368,
+                                            46.813208
+                                        ],
+                                        [
+                                            23.736397,
+                                            46.812107
+                                        ],
+                                        [
+                                            23.735574,
+                                            46.810002
+                                        ],
+                                        [
+                                            23.735222,
+                                            46.809071
+                                        ],
+                                        [
+                                            23.735106,
+                                            46.808806
+                                        ],
+                                        [
+                                            23.734981,
+                                            46.80856
+                                        ],
+                                        [
+                                            23.734719,
+                                            46.808104
+                                        ],
+                                        [
+                                            23.734397,
+                                            46.807665
+                                        ],
+                                        [
+                                            23.734139,
+                                            46.807371
+                                        ],
+                                        [
+                                            23.73388,
+                                            46.807099
+                                        ],
+                                        [
+                                            23.733525,
+                                            46.806779
+                                        ],
+                                        [
+                                            23.732888,
+                                            46.80628
+                                        ],
+                                        [
+                                            23.732555,
+                                            46.806055
+                                        ],
+                                        [
+                                            23.732194,
+                                            46.805845
+                                        ],
+                                        [
+                                            23.728446,
+                                            46.803858
+                                        ],
+                                        [
+                                            23.727413,
+                                            46.803206
+                                        ],
+                                        [
+                                            23.726834,
+                                            46.802799
+                                        ],
+                                        [
+                                            23.724439,
+                                            46.801042
+                                        ],
+                                        [
+                                            23.72355,
+                                            46.800406
+                                        ],
+                                        [
+                                            23.722341,
+                                            46.799555
+                                        ],
+                                        [
+                                            23.722086,
+                                            46.799388
+                                        ],
+                                        [
+                                            23.721739,
+                                            46.799197
+                                        ],
+                                        [
+                                            23.721127,
+                                            46.798928
+                                        ],
+                                        [
+                                            23.719686,
+                                            46.798436
+                                        ],
+                                        [
+                                            23.718591,
+                                            46.798058
+                                        ],
+                                        [
+                                            23.717612,
+                                            46.797727
+                                        ],
+                                        [
+                                            23.717174,
+                                            46.797659
+                                        ],
+                                        [
+                                            23.717017,
+                                            46.797662
+                                        ]
+                                    ]
+                                },
+                                "dateModified": "2025-10-08T11:18:36.659Z",
+                                "dateObserved": 1759922316659,
+                                "type": "TrafficFlowObserved",
+                                "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:SubCoastă"
+                            }
+                        }
+                    }
+                ]
             }
         }
     ]
