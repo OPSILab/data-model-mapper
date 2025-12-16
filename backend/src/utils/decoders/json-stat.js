@@ -1,18 +1,13 @@
-const axios = require("axios");
 const xlsx = require("xlsx");
 const fs = require("fs");
 const NUTS_XLSX = "./src/utils/decoders/nuts.xlsx";
-//const NUTS_XLSX = "./nuts.xlsx";
-const log = require('../logger')
-const { Logger } = log
-const logger = new Logger(__filename)
 
 function loadNutsMap() {
   const workbook = xlsx.readFile(NUTS_XLSX);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows = xlsx.utils.sheet_to_json(sheet, { header: 1 }); // array di array
-  const header = rows[0];
+  const rows = xlsx.utils.sheet_to_json(sheet, { header: 1 });
 
+  const header = rows[0];
   const geoIndex = header.indexOf("NUTS Code");
   const labelIndex = header.indexOf("NUTS label");
   const levelIndex = header.indexOf("NUTS level");
@@ -21,106 +16,122 @@ function loadNutsMap() {
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
     const code = row[geoIndex];
-    const name = row[labelIndex];
-    const level = row[levelIndex];
     if (code) {
-      map[code] = { name, level };
+      map[code] = { name: row[labelIndex], level: row[levelIndex] };
     }
   }
-
   return map;
 }
 
 module.exports = async function decode(source) {
   const nutsMap = loadNutsMap();
-  //const res = await axios.get(url);
-  //const js = res.data;
-  const js = source
+  const js = source;
+
   const dims = js.dimension;
   const ids = js.id;
   const sizes = js.size;
   const values = js.value;
-  //logger.debug(Object.keys(source));
 
   const geoDimName = js.role?.geo ||
-    Object.keys(dims).find(dim =>
-      dim.toLowerCase() === "geo" ||
-      dim.toLowerCase().includes("region") ||
-      dim.toLowerCase().includes("area") ||
-      dim.toLowerCase().includes("country")
+    Object.keys(dims).find(d =>
+      ["geo", "region", "area", "country"].some(k => d.toLowerCase().includes(k))
     );
 
-  const labels = {};
+  const NON_REGIONAL = new Set(["EU27_2020", "EA19", "TOTAL", "WORLD"]);
+
+  /** 🔹 Precompute index → code */
+  const indexToCode = {};
+  const indexToLabel = {};
+
   for (const dim of ids) {
-    labels[dim] = dims[dim].category.label;
+    const idxMap = dims[dim].category.index;
+    const labels = dims[dim].category.label;
+
+    const arrCode = [];
+    const arrLabel = [];
+
+    for (const code in idxMap) {
+      const pos = idxMap[code];
+      arrCode[pos] = code;
+      arrLabel[pos] = labels[code];
+    }
+
+    indexToCode[dim] = arrCode;
+    indexToLabel[dim] = arrLabel;
   }
 
-  function walk(indices, dimIndex, output, dims, ids, sizes, nutsMap, geoDimName, timestamp) {
+  /** 🔹 Precompute flat strides */
+  const strides = [];
+  let acc = 1;
+  for (let i = sizes.length - 1; i >= 0; i--) {
+    strides[i] = acc;
+    acc *= sizes[i];
+  }
+
+  const output = [];
+  const indices = new Array(ids.length).fill(0);
+  const timestamp = js.updated;
+
+  function walk(dimIndex) {
     if (dimIndex === ids.length) {
-      const flat = indices.reduce((acc, curr, i) => {
-        const prod = sizes.slice(i + 1).reduce((a, b) => a * b, 1);
-        return acc + curr * prod;
-      }, 0);
+      let flat = 0;
+      for (let i = 0; i < indices.length; i++) {
+        flat += indices[i] * strides[i];
+      }
 
-      const val = js.value[flat];
-      if (val !== null && val !== undefined) {
-        let regionLevel = "unknown";
-        let regionName = null;
+      const val = values[flat];
+      if (val == null) return;
 
-        const humanDims = indices.map((idx, i) => {
-          const dim = ids[i];
-          const code = Object.entries(dims[dim].category.index)
-            .find(([c, pos]) => pos === idx)[0];
-          const lab = dims[dim].category.label[code];
-          const nonRegionalCodes = ["EU27_2020", "EA19", "TOTAL", "WORLD"];
-          const isRegional = !nonRegionalCodes.includes(code)
+      let regionLevel = "unknown";
+      let regionName = null;
+      const humanDims = new Array(ids.length);
 
-          if (dim === geoDimName) {
-            //if (nonRegionalCodes.includes(code))
-            //  console.log(code)
-            regionLevel = nutsMap[code]?.level ? "NUTS" + nutsMap[code].level :
-              isRegional && code.length === 3 ? regionLevel = "NUTS1" :
-                isRegional && code.length === 4 ? regionLevel = "NUTS2" :
-                  isRegional && code.length === 5 ? regionLevel = "NUTS3" :
-                    "NON_NUTS";
+      for (let i = 0; i < ids.length; i++) {
+        const dim = ids[i];
+        const code = indexToCode[dim][indices[i]];
+        const label = indexToLabel[dim][indices[i]];
+        humanDims[i] = label;
 
-            regionName = lab;
+        if (dim === geoDimName) {
+          const isRegional = !NON_REGIONAL.has(code);
+
+          if (nutsMap[code]?.level != null) {
+            regionLevel = "NUTS" + nutsMap[code].level;
+          } else if (isRegional) {
+            if (code.length === 3) regionLevel = "NUTS1";
+            else if (code.length === 4) regionLevel = "NUTS2";
+            else if (code.length === 5) regionLevel = "NUTS3";
+            else regionLevel = "NON_NUTS";
+          } else {
+            regionLevel = "NON_NUTS";
           }
 
-          return lab;
-        });
-
-        output.push({
-          source: "ESTAT",
-          survey: "nama_10r_3gdp",
-          region: regionLevel,
-          dimensions: humanDims,
-          value: val,
-          timestamp: timestamp
-        });
+          regionName = label;
+        }
       }
+
+      output.push({
+        source: "ESTAT",
+        survey: "nama_10r_3gdp",
+        region: regionLevel,
+        dimensions: humanDims,
+        value: val,
+        timestamp
+      });
       return;
     }
 
     for (let i = 0; i < sizes[dimIndex]; i++) {
-      walk([...indices, i], dimIndex + 1, output, dims, ids, sizes, nutsMap, geoDimName, timestamp);
+      indices[dimIndex] = i;
+      walk(dimIndex + 1);
     }
   }
 
-  const output = [];
-  const timestamp = js.updated; // o js.date se c'è
-  walk([], 0, output, dims, ids, sizes, nutsMap, geoDimName, timestamp);
+  walk(0);
 
-
-  //console.log("Tot record:", output.length);
-  fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2), "utf-8");
+  console.log("Salvataggio file di output...");
+  fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
   console.log("File salvato: out_human_nuts.json");
-  //return "ok"
-  return output;
-}
 
-/*const test = require("./json-stat");
-test(0, "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/NAMA_10R_3GDP").then(res => {
-  console.log("ok");
-  process.exit(0);
-})*/
+  return output;
+};
