@@ -14,6 +14,7 @@ const minioWriter = isMinioWriterActive() ? require('../../../writers/minioWrite
 const common = require('../../../utils/common');
 const { finish, lock } = common
 const cliGl = require('../../../cli/setup');
+const decodeHandler = require('../../../decodeHandler');
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -170,7 +171,7 @@ module.exports = {
   },
   */
 
-  async mapData(source, map, dataModel, configIn, res) {
+  async mapData(source, map, decodeOptions, dataModel, configIn, res) {
 
     logger.debug({ source, map, dataModel, configIn })
     const cli = require('../../../cli/setup');
@@ -228,7 +229,7 @@ module.exports = {
       )
       ||
       (
-        !map
+        (!map && !decodeOptions)
         ||
         (
           !dataModel.id && !dataModel.data && !dataModel.name && !dataModel.url && !config.noSchema && !configIn.noSchema
@@ -260,8 +261,8 @@ module.exports = {
       }
     }
 
-    if (!Array.isArray(source.data) && (source.type == "json" || source.type == ".json" || source.type == "JSON" || source.type == ".JSON") && (!source.path || source.path == ".root$$$"))
-      source.data = [source.data]
+    /*if (!Array.isArray(source.data) && (source.type == "json" || source.type == ".json" || source.type == "JSON" || source.type == ".JSON") && (!source.path || source.path == ".root$$$"))
+      source.data = [source.data]*/
 
     /*
     if (config.backup) {
@@ -303,7 +304,7 @@ module.exports = {
     config.delimiter = configIn ? configIn.delimiter : config.delimiter || ','
     if (config.NGSI_entity != undefined) NGSI_entity = config.NGSI_entity
 
-    if (source.id && !source.data[0]) {
+    if (source.id && !source.data) {
       //try { 
       source.data = await Source.findOne({ _id: source.id })
       //}
@@ -350,7 +351,7 @@ module.exports = {
     if ((!source.data || source.data && !source.data[0]) && source.url) {
       source.download = await axios.get(source.url)
       source.data = source.download.data
-      delete source.download.headers 
+      delete source.download.headers
       delete source.download.request
       /*
       fs.writeFile(config.sourceDataPath + 'sourceFileTemp2.' + source.type, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
@@ -358,6 +359,11 @@ module.exports = {
           logger.debug('File sourceData temp is created successfully.');
       })*/
       //sourceFileTemp2 = true
+    }
+
+    if (!Array.isArray(source.data) && (source.type == "json" || source.type == ".json" || source.type == "JSON" || source.type == ".JSON") && (!source.path || source.path == ".root$$$")) {
+      logger.debug("Wrapped source data in array")
+      source.data = [source.data];
     }
 
     let EPSG_code = config.EPSG_code
@@ -467,7 +473,8 @@ module.exports = {
     }
 
     res.dmm.source = source
-    res.dmm.mapData = map[0]
+    if (map)
+      res.dmm.mapData = map[0]
     res.dmm.schema = schema
 
     logger.debug({ dataModel })
@@ -475,13 +482,22 @@ module.exports = {
     logger.debug(source.name, sourceTempId)
 
     try {
-      await cli(
-        //source.name ? config.sourceDataPath + source.name : config.sourceDataPath + sourceFileTemp2 ? 'sourceFileTemp2.' + source.type : 'sourceFileTemp.' + source.type,
-        source.name ? config.sourceDataPath + source.name : config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type,
-        map,
-        dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId,
-        schema, NGSI_entity, minioObj, config, res
-      );
+      if (decodeOptions) {
+        logger.debug("Decode options provided, using decodeOptions mapping")
+        logger.debug(decodeOptions)
+        logger.debug(map)
+        res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions)
+        //res.dmm.outputFile = res.dmm.outputFile[0]
+        res.dmm.deleteSession()
+      }
+      else
+        await cli(
+          //source.name ? config.sourceDataPath + source.name : config.sourceDataPath + sourceFileTemp2 ? 'sourceFileTemp2.' + source.type : 'sourceFileTemp.' + source.type,
+          source.name ? config.sourceDataPath + source.name : config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type,
+          map,
+          dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId,
+          schema, NGSI_entity, minioObj, config, res, decodeOptions
+        );
     }
     catch (error) {
       logger.error(error)

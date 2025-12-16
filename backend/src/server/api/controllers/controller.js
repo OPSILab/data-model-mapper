@@ -128,11 +128,26 @@ module.exports = {
 
         //await waiting("map")
         //process.dataModelMapper.map = "busy"
-        let { sourceData, map, dataModel } = utils.bodyMapper(req.body, req.query)
+        let { sourceData, map, decodeOptions, dataModel } = utils.bodyMapper(req.body, req.query)
         const emitter = new EventEmitter();
+        emitter.on('message', (message) => {
+            if (message == "delete") {
+                logger.info("Deleting session ", id)
+                //this[id] = null
+                if (!req.query.streamMode) {
+                    let outputFile = (req.body.config.mappingReport !== false && globalConfig.mappingReport) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    res.send(outputFile);
+                }
+                delete this[id]
+                logger.info(message, " ", id)
+            }
+            else
+                logger.info("Not recognized message for session ", id, ": ", message)
+        });
         let id
         try {
             function deleteSession() {
+                logger.info("Emitting delete for session ", id)
                 emitter.emit('message', "delete");
             }
             id = req.body.config.group +
@@ -145,7 +160,7 @@ module.exports = {
             if (req.query.streamMode)
                 res.send({ id })
             //res.send(id)
-            await service.mapData(sourceData, map, dataModel, req.body.config, res)
+            let result = await service.mapData(sourceData, map, decodeOptions, dataModel, req.body.config, res)
             if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
         }
         catch (error) {
@@ -160,18 +175,6 @@ module.exports = {
                 res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
         }
         process.dataModelMapper.setupError = null
-        emitter.on('message', (message) => {
-            if (message == "delete") {
-                //this[id] = null
-                if (!req.query.streamMode) {
-                    let outputFile = (req.body.config.mappingReport !== false && globalConfig.mappingReport) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
-                    res.send(outputFile);
-                }
-                delete this[id]
-            }
-            logger.info(message, " ", id)
-        });
-
         logger.info("controller.mapData end");
     },
 

@@ -315,9 +315,12 @@ const bodyMapper = (body, query) => {
             csvDelimiter: body.csvDelimiter
         }
 
+    let decodeOptions = body.decodeOptions
+
     return {
         sourceData,
         map,
+        decodeOptions,
         dataModel
     }
 };

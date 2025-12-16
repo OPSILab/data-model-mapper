@@ -460,7 +460,8 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     logger.debug(`Skipping source field: ${JSON.stringify(mapSourceKey)} because the value ${JSON.stringify(singleResult)} is not valid for mapped key: ${mapDestKey}`);
                 }
 
-            } else {
+            }
+            else {
                 logger.info(`The mapped key: ${mapDestKey} is not present in the selected Data Model Schema`);
             }
         }
@@ -530,7 +531,7 @@ const checkPairWithDestModelSchema = (mappedObject, destKey, modelSchema, rowNum
 
     //if (config.noSchema)
     //        return true
-    var result = validator.validateSourceValue(mappedObject, modelSchema, true, rowNumber, config, res);
+    var result = config.noSchema || config.ignoreValidation || validator.validateSourceValue(mappedObject, modelSchema, true, rowNumber, config, res);
     logger.debug("Object number : ", rowNumber)
     logger.trace("Validator result : ", result)
     return result;
@@ -543,7 +544,7 @@ const checkResultWithDestModelSchema = (mappedObject, destKey, modelSchema, rowN
 
     //if (config.noSchema)
     //    return true
-    return validator.validateSourceValue(mappedObject, modelSchema, false, rowNumber, config, res);
+    return config.noSchema || config.ignoreValidation || validator.validateSourceValue(mappedObject, modelSchema, false, rowNumber, config, res);
 
 };
 
