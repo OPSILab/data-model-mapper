@@ -185,4 +185,8 @@ config.minioWriter = {
     }
 }
 
+config.debug = {
+    jsonStat: false
+}
+
 module.exports = config;

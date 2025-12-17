@@ -1,6 +1,10 @@
 const xlsx = require("xlsx");
 const fs = require("fs");
 const NUTS_XLSX = "./src/utils/decoders/nuts.xlsx";
+const config = require("../../../config");
+const log = require('../logger')
+const { Logger } = log
+const logger = new Logger(__filename)
 
 function loadNutsMap() {
   const workbook = xlsx.readFile(NUTS_XLSX);
@@ -39,7 +43,6 @@ module.exports = async function decode(source) {
 
   const NON_REGIONAL = new Set(["EU27_2020", "EA19", "TOTAL", "WORLD"]);
 
-  /** 🔹 Precompute index → code */
   const indexToCode = {};
   const indexToLabel = {};
 
@@ -60,7 +63,6 @@ module.exports = async function decode(source) {
     indexToLabel[dim] = arrLabel;
   }
 
-  /** 🔹 Precompute flat strides */
   const strides = [];
   let acc = 1;
   for (let i = sizes.length - 1; i >= 0; i--) {
@@ -75,22 +77,15 @@ module.exports = async function decode(source) {
   function walk(dimIndex) {
     if (dimIndex === ids.length) {
       let flat = 0;
-      for (let i = 0; i < indices.length; i++) {
-        flat += indices[i] * strides[i];
-      }
-
-      const val = values[flat];
-      if (val == null) return;
-
       let regionLevel = "unknown";
-      let regionName = null;
-      const humanDims = new Array(ids.length);
+      const humanDims = {};
 
       for (let i = 0; i < ids.length; i++) {
+        flat += indices[i] * strides[i];
         const dim = ids[i];
         const code = indexToCode[dim][indices[i]];
         const label = indexToLabel[dim][indices[i]];
-        humanDims[i] = label;
+        humanDims[dim] = label
 
         if (dim === geoDimName) {
           const isRegional = !NON_REGIONAL.has(code);
@@ -110,9 +105,12 @@ module.exports = async function decode(source) {
         }
       }
 
+      const val = values[flat];
+      if (val == null) return;
+
       output.push({
-        source: "ESTAT",
-        survey: "nama_10r_3gdp",
+        source: source.extension.agencyId || source.extension.datastructure.agencyId,
+        survey: source.extension.id || source.extension.datastructure.id,
         region: regionLevel,
         dimensions: humanDims,
         value: val,
@@ -129,9 +127,11 @@ module.exports = async function decode(source) {
 
   walk(0);
 
-  console.log("Salvataggio file di output...");
-  fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
-  console.log("File salvato: out_human_nuts.json");
+  if (config.debug?.jsonStat) {
+    logger.debug("Salvataggio file di output...");
+    fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
+    logger.debug("File salvato: out_human_nuts.json");
+  }
 
   return output;
 };
