@@ -1,6 +1,6 @@
 const xlsx = require("xlsx");
 const fs = require("fs");
-const NUTS_XLSX = "./src/utils/decoders/nuts.xlsx";
+const NUTS_XLSX = "./nuts.xlsx"//"./src/utils/decoders/nuts.xlsx";
 const config = require("../../../config");
 const log = require('../logger')
 const { Logger } = log
@@ -74,18 +74,74 @@ module.exports = async function decode(source) {
   const indices = new Array(ids.length).fill(0);
   const timestamp = js.updated;
 
-  function walk(dimIndex) {
-    if (dimIndex === ids.length) {
+  if (config.debug?.recursiveJsonStat) { //TODO once tested remove this option
+    function walk(dimIndex) {
+      if (dimIndex === ids.length) {
+        let flat = 0;
+        let regionLevel = "unknown";
+        const humanDims = {};
+
+        for (let i = 0; i < ids.length; i++) {
+          flat += indices[i] * strides[i];
+          const dim = ids[i];
+          const code = indexToCode[dim][indices[i]];
+          const label = indexToLabel[dim][indices[i]];
+          humanDims[dim] = label
+
+          if (dim === geoDimName) {
+            const isRegional = !NON_REGIONAL.has(code);
+
+            if (nutsMap[code]?.level != null) {
+              regionLevel = "NUTS" + nutsMap[code].level;
+            } else if (isRegional) {
+              if (code.length === 3) regionLevel = "NUTS1";
+              else if (code.length === 4) regionLevel = "NUTS2";
+              else if (code.length === 5) regionLevel = "NUTS3";
+              else regionLevel = "NON_NUTS";
+            } else {
+              regionLevel = "NON_NUTS";
+            }
+
+            regionName = label;
+          }
+        }
+
+        const val = values[flat];
+        if (val == null) return;
+
+        output.push({
+          source: source.extension.agencyId || source.extension.datastructure.agencyId,
+          survey: source.extension.id || source.extension.datastructure.id,
+          region: regionLevel,
+          dimensions: humanDims,
+          value: val,
+          timestamp
+        });
+        return;
+      }
+
+      for (let i = 0; i < sizes[dimIndex]; i++) {
+        indices[dimIndex] = i;
+        walk(dimIndex + 1);
+      }
+    }
+    walk(0);
+  }
+
+  else
+    while (true) {
       let flat = 0;
       let regionLevel = "unknown";
       const humanDims = {};
 
       for (let i = 0; i < ids.length; i++) {
         flat += indices[i] * strides[i];
+
         const dim = ids[i];
         const code = indexToCode[dim][indices[i]];
         const label = indexToLabel[dim][indices[i]];
-        humanDims[dim] = label
+
+        humanDims[dim] = label;
 
         if (dim === geoDimName) {
           const isRegional = !NON_REGIONAL.has(code);
@@ -100,32 +156,34 @@ module.exports = async function decode(source) {
           } else {
             regionLevel = "NON_NUTS";
           }
-
-          regionName = label;
         }
       }
 
       const val = values[flat];
-      if (val == null) return;
+      if (val != null) {
+        output.push({
+          source: source.extension.agencyId || source.extension.datastructure.agencyId,
+          survey: source.extension.id || source.extension.datastructure.id,
+          region: regionLevel,
+          dimensions: humanDims,
+          value: val,
+          timestamp
+        });
+      }
 
-      output.push({
-        source: source.extension.agencyId || source.extension.datastructure.agencyId,
-        survey: source.extension.id || source.extension.datastructure.id,
-        region: regionLevel,
-        dimensions: humanDims,
-        value: val,
-        timestamp
-      });
-      return;
+      let carry = true;
+      for (let i = indices.length - 1; i >= 0 && carry; i--) {
+        indices[i]++;
+        if (indices[i] < sizes[i]) {
+          carry = false;
+        } else {
+          indices[i] = 0;
+        }
+      }
+
+      if (carry) break; 
     }
 
-    for (let i = 0; i < sizes[dimIndex]; i++) {
-      indices[dimIndex] = i;
-      walk(dimIndex + 1);
-    }
-  }
-
-  walk(0);
 
   if (config.debug?.jsonStat) {
     logger.debug("Salvataggio file di output...");
