@@ -1,6 +1,6 @@
 const xlsx = require("xlsx");
 const fs = require("fs");
-const NUTS_XLSX = "./nuts.xlsx"//"./src/utils/decoders/nuts.xlsx";
+const NUTS_XLSX = "./src/utils/decoders/nuts.xlsx";
 const config = require("../../../config");
 const log = require('../logger')
 const { Logger } = log
