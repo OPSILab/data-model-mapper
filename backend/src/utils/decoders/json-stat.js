@@ -83,9 +83,12 @@ module.exports = async function decode(source) {
 
         for (let i = 0; i < ids.length; i++) {
           flat += indices[i] * strides[i];
-          const dim = ids[i];
+          let dim = ids[i];
           const code = indexToCode[dim][indices[i]];
-          const label = indexToLabel[dim][indices[i]];
+          let label = indexToLabel[dim][indices[i]];
+          console.log(89)
+          if (dim == "time")
+            dim = "year"
           humanDims[dim] = label
 
           if (dim === geoDimName) {
@@ -137,10 +140,11 @@ module.exports = async function decode(source) {
       for (let i = 0; i < ids.length; i++) {
         flat += indices[i] * strides[i];
 
-        const dim = ids[i];
+        let dim = ids[i];
         const code = indexToCode[dim][indices[i]];
         const label = indexToLabel[dim][indices[i]];
-
+        if(dim == "time")
+          dim = "year"
         humanDims[dim] = label;
 
         if (dim === geoDimName) {
