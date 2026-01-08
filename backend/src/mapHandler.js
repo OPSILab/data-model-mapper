@@ -681,6 +681,7 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
             }
         });
 
+        
         // print Array String as output
         logger.debug({ finalArray })
         return finalArray
