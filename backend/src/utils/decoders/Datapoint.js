@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const config = require('../../../config');
 
-const MONGO_URI = 'mongodb://localhost:22000/Minio-Mongo'; // cambia "mydb" con il tuo database
+const MONGO_URI = config.mongoSourceConnector; // cambia "mydb" con il tuo database
 
 // Oggetto che conterrà il modello una volta creato
 let Datapoint;
