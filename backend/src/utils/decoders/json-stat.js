@@ -74,119 +74,88 @@ module.exports = async function decode(source) {
   const indices = new Array(ids.length).fill(0);
   const timestamp = js.updated;
 
-  if (config.debug?.recursiveJsonStat) { //TODO once tested remove this option
-    function walk(dimIndex) {
-      if (dimIndex === ids.length) {
-        let flat = 0;
-        let regionLevel = "unknown";
-        const humanDims = {};
-
-        for (let i = 0; i < ids.length; i++) {
-          flat += indices[i] * strides[i];
-          let dim = ids[i];
-          const code = indexToCode[dim][indices[i]];
-          let label = indexToLabel[dim][indices[i]];
-          console.log(89)
-          if (dim == "time")
-            dim = "year"
-          humanDims[dim] = label
-
-          if (dim === geoDimName) {
-            const isRegional = !NON_REGIONAL.has(code);
-
-            if (nutsMap[code]?.level != null) {
-              regionLevel = "NUTS" + nutsMap[code].level;
-            } else if (isRegional) {
-              if (code.length === 3) regionLevel = "NUTS1";
-              else if (code.length === 4) regionLevel = "NUTS2";
-              else if (code.length === 5) regionLevel = "NUTS3";
-              else regionLevel = "NON_NUTS";
-            } else {
-              regionLevel = "NON_NUTS";
-            }
-
-            regionName = label;
-          }
-        }
-
-        const val = values[flat];
-        if (val == null) return;
-
-        output.push({
-          source: source.extension.agencyId || source.extension.datastructure.agencyId,
-          survey: source.extension.id || source.extension.datastructure.id,
-          region: regionLevel,
-          dimensions: humanDims,
-          value: val,
-          timestamp
-        });
-        return;
-      }
-
-      for (let i = 0; i < sizes[dimIndex]; i++) {
-        indices[dimIndex] = i;
-        walk(dimIndex + 1);
-      }
-    }
-    walk(0);
+  if (sizes.length !== ids.length) {
+    throw new Error("sizes e ids non allineati");
   }
 
-  else
-    while (true) {
-      let flat = 0;
-      let regionLevel = "unknown";
-      const humanDims = {};
-
-      for (let i = 0; i < ids.length; i++) {
-        flat += indices[i] * strides[i];
-
-        let dim = ids[i];
-        const code = indexToCode[dim][indices[i]];
-        const label = indexToLabel[dim][indices[i]];
-        if(dim == "time")
-          dim = "year"
-        humanDims[dim] = label;
-
-        if (dim === geoDimName) {
-          const isRegional = !NON_REGIONAL.has(code);
-
-          if (nutsMap[code]?.level != null) {
-            regionLevel = "NUTS" + nutsMap[code].level;
-          } else if (isRegional) {
-            if (code.length === 3) regionLevel = "NUTS1";
-            else if (code.length === 4) regionLevel = "NUTS2";
-            else if (code.length === 5) regionLevel = "NUTS3";
-            else regionLevel = "NON_NUTS";
-          } else {
-            regionLevel = "NON_NUTS";
-          }
-        }
-      }
-
-      const val = values[flat];
-      if (val != null) {
-        output.push({
-          source: source.extension.agencyId || source.extension.datastructure.agencyId,
-          survey: source.extension.id || source.extension.datastructure.id,
-          region: regionLevel,
-          dimensions: humanDims,
-          value: val,
-          timestamp
-        });
-      }
-
-      let carry = true;
-      for (let i = indices.length - 1; i >= 0 && carry; i--) {
-        indices[i]++;
-        if (indices[i] < sizes[i]) {
-          carry = false;
-        } else {
-          indices[i] = 0;
-        }
-      }
-
-      if (carry) break; 
+  sizes.forEach((s, i) => {
+    if (!Number.isInteger(s) || s <= 0) {
+      throw new Error(`Size non valida alla dimensione ${ids[i]}: ${s}`);
     }
+  });
+
+  const fs = require("fs");
+
+  const stream = fs.createWriteStream("out_human_nuts.json", {
+    highWaterMark: 1024 * 1024 // 1MB buffer, opzionale
+  });
+  stream.write("[\n");
+
+  let firstRecord = true;
+
+  while (true) {
+    let flat = 0;
+    let regionLevel = "unknown";
+    const humanDims = {};
+
+    for (let i = 0; i < ids.length; i++) {
+      flat += indices[i] * strides[i];
+
+      let dim = ids[i];
+      const code = indexToCode[dim][indices[i]];
+      const label = indexToLabel[dim][indices[i]];
+
+      if (dim === "time") dim = "year";
+      humanDims[dim] = label;
+
+      if (dim === geoDimName) {
+        const isRegional = !NON_REGIONAL.has(code);
+
+        if (nutsMap[code]?.level != null) {
+          regionLevel = "NUTS" + nutsMap[code].level;
+        } else if (isRegional) {
+          if (code.length === 3) regionLevel = "NUTS1";
+          else if (code.length === 4) regionLevel = "NUTS2";
+          else if (code.length === 5) regionLevel = "NUTS3";
+          else regionLevel = "NON_NUTS";
+        } else {
+          regionLevel = "NON_NUTS";
+        }
+      }
+    }
+
+    const val = values[flat];
+    if (val != null) {
+      const record = JSON.stringify({
+        source: source.extension.agencyId || source.extension.datastructure.agencyId,
+        survey: source.extension.id || source.extension.datastructure.id,
+        region: regionLevel,
+        dimensions: humanDims,
+        value: val,
+        timestamp
+      });
+
+      if (!firstRecord) stream.write(",\n");
+      else firstRecord = false;
+
+      // Scrive su SSD direttamente, senza accumulare in RAM
+      stream.write(record);
+    }
+
+    // incrementa gli indici
+    let carry = true;
+    for (let i = indices.length - 1; i >= 0 && carry; i--) {
+      indices[i]++;
+      if (indices[i] < sizes[i]) carry = false;
+      else indices[i] = 0;
+    }
+
+    if (carry) break; // terminazione del ciclo
+  }
+
+  stream.write("\n]");
+  stream.end();
+
 
 
   if (config.debug?.jsonStat) {
@@ -195,5 +164,45 @@ module.exports = async function decode(source) {
     logger.debug("File salvato: out_human_nuts.json");
   }
 
-  return output;
+  const Datapoints = require('./Datapoint');
+  const stream2 = fs.createReadStream("out_human_nuts.json", { encoding: "utf-8" });
+  let buffer = "";
+  let depth = 0; // conta le parentesi graffe
+  let inObject = false;
+
+  logger.debug("Inizio inserimento datapoints nel database...");
+  for await (const chunk of stream2) {
+    logger.debug("Lettura chunk di dati...");
+    for (const char of chunk) {
+      logger.debug(`Elaborazione carattere: ${char}`);
+      if (char === "{") {
+        logger.debug("Inizio di un nuovo oggetto JSON rilevato.");
+        if (!inObject) inObject = true;
+        depth++;
+      }
+
+      logger.debug(`Profondità attuale delle parentesi graffe: ${depth}`);
+      if (inObject) buffer += char;
+
+      logger.debug(`Buffer attuale: ${buffer}`);
+      if (char === "}") {
+        logger.debug("Fine di un oggetto JSON rilevata.");
+        depth--;
+        if (depth === 0 && inObject) {
+          logger.debug("Oggetto JSON completo rilevato, procedo con l'inserimento nel database.");
+          // oggetto completo
+          const obj = JSON.parse(buffer);
+          logger.debug(`Oggetto JSON da inserire: ${JSON.stringify(obj)}`);
+          const DatapointModel = await Datapoints.getDatapointModel();
+          const datapoint = new DatapointModel(obj);
+          await datapoint.save();
+          logger.debug("Datapoint salvato nel database.");
+          buffer = "";
+          inObject = false;
+        }
+      }
+    }
+  }
+  return [];
+
 };
