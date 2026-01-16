@@ -3,7 +3,7 @@ WORKDIR /app
 COPY ./backend/dataModels ./dataModels
 COPY ./backend/docs ./docs
 COPY ./backend/src ./src
-COPY ./backend/output ./output
+RUN mkdir ./output
 #COPY ./backend/config*.js ./
 COPY ./backend/mapper.js ./
 COPY ./backend/LICENSE ./

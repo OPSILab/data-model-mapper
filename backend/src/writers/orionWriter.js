@@ -193,7 +193,7 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
         logger.debug('Sending to Orion CB object number: ' + objNumber + ' , id: ' + obj.id);
         logger.debug({ ToOrionObject: !config.orionWriter.keyValues || obj })
 
-        var orionedObj = !config.orionWriter.keyValues && toOrionObject(obj, modelSchema) || obj;
+        var orionedObj = !config.orionWriter.keyValues && toOrionObject(obj, modelSchema, config) || obj;
 
         var options = {
             method: 'POST',
@@ -553,79 +553,88 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
     }
 }
 
-function toOrionObject(obj, schema) {
+function toOrionObject(obj, schema, config) {
 
     logger.debug("Transforming Mapped object to an Orion Entity (explicit types in attributes)");
 
     for (key in obj) {
         if (key != 'id' && key != 'type') {
 
-            var modelField = schema.allOf[0].properties[key];
-            var modelFieldType = modelField.type;
-            var modelFieldFormat = modelField.format;
-            var objField = obj[key];
-            logger.debug({ key: obj[key], modelField });
-
-            if (key == 'location') {
-
-                var newValue = {};
-                newValue = {
-                    type: modelFieldType,//"geo:json",
-                    value: objField
-                };
-                obj['location'] = newValue;
-
-            } else if (modelFieldType === 'object') {
-
-                //var nestedValue = {};
-                //for (fieldKey in objField) {
-
-                //    var modelSubField = modelField.properties[fieldKey];
-                //    var modelSubFieldType = modelSubField.type;
-                //    var modelSubFieldFormat = modelSubField.format;
-
-                //    if (modelSubFieldFormat)
-                //        nestedValue[fieldKey] = {
-                //            value: objField[fieldkey],
-                //            type: modelSubFieldType,
-                //            format: modelSubFieldFormat
-                //        }
-                //    else
-                //        nestedValue[fieldKey] = {
-                //            value: objField[fieldKey],
-                //            type: modelSubFieldType
-                //        }
-
-                //    delete objField[fieldKey];
-                //}
-
-                var nestedObject = objField;
-                delete objField;//TODO check
+            if (config.orionWriter.protocol != "v2")
                 obj[key] = {
-                    type: modelFieldType,
-                    value: nestedObject
+                    type: config.orionWriter.protocol == "v2" ? modelFieldType : "Property",
+                    value: obj[key]
                 }
+            else {
 
-            } else {
 
-                if (modelFieldFormat) {
-                    if (modelFieldFormat === 'date-time')
-                        obj[key] = {
-                            type: 'DateTime',
-                            value: objField
-                        };
+                var modelField = schema.allOf[0].properties[key];
+                var modelFieldType = modelField.type;
+                var modelFieldFormat = modelField.format;
+                var objField = obj[key];
+                logger.debug({ key: obj[key], modelField });
+
+                if (key == 'location') {
+
+                    var newValue = {};
+                    newValue = {
+                        type: modelFieldType,//"geo:json",
+                        value: objField
+                    };
+                    obj['location'] = newValue;
+
+                } else if (modelFieldType === 'object') {
+
+                    //var nestedValue = {};
+                    //for (fieldKey in objField) {
+
+                    //    var modelSubField = modelField.properties[fieldKey];
+                    //    var modelSubFieldType = modelSubField.type;
+                    //    var modelSubFieldFormat = modelSubField.format;
+
+                    //    if (modelSubFieldFormat)
+                    //        nestedValue[fieldKey] = {
+                    //            value: objField[fieldkey],
+                    //            type: modelSubFieldType,
+                    //            format: modelSubFieldFormat
+                    //        }
+                    //    else
+                    //        nestedValue[fieldKey] = {
+                    //            value: objField[fieldKey],
+                    //            type: modelSubFieldType
+                    //        }
+
+                    //    delete objField[fieldKey];
+                    //}
+
+                    var nestedObject = objField;
+                    delete objField;//TODO check
+                    obj[key] = {
+                        type: config.orionWriter.protocol == "v2" ? modelFieldType : "Property",
+                        value: nestedObject
+                    }
+
+                } else {
+
+                    if (modelFieldFormat) {
+                        if (modelFieldFormat === 'date-time')
+                            obj[key] = {
+                                type: 'DateTime',
+                                value: objField
+                            };
+                        else
+                            obj[key] = {
+                                type: modelFieldType,
+                                value: objField
+                                // format: modelFieldFormat
+                            };
+                    }
                     else
                         obj[key] = {
                             type: modelFieldType,
                             value: objField
-                            // format: modelFieldFormat
-                        };
+                        }
                 }
-                else
-                    obj[key] = {
-                        type: modelFieldType,
-                        value: objField
-                    }
             }
         }
     }
