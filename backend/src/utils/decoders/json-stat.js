@@ -86,7 +86,7 @@ module.exports = async function decode(source) {
 
   const fs = require("fs");
 
-  const stream = fs.createWriteStream("out_human_nuts.json", {
+  const stream = fs.createWriteStream("./out_human_nuts.json", {
     highWaterMark: 1024 * 1024 // 1MB buffer, opzionale
   });
   stream.write("[\n");
@@ -165,38 +165,45 @@ module.exports = async function decode(source) {
   }
 
   const Datapoints = require('./Datapoint');
-  const stream2 = fs.createReadStream("out_human_nuts.json", { encoding: "utf-8" });
+  const stream2 = fs.createReadStream("./out_human_nuts.json", { encoding: "utf-8" });
   let buffer = "";
   let depth = 0; // conta le parentesi graffe
   let inObject = false;
 
   logger.debug("Inizio inserimento datapoints nel database...");
+  let tempArray = [];
   for await (const chunk of stream2) {
-    logger.debug("Lettura chunk di dati...");
+    //logger.debug("Lettura chunk di dati...");
     for (const char of chunk) {
-      logger.debug(`Elaborazione carattere: ${char}`);
+      //logger.debug(`Elaborazione carattere: ${char}`);
       if (char === "{") {
-        logger.debug("Inizio di un nuovo oggetto JSON rilevato.");
+        //logger.debug("Inizio di un nuovo oggetto JSON rilevato.");
         if (!inObject) inObject = true;
         depth++;
       }
 
-      logger.debug(`Profondità attuale delle parentesi graffe: ${depth}`);
+      //logger.debug(`Profondità attuale delle parentesi graffe: ${depth}`);
       if (inObject) buffer += char;
 
-      logger.debug(`Buffer attuale: ${buffer}`);
+      //logger.debug(`Buffer attuale: ${buffer}`);
       if (char === "}") {
-        logger.debug("Fine di un oggetto JSON rilevata.");
+        //logger.debug("Fine di un oggetto JSON rilevata.");
         depth--;
         if (depth === 0 && inObject) {
-          logger.debug("Oggetto JSON completo rilevato, procedo con l'inserimento nel database.");
+          //logger.debug("Oggetto JSON completo rilevato, procedo con l'inserimento nel database.");
           // oggetto completo
           const obj = JSON.parse(buffer);
-          logger.debug(`Oggetto JSON da inserire: ${JSON.stringify(obj)}`);
+          //logger.debug(`Oggetto JSON da inserire: ${JSON.stringify(obj)}`);
           //const DatapointModel = await Datapoints.getDatapointModel();
           //const datapoint = new DatapointModel(obj);
-          await Datapoints.insertMany([obj]);
-          logger.debug("Datapoint salvato nel database.");
+          tempArray.push(obj);
+          if (tempArray.length >= 1000) {
+            await Datapoints.insertMany(tempArray);
+            tempArray = [];
+            logger.debug("1000 Datapoints salvati nel database.");
+          }
+          //await Datapoints.insertMany([obj]);
+          //logger.debug("Datapoint salvato nel database.");
           buffer = "";
           inObject = false;
         }
