@@ -2,6 +2,7 @@ version: '3'
 services:
   data-model-mapper-backend:
     image: engineeringopsilab/data-model-mapper-backend
+    #pull_policy: always
     build: 
       context: .
       #dockerfile: 
