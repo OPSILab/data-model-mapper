@@ -86,7 +86,9 @@ module.exports = async function decode(source) {
 
   const fs = require("fs");
 
-  const stream = fs.createWriteStream("./out_human_nuts.json", {
+  let nameStream = ".out" + Date.now() + ".json";
+
+  const stream = fs.createWriteStream(nameStream, {
     highWaterMark: 1024 * 1024 // 1MB buffer, opzionale
   });
   stream.write("[\n");
@@ -165,7 +167,7 @@ module.exports = async function decode(source) {
   }
 
   const Datapoints = require('./Datapoint');
-  const stream2 = fs.createReadStream("./out_human_nuts.json", { encoding: "utf-8" });
+  const stream2 = fs.createReadStream(nameStream, { encoding: "utf-8" });
   let buffer = "";
   let depth = 0; // conta le parentesi graffe
   let inObject = false;
@@ -197,10 +199,10 @@ module.exports = async function decode(source) {
           //const DatapointModel = await Datapoints.getDatapointModel();
           //const datapoint = new DatapointModel(obj);
           tempArray.push(obj);
-          if (tempArray.length >= 1000) {
+          if (tempArray.length >= config.batch) {
             await Datapoints.insertMany(tempArray);
             tempArray = [];
-            logger.debug("1000 Datapoints salvati nel database.");
+            logger.debug(config.batch +" Datapoints salvati nel database.");
           }
           //await Datapoints.insertMany([obj]);
           //logger.debug("Datapoint salvato nel database.");
