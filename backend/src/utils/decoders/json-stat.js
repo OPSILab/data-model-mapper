@@ -193,9 +193,9 @@ module.exports = async function decode(source) {
           // oggetto completo
           const obj = JSON.parse(buffer);
           logger.debug(`Oggetto JSON da inserire: ${JSON.stringify(obj)}`);
-          const DatapointModel = await Datapoints.getDatapointModel();
-          const datapoint = new DatapointModel(obj);
-          await datapoint.save();
+          //const DatapointModel = await Datapoints.getDatapointModel();
+          //const datapoint = new DatapointModel(obj);
+          await Datapoints.insertMany([obj]);
           logger.debug("Datapoint salvato nel database.");
           buffer = "";
           inObject = false;
