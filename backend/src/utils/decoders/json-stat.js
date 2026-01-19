@@ -85,16 +85,16 @@ module.exports = async function decode(source) {
     }
   });
 
-  /*const fs = require("fs");
+  let nameStream, stream, firstRecord
+  if (config.writeJsonStatOnFile) {
+    nameStream = ".out" + Date.now() + ".json";
+    stream = fs.createWriteStream(nameStream, {
+      highWaterMark: 1024 * 1024
+    });
+    stream.write("[\n");
+    firstRecord = true;
+  }
 
-  let nameStream = ".out" + Date.now() + ".json";
-
-  const stream = fs.createWriteStream(nameStream, {
-    highWaterMark: 1024 * 1024 // 1MB buffer, opzionale
-  });
-  stream.write("[\n");*/
-
-  let firstRecord = true;
   let purged = false
   let bufferArray = []
 
@@ -131,49 +131,33 @@ module.exports = async function decode(source) {
 
     const val = values[flat];
     if (val != null) {
-      /*const record = JSON.stringify({
+      const record = {
         source: source.extension.agencyId || source.extension.datastructure.agencyId,
         survey: source.extension.id || source.extension.datastructure.id,
         region: regionLevel,
         dimensions: humanDims,
         value: val,
         timestamp
-      });*/
+      };
 
-      //if (!firstRecord) stream.write(",\n");
-      //else firstRecord = false;
+      if (config.writeJsonStatOnFile) {
+        if (!firstRecord) stream.write(",\n");
+        else firstRecord = false;
+        stream.write(record);
+      }
 
-      // Scrive su SSD direttamente, senza accumulare in RAM
-      //stream.write(record);
       if (!purged) {
         await Datapoints.deleteMany({
           survey: source.extension.id || source.extension.datastructure.id,
         });
         purged = true;
       }
-      bufferArray.push({
-        source: source.extension.agencyId || source.extension.datastructure.agencyId,
-        survey: source.extension.id || source.extension.datastructure.id,
-        region: regionLevel,
-        dimensions: humanDims,
-        value: val,
-        timestamp
-      })
+      bufferArray.push(record)
       if (bufferArray.length >= config.batch) {
         await Datapoints.insertMany(bufferArray);
         bufferArray = []
         logger.debug(config.batch + " Datapoints salvati nel database.");
       }
-      /*await Datapoints.insertMany([
-        {
-          source: source.extension.agencyId || source.extension.datastructure.agencyId,
-          survey: source.extension.id || source.extension.datastructure.id,
-          region: regionLevel,
-          dimensions: humanDims,
-          value: val,
-          timestamp
-        }
-      ]);*/
     }
 
     // incrementa gli indici
@@ -191,8 +175,10 @@ module.exports = async function decode(source) {
     logger.debug(bufferArray.length + " Datapoints salvati nel database.");
   }
 
-  //stream.write("\n]");
-  //stream.end();
+  if (config.writeJsonStatOnFile) {
+    stream.write("\n]");
+    stream.end();
+  }
 
 
 
@@ -202,51 +188,6 @@ module.exports = async function decode(source) {
     logger.debug("File salvato: out_human_nuts.json");
   }
 
-  /*const stream2 = fs.createReadStream(nameStream, { encoding: "utf-8" });
-  let buffer = "";
-  let depth = 0; // conta le parentesi graffe
-  let inObject = false;
-
-  logger.debug("Inizio inserimento datapoints nel database...");
-  let tempArray = [];
-  for await (const chunk of stream2) {
-    //logger.debug("Lettura chunk di dati...");
-    for (const char of chunk) {
-      //logger.debug(`Elaborazione carattere: ${char}`);
-      if (char === "{") {
-        //logger.debug("Inizio di un nuovo oggetto JSON rilevato.");
-        if (!inObject) inObject = true;
-        depth++;
-      }
-
-      //logger.debug(`Profondità attuale delle parentesi graffe: ${depth}`);
-      if (inObject) buffer += char;
-
-      //logger.debug(`Buffer attuale: ${buffer}`);
-      if (char === "}") {
-        //logger.debug("Fine di un oggetto JSON rilevata.");
-        depth--;
-        if (depth === 0 && inObject) {
-          //logger.debug("Oggetto JSON completo rilevato, procedo con l'inserimento nel database.");
-          // oggetto completo
-          const obj = JSON.parse(buffer);
-          //logger.debug(`Oggetto JSON da inserire: ${JSON.stringify(obj)}`);
-          //const DatapointModel = await Datapoints.getDatapointModel();
-          //const datapoint = new DatapointModel(obj);
-          tempArray.push(obj);
-          if (tempArray.length >= config.batch) {
-            await Datapoints.insertMany(tempArray);
-            tempArray = [];
-            logger.debug(config.batch + " Datapoints salvati nel database.");
-          }
-          //await Datapoints.insertMany([obj]);
-          //logger.debug("Datapoint salvato nel database.");
-          buffer = "";
-          inObject = false;
-        }
-      }
-    }
-  }*/
   return [];
 
 };
