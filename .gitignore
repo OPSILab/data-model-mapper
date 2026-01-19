@@ -76,3 +76,5 @@ frontend/src/assets/TrafficFlowObservedWaze.json
 backend/tests/
 technical documentation
 backend/sandbox/
+backend/config.docker.js
+postgre-minio.session.sql

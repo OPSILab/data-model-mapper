@@ -5,6 +5,7 @@ const config = require("../../../config");
 const log = require('../logger')
 const { Logger } = log
 const logger = new Logger(__filename)
+const Datapoints = require('./Datapoint');
 
 function loadNutsMap() {
   const workbook = xlsx.readFile(NUTS_XLSX);
@@ -84,16 +85,18 @@ module.exports = async function decode(source) {
     }
   });
 
-  const fs = require("fs");
+  /*const fs = require("fs");
 
   let nameStream = ".out" + Date.now() + ".json";
 
   const stream = fs.createWriteStream(nameStream, {
     highWaterMark: 1024 * 1024 // 1MB buffer, opzionale
   });
-  stream.write("[\n");
+  stream.write("[\n");*/
 
   let firstRecord = true;
+  let purged = false
+  let bufferArray = []
 
   while (true) {
     let flat = 0;
@@ -128,20 +131,49 @@ module.exports = async function decode(source) {
 
     const val = values[flat];
     if (val != null) {
-      const record = JSON.stringify({
+      /*const record = JSON.stringify({
         source: source.extension.agencyId || source.extension.datastructure.agencyId,
         survey: source.extension.id || source.extension.datastructure.id,
         region: regionLevel,
         dimensions: humanDims,
         value: val,
         timestamp
-      });
+      });*/
 
-      if (!firstRecord) stream.write(",\n");
-      else firstRecord = false;
+      //if (!firstRecord) stream.write(",\n");
+      //else firstRecord = false;
 
       // Scrive su SSD direttamente, senza accumulare in RAM
-      stream.write(record);
+      //stream.write(record);
+      if (!purged) {
+        await Datapoints.deleteMany({
+          survey: source.extension.id || source.extension.datastructure.id,
+        });
+        purged = true;
+      }
+      bufferArray.push({
+        source: source.extension.agencyId || source.extension.datastructure.agencyId,
+        survey: source.extension.id || source.extension.datastructure.id,
+        region: regionLevel,
+        dimensions: humanDims,
+        value: val,
+        timestamp
+      })
+      if (bufferArray.length >= config.batch) {
+        await Datapoints.insertMany(bufferArray);
+        bufferArray = []
+        logger.debug(config.batch + " Datapoints salvati nel database.");
+      }
+      /*await Datapoints.insertMany([
+        {
+          source: source.extension.agencyId || source.extension.datastructure.agencyId,
+          survey: source.extension.id || source.extension.datastructure.id,
+          region: regionLevel,
+          dimensions: humanDims,
+          value: val,
+          timestamp
+        }
+      ]);*/
     }
 
     // incrementa gli indici
@@ -154,9 +186,13 @@ module.exports = async function decode(source) {
 
     if (carry) break; // terminazione del ciclo
   }
+  if (bufferArray.length > 0) {
+    await Datapoints.insertMany(bufferArray);
+    logger.debug(bufferArray.length + " Datapoints salvati nel database.");
+  }
 
-  stream.write("\n]");
-  stream.end();
+  //stream.write("\n]");
+  //stream.end();
 
 
 
@@ -166,8 +202,7 @@ module.exports = async function decode(source) {
     logger.debug("File salvato: out_human_nuts.json");
   }
 
-  const Datapoints = require('./Datapoint');
-  const stream2 = fs.createReadStream(nameStream, { encoding: "utf-8" });
+  /*const stream2 = fs.createReadStream(nameStream, { encoding: "utf-8" });
   let buffer = "";
   let depth = 0; // conta le parentesi graffe
   let inObject = false;
@@ -202,7 +237,7 @@ module.exports = async function decode(source) {
           if (tempArray.length >= config.batch) {
             await Datapoints.insertMany(tempArray);
             tempArray = [];
-            logger.debug(config.batch +" Datapoints salvati nel database.");
+            logger.debug(config.batch + " Datapoints salvati nel database.");
           }
           //await Datapoints.insertMany([obj]);
           //logger.debug("Datapoint salvato nel database.");
@@ -211,7 +246,7 @@ module.exports = async function decode(source) {
         }
       }
     }
-  }
+  }*/
   return [];
 
 };

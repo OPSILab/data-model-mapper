@@ -9,6 +9,6 @@ const datapointSchema = new mongoose.Schema({
   timestamp: String,
   dimensions: Object,
   value: Number
-}, {strict: false});
+}, {strict: false, versionKey: false});
 
 module.exports = mongoose.model('Datapoint', datapointSchema);
