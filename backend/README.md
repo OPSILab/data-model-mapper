@@ -840,3 +840,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU Affero General Public License along with this program. If not, see http://www.gnu.org/licenses/.
 
 Copyright (C) 2019 Engineering Ingegneria Informatica S.p. A.
+
