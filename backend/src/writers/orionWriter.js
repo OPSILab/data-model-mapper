@@ -280,7 +280,7 @@ const writeObject = async (objNumber, obj, modelSchema, config) => {
                         options.uri = setURL("update", config, existingId);
                         options.method = config.updateMode == 'REPLACE' || config.orionWriter.updateMode == 'REPLACE' ? 'PUT' : 'POST';
                     }
-                    else if (config.orionWriter.protocol == "v1") {
+                    else if (config.orionWriter.protocol == "v1" || config.orionWriter.protocol == "ngsi-ld") {
                         options.uri = setURL("update", config, existingId)
                         options.method = 'POST';
                         options.body.id = existingId + Date.now().toString()
