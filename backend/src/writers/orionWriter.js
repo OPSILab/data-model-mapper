@@ -46,7 +46,7 @@ const lines = "--------_----------_-----------------|-------------------_-------
 
 const insertLargeFiles = async (id, obj, config, modelSchema) => {
     logger.debug("insertLargeFiles")
-    const uri = "mongodb://" + config.orionWriter.mongoHost + ":" + config.orionWriter.mongoPort + "/orion-" + (config.fiwareService || config.orionWriter.fiwareService);
+    const uri = "mongodb://" + config.orionWriter.mongoHost + ":" + config.orionWriter.mongoPort + "/orion" + (config.authConfig.disableAuth ? "" : "-") + (config.authConfig.disableAuth ? "" : (config.fiwareService || config.orionWriter.fiwareService));
     const orionDB = await mongoose.createConnection(uri, { useNewUrlParser: true, useUnifiedTopology: true });
     const Entity = await orionDB.model("Entity", new mongoose.Schema({}, { strict: false, _id: false }), "entities");
     let update, del
@@ -145,10 +145,12 @@ const sendToOrion = async (options, retries) => {
 
 const buildRequestHeaders = (config) => {
 
-    var headerObject = {
-        'Fiware-Service': config.fiwareService || config.orionWriter.fiwareService,
-        'Fiware-ServicePath': config.fiwareServicePath || config.orionWriter.fiwareServicePath
-    };
+    var headerObject = {}
+    if (!config.authConfig.disableAuth)
+        headerObject = {
+            'Fiware-Service': config.fiwareService || config.orionWriter.fiwareService,
+            'Fiware-ServicePath': config.fiwareServicePath || config.orionWriter.fiwareServicePath
+        };
 
     if ((config.orionAuthHeaderName || config.orionWriter.orionAuthHeaderName) && (config.orionAuthToken || config.orionWriter.orionAuthToken))
         headerObject[config.orionAuthHeaderName || config.orionWriter.orionAuthHeaderName] = config.orionAuthToken || config.orionWriter.orionAuthToken;
