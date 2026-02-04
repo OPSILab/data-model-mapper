@@ -6,6 +6,7 @@ const log = require('../logger')
 const { Logger } = log
 const logger = new Logger(__filename)
 const Datapoints = require('./Datapoint');
+const Output = require('../../server/api/models/output');
 
 function loadNutsMap() {
   const workbook = xlsx.readFile(NUTS_XLSX);
@@ -28,7 +29,8 @@ function loadNutsMap() {
   return map;
 }
 
-module.exports = async function decode(source) {
+module.exports = async function decode(source, id) {
+  const collectedOutput = Output(id)
   const nutsMap = loadNutsMap();
   const js = source;
 
@@ -146,15 +148,16 @@ module.exports = async function decode(source) {
         stream.write(record);
       }
 
-      if (!purged) {
+      /*if (!purged) {
         await Datapoints.deleteMany({
           survey: source.extension.id || source.extension.datastructure.id,
         });
         purged = true;
-      }
+      }*/
       bufferArray.push(record)
       if (bufferArray.length >= config.batch) {
-        await Datapoints.insertMany(bufferArray);
+        await collectedOutput.insertMany(bufferArray);
+        //await Datapoints.insertMany(bufferArray);
         bufferArray = []
         logger.debug(config.batch + " Datapoints salvati nel database.");
       }
@@ -171,7 +174,7 @@ module.exports = async function decode(source) {
     if (carry) break; // terminazione del ciclo
   }
   if (bufferArray.length > 0) {
-    await Datapoints.insertMany(bufferArray);
+    await collectedOutput.insertMany(bufferArray);
     logger.debug(bufferArray.length + " Datapoints salvati nel database.");
   }
 
@@ -188,6 +191,6 @@ module.exports = async function decode(source) {
     logger.debug("File salvato: out_human_nuts.json");
   }
 
-  return [];
+  return { id };
 
 };

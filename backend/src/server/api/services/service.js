@@ -15,6 +15,7 @@ const common = require('../../../utils/common');
 const { finish, lock } = common
 const cliGl = require('../../../cli/setup');
 const decodeHandler = require('../../../decodeHandler');
+const Output = require('../models/output.js')
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -46,6 +47,19 @@ module.exports = {
   error: null,
 
   NGSI_entity: undefined,
+
+  async getOutput(id, lastId, index) {
+    logger.debug("Getting output for id ", id, " after lastId ", lastId , " index ", index)
+    const collectedOutput = Output(id)
+    //return collectedOutput.find().skip(configGlobal.batch * index).limit(1000)
+    if (!lastId || lastId === "undefined")
+      return await collectedOutput.find({})
+        .sort({ _id: 1 })
+        .limit(configGlobal.batch)//.map(s => s.toObject())
+    return await collectedOutput.find({ _id: { $gt: lastId } })
+      .sort({ _id: 1 })
+      .limit(configGlobal.batch)//.map(s => s.toObject())
+  },
 
   getFilename(id) {
 
@@ -171,7 +185,7 @@ module.exports = {
   },
   */
 
-  async mapData(source, map, decodeOptions, dataModel, configIn, res) {
+  async mapData(source, map, decodeOptions, dataModel, configIn, res, id) {
 
     logger.debug({ source, map, dataModel, configIn })
     const cli = require('../../../cli/setup');
@@ -486,7 +500,7 @@ module.exports = {
         logger.debug("Decode options provided, using decodeOptions mapping")
         logger.debug(decodeOptions)
         logger.debug(map)
-        res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions)
+        res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions, id)
         //res.dmm.outputFile = res.dmm.outputFile[0]
         res.dmm.deleteSession()
       }

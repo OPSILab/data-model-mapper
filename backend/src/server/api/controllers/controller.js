@@ -8,6 +8,7 @@ const logger = new Logger(__filename)
 const fs = require("fs");
 const EventEmitter = require('events');
 const globalConfig = require("../../../../config.js")
+const Session = require("../models/session.js");
 
 module.exports = {
 
@@ -20,6 +21,10 @@ module.exports = {
     },
 
     getSession: async (req, res) => {
+        if (req.query.id === "undefined" && req.query.lastId === "undefined" || !req.query.id)
+            return res.status(400).send("id and lastId query parameters are required")
+        if (req.query.lastId)
+            return res.send(await service.getOutput(req.query.id, req.query.lastId, parseInt(req.query.index)))
         let session = this[req.query.id]?.res.dmm
         if (!session) {
             //    res.send({ data: "No data" })
@@ -138,6 +143,11 @@ module.exports = {
                     let outputFile = (req.body.config.mappingReport !== false && globalConfig.mappingReport) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
                 }
+                /*Session.insertMany({ sessionId: id }).then(result => {
+                    logger.log('session inserted');
+                }).catch(err => {
+                    logger.error(err);
+                });*/
                 delete this[id]
                 logger.info(message, " ", id)
             }
@@ -160,7 +170,7 @@ module.exports = {
             if (req.query.streamMode)
                 res.send({ id })
             //res.send(id)
-            let result = await service.mapData(sourceData, map, decodeOptions, dataModel, req.body.config, res)
+            let result = await service.mapData(sourceData, map, decodeOptions, dataModel, req.body.config, res, id)
             if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
         }
         catch (error) {

@@ -172,7 +172,7 @@ module.exports = {
                             req.body.pilot = decodedToken.pilot || pilot
                             req.body.email = decodedToken.email || decodedToken.username || email
                         }
-                        logger.debug(req.body.prefix)
+                        //logger.debug(req.body.prefix)
 
 
 
