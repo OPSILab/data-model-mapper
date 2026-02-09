@@ -20,31 +20,68 @@ module.exports = {
         res.send(sessions)
     },
 
+    getOutput: async (req, res) => {
+        try {
+            if (req.query.id === "undefined" && req.query.lastId === "undefined" || !req.query.id)
+                return res.status(400).send("id and lastId query parameters are required")
+            if (req.query.lastId)
+                if (globalConfig.sessionLocation.mongo)
+                    return res.send(await service.getOutput(req.query.id, req.query.lastId, parseInt(req.query.index)))
+                else if (globalConfig.sessionLocation.filesystem)
+                    if (fs.existsSync("./output/" + req.query.id + "/")) {
+                        const files = fs.readdirSync("./output/" + req.query.id + "/");
+                        if (files.length > 0 && files.includes((req.query.index + 1) + ".json")) {
+                            output = fs.readFileSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json", 'utf-8')
+                            jsonOutput = JSON.parse(output)//);
+                            return res.send(jsonOutput)
+                        }
+                        else
+                            return res.send([])
+                    }
+                    else
+                        return res.send([])
+                else
+                    return res.send([])
+            else
+                return res.send([])
+        }
+        catch (error) {
+            logger.error(error)
+            return res.status(500).send(error.toString() == "[object Object]" ? error : error.toString())
+        }
+    },
+
     getSession: async (req, res) => {
-        if (req.query.id === "undefined" && req.query.lastId === "undefined" || !req.query.id)
-            return res.status(400).send("id and lastId query parameters are required")
-        if (req.query.lastId)
-            return res.send(await service.getOutput(req.query.id, req.query.lastId, parseInt(req.query.index)))
+        if (req.query.id === "undefined" || !req.query.id)
+            return res.status(400).send("id is required")
         let session = this[req.query.id]?.res.dmm
         if (!session) {
             //    res.send({ data: "No data" })
             //else
             let output, jsonOutput //JSON.parse(await new Promise(function (resolve, reject) {
-            try {
-                //resolve(
-                output = fs.readFileSync("./output/output" + req.query.id + ".json", 'utf-8')
-                jsonOutput = JSON.parse(output)//);
-            }
-            catch (error) {
-                logger.error(error)
-                //    reject(error)
-            }
+            if (globalConfig.sessionLocation.mongo)
+                return res.send(await service.getSession(req.query.id))
+            else if (globalConfig.sessionLocation.filesystem)
+                try {
+                    //resolve(
+                    if (fs.existsSync("./output/output" + req.query.id + ".json")) {
+                        output = fs.readFileSync("./output/output" + req.query.id + ".json", 'utf-8')
+                        jsonOutput = JSON.parse(output)//);
+                    }
+                }
+                catch (error) {
+                    logger.error(error)
+                    //    reject(error)
+                }
+            else
+                return res.send([])
             //}))
-            console.log(output)
+            logger.info(output)
             if (jsonOutput || output)
                 res.send(jsonOutput || output)
             else
-                res.send({ data: "No data" })
+                res.send([])
+            //res.send({ data: "No data" }) 
         }
         else
             res.send(session)

@@ -50,6 +50,11 @@ module.exports = () => {
             logLevel: config.logLevel,
             activeWriters: config.writers
           })
+          utils.checkMaximumSpaceOverflow().then(() => {
+            logger.info("Finished checking MongoDB storage size on startup.")
+          }).catch(err => {
+            logger.error("Error checking MongoDB storage size on startup:", err);
+          })
         });
       })
   }

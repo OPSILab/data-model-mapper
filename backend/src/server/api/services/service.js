@@ -16,6 +16,8 @@ const { finish, lock } = common
 const cliGl = require('../../../cli/setup');
 const decodeHandler = require('../../../decodeHandler');
 const Output = require('../models/output.js')
+const utils = require('../../../utils/utils.js');
+const Session = require("../models/session.js")
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -49,7 +51,7 @@ module.exports = {
   NGSI_entity: undefined,
 
   async getOutput(id, lastId, index) {
-    logger.debug("Getting output for id ", id, " after lastId ", lastId , " index ", index)
+    logger.debug("Getting output for id ", id, " after lastId ", lastId, " index ", index)
     const collectedOutput = Output(id)
     //return collectedOutput.find().skip(configGlobal.batch * index).limit(1000)
     if (!lastId || lastId === "undefined")
@@ -60,6 +62,12 @@ module.exports = {
       .sort({ _id: 1 })
       .limit(configGlobal.batch)//.map(s => s.toObject())
   },
+
+  async getSession(id) {
+    logger.debug("Getting session for id ", id)
+    return await Session.find({ sessionId: id })
+  },
+
 
   getFilename(id) {
 
@@ -501,8 +509,9 @@ module.exports = {
         logger.debug(decodeOptions)
         logger.debug(map)
         res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions, id)
+        utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
         //res.dmm.outputFile = res.dmm.outputFile[0]
-        res.dmm.deleteSession()
+        //res.dmm.deleteSession()
       }
       else
         await cli(

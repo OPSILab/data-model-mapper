@@ -31,6 +31,103 @@ const log = require('./logger')
 const { Logger } = log
 const logger = new Logger(__filename)
 const fs = require("fs");
+const Session = require('../server/api/models/session');
+const Output = require('../server/api/models/output.js')
+const mongoose = require("mongoose");
+
+function dropOutput(id) {
+    const { execSync } = require("child_process");
+    const os = require('os')
+    let command
+    if (os.platform() == "win32")
+        command = `"C:\\Program Files\\mongosh\\mongosh.exe" mongodb://localhost:27017/DataModelMapper --eval "db.output${id}.drop()"`
+    else
+        command = `mongo mongodb://localhost:27017/DataModelMapper --eval "db.output${id}.drop()"`
+
+    logger.debug(`Dropping collection output${id} with command: ${command}`)
+    execSync(command, { stdio: 'inherit' });
+    logger.debug(`Collection output${id} dropped successfully.`)
+}
+
+async function checkMaximumSpaceOverflow() {
+
+    let collections = await mongoose.connection.db.listCollections().toArray();
+    const db = mongoose.connection.db;
+    let usedMB = 0 //stats.storageSize;
+
+    collections = await Promise.all(
+        collections
+            .filter(coll => coll.name.includes("output") || coll.name.includes("session"))
+            .map(async coll => {
+                const stats = await db.command({ collStats: coll.name, scale: 1024 * 1024 });
+                usedMB += stats.storageSize;
+                return {
+                    name: coll.name,
+                    stats,
+                    storageSize: stats.storageSize
+                };
+
+            })
+    );
+    logger.debug("Current MongoDB storage size for sessions and outputs: ", usedMB, " MB")
+    if (usedMB > (config.mongoMaxStorageMB || 500)) {
+        logger.warn(`MongoDB storage size is ${usedMB} MB, which exceeds the configured maximum of ${config.mongoMaxStorageMB || 500} MB. Cleaning up sessions...`)
+        try {
+            let sessions = await Session.find().lean();
+            for (const session of sessions) {
+                const outputId = session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId
+                if (outputId && collections.find(coll => coll.name == "output" + outputId))
+                    try {
+                        dropOutput(outputId)
+                        logger.info(`Dropped collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}`)
+                    }
+                    catch (error) {
+                        logger.error(`Error dropping collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}:`, error)
+                    }
+                const size = (Buffer.byteLength(JSON.stringify(session), "utf8")) / (1024 * 1024); // Convert to MB
+                await Session.deleteOne({ sessionId: session.sessionId });
+                usedMB -= size;
+                if (usedMB <= (config.mongoMaxStorageMB || 500)) {
+                    stats = await mongoose.connection.db.stats({
+                        scale: 1024 * 1024
+                    });
+                    usedMB = stats.storageSize;
+                    if (usedMB <= (config.mongoMaxStorageMB || 500))
+                        break
+                }
+            }
+        }
+        catch (error) {
+            logger.error("Error during MongoDB cleanup: ", error)
+        }
+    }
+    usedMB = 0
+    let cancel = false
+    let files = fs.readdirSync("./output/");
+    files = files
+        .map(file => ({ file, time: fs.statSync("./output/" + file).mtime.getTime() }))
+        .sort((a, b) => {
+            const aTime = a.time;
+            const bTime = b.time;
+            return bTime - aTime;
+        });
+    for (const file of files) {
+        //logger.debug(`Checking file ${file.file} for cleanup...`)
+        const filePath = path.join("./output/", file.file);
+        const stats = fs.statSync(filePath);
+        usedMB += stats.size / (1024 * 1024);
+        if (usedMB > (config.fileMaxStorageMB || 500))
+            cancel = true
+        if (cancel)
+            try {
+                fs.unlinkSync(filePath);
+                //logger.info(`File ${file.file} deleted.`);
+            } catch (err) {
+                logger.error(`Error deleting file ${filePath}:`, err);
+            }
+    }
+    logger.debug("Current filesystem storage size for sessions and outputs: ", Number(usedMB.toFixed(3)), " MB")
+}
 
 function ngsi(NGSI_entity) {
     return (((NGSI_entity == undefined) && config.NGSI_entity || NGSI_entity).toString() === 'true')
@@ -329,7 +426,7 @@ const init = () => {
     let deletedCount = 0
     fs.readdir("dataModels/", (err, files) => {
         if (err) {
-            console.error("Errore durante la lettura della directory:", err);
+            logger.error("Errore durante la lettura della directory:", err);
             return;
         }
 
@@ -338,12 +435,12 @@ const init = () => {
             if (file.includes("DataModelTemp")) {
                 fs.unlinkSync(filePath, (err) => {
                     if (err) {
-                        console.error(
-                            `Errore durante l'eliminazione del file ${file}:`,
+                        logger.error(
+                            `Errore durante l'eliminazione del file ${filePath}:`,
                             err
                         );
                     } else {
-                        console.log(`File ${file} eliminato.`);
+                        logger.info(`File ${file} eliminato.`);
                     }
                 });
             }
@@ -353,7 +450,7 @@ const init = () => {
     });
     fs.readdir(config.sourceDataPath || "", (err, files) => {
         if (err) {
-            console.error("Errore durante la lettura della directory:", err);
+            logger.error("Errore durante la lettura della directory:", err);
             return;
         }
 
@@ -362,12 +459,12 @@ const init = () => {
             if (file.includes("sourceFileTemp")) {
                 fs.unlinkSync(filePath, (err) => {
                     if (err) {
-                        console.error(
-                            `Errore durante l'eliminazione del file ${file}:`,
+                        logger.error(
+                            `Errore durante l'eliminazione del file ${filePath}:`,
                             err
                         );
                     } else {
-                        console.log(`File ${file} eliminato.`);
+                        logger.info(`File ${file} eliminato.`);
                     }
                 });
             }
@@ -411,22 +508,22 @@ const sendOutput = async (config, res) => {
             //await res.send(res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1));
             fs.unlinkSync(res.dmm.schemaTempName, (err) => {
                 if (err) {
-                    console.error(
-                        `Errore durante l'eliminazione del file ${file}:`,
+                    logger.error(
+                        `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
                         err
                     );
                 } else {
-                    console.log(`File ${file} eliminato.`);
+                    logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
                 }
             })
             fs.unlinkSync(res.dmm.sourceTempName, (err) => {
                 if (err) {
-                    console.error(
-                        `Errore durante l'eliminazione del file ${file}:`,
+                    logger.error(
+                        `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
                         err
                     );
                 } else {
-                    console.log(`File ${file} eliminato.`);
+                    logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
                 }
             })
         }
@@ -440,22 +537,22 @@ const sendOutput = async (config, res) => {
             //await res.send(res.dmm.outputFile);
             fs.unlinkSync(res.dmm.schemaTempName, (err) => {
                 if (err) {
-                    console.error(
-                        `Errore durante l'eliminazione del file ${file}:`,
+                    logger.error(
+                        `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
                         err
                     );
                 } else {
-                    console.log(`File ${file} eliminato.`);
+                    logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
                 }
             })
             fs.unlinkSync(res.dmm.sourceTempName, (err) => {
                 if (err) {
-                    console.error(
-                        `Errore durante l'eliminazione del file ${file}:`,
+                    logger.error(
+                        `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
                         err
                     );
                 } else {
-                    console.log(`File ${file} eliminato.`);
+                    logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
                 }
             })
         }
@@ -464,13 +561,19 @@ const sendOutput = async (config, res) => {
         }
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
+    res.set('outputId', outputId);
+    res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].outputId = outputId
+    //await Session.insertMany([{ sessionId: outputId }])
     try {
-        fs.writeFile('./output/output' + outputId + ".json", JSON.stringify(res.dmm), function (err) {
-            //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
-            if (err) throw err;
-            logger.debug('File output is created successfully.');
-            outputDataTempWriting.value = 'File output is created successfully.'
-        })
+        if (config.sessionLocation.filesystem)
+            fs.writeFile('./output/output' + outputId + ".json", JSON.stringify(res.dmm), function (err) {
+                //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
+                if (err) throw err;
+                logger.debug('File output is created successfully.');
+                outputDataTempWriting.value = 'File output is created successfully.'
+            })
+        if (config.sessionLocation.mongo)
+            await Session.insertMany([{ sessionId: outputId, data: res.dmm }])
     }
     catch (error) {
         logger.error(error)
@@ -478,6 +581,7 @@ const sendOutput = async (config, res) => {
         outputDataTempWriting.value = 'Error during output file creation.'
     }
     await finish(outputDataTempWriting)
+    await checkMaximumSpaceOverflow()
     //const deleteSession = 
     res.dmm.deleteSession()
     //res = null
@@ -680,5 +784,6 @@ module.exports = {
     bodyMapper: bodyMapper,
     waiting,
     createRandId,
-    init
+    init,
+    checkMaximumSpaceOverflow
 };

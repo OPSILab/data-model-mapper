@@ -41,6 +41,12 @@ var config = {
     mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
     truncateLogs: false,
     stopsTestsOnErrors: false, // stops the process on errors
+    mongoMaxStorageMB: 500, // max MongoDB storage in MB, after which the cleanup process is triggered
+    batch: 30000, // number of records to be saved in batch in MongoDB
+    sessionLocation : {
+        mongo: true, // if true, session output will be saved in MongoDB collection
+        filesystem: false // if true, session output will be saved in filesystem
+    },
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).

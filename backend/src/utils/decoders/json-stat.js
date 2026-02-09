@@ -99,6 +99,7 @@ module.exports = async function decode(source, id) {
 
   let purged = false
   let bufferArray = []
+  let part = 1
 
   while (true) {
     let flat = 0;
@@ -156,7 +157,13 @@ module.exports = async function decode(source, id) {
       }*/
       bufferArray.push(record)
       if (bufferArray.length >= config.batch) {
-        await collectedOutput.insertMany(bufferArray);
+        if (config.sessionLocation.mongo)
+          await collectedOutput.insertMany(bufferArray);
+        if (config.sessionLocation.filesystem){
+          if(!fs.existsSync('./output/' + id + '/'))
+            fs.mkdirSync('./output/' + id + '/', { recursive: true });
+          fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(bufferArray));
+        }
         //await Datapoints.insertMany(bufferArray);
         bufferArray = []
         logger.debug(config.batch + " Datapoints salvati nel database.");
@@ -191,6 +198,6 @@ module.exports = async function decode(source, id) {
     logger.debug("File salvato: out_human_nuts.json");
   }
 
-  return { id };
+  return [{ id }]; //TODO uniformare return con la struttura del in Mapping report
 
 };

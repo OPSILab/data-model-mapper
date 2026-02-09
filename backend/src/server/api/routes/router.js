@@ -33,6 +33,7 @@ router.get(encodeURI("/version"), controller.version)
 router.get(encodeURI("/report"), auth, controller.getReport)
 router.get(encodeURI("/session"), auth, controller.getSession)
 router.get(encodeURI("/sessions"), auth, controller.getSessions)
+router.get(encodeURI("/output"), auth, controller.getOutput)
 
 router.put(encodeURI("/map"), upload.none(), auth, controller.modifyMap)
 router.put(encodeURI("/source"), upload.none(), auth, controller.modifySource)
