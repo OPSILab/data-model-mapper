@@ -21,16 +21,23 @@ module.exports = {
     },
 
     getOutput: async (req, res) => {
+        logger.debug("getOutput called with query: ", req.query)
+        req.query.index = req.query.index * 1
         try {
             if (req.query.id === "undefined" && req.query.lastId === "undefined" || !req.query.id)
                 return res.status(400).send("id and lastId query parameters are required")
-            if (req.query.lastId)
+            logger.debug("Fetching output for session ", req.query.id, " with lastId ", req.query.lastId)
+            if (req.query.lastId !="undefined" || req.query.index === 0 || !globalConfig.sessionLocation.mongo)
                 if (globalConfig.sessionLocation.mongo)
                     return res.send(await service.getOutput(req.query.id, req.query.lastId, parseInt(req.query.index)))
                 else if (globalConfig.sessionLocation.filesystem)
                     if (fs.existsSync("./output/" + req.query.id + "/")) {
+                        logger.debug("Output directory exists for session ", req.query.id, ", checking for files...")
                         const files = fs.readdirSync("./output/" + req.query.id + "/");
+                        logger.debug("Files found: ", files)
+                        logger.debug("Looking for file with index ", req.query.index + 1)
                         if (files.length > 0 && files.includes((req.query.index + 1) + ".json")) {
+                            logger.debug("Output file found for session ", req.query.id, " with index ", req.query.index + 1, ", reading file...")
                             output = fs.readFileSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json", 'utf-8')
                             jsonOutput = JSON.parse(output)//);
                             return res.send(jsonOutput)

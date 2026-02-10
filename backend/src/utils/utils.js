@@ -35,14 +35,31 @@ const Session = require('../server/api/models/session');
 const Output = require('../server/api/models/output.js')
 const mongoose = require("mongoose");
 
+function readDirRecursive(dir) {
+    let results = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        logger.debug(entry.name)
+        if (entry.isDirectory()) {
+            results = results.concat(readDirRecursive(fullPath));
+        } else {
+            results.push(fullPath);
+        }
+    }
+
+    return results;
+}
+
 function dropOutput(id) {
     const { execSync } = require("child_process");
     const os = require('os')
     let command
     if (os.platform() == "win32")
-        command = `"C:\\Program Files\\mongosh\\mongosh.exe" mongodb://localhost:27017/DataModelMapper --eval "db.output${id}.drop()"`
+        command = `"C:\\Program Files\\mongosh\\mongosh.exe" ${config.mongo} --eval "db.output${id}.drop()"`
     else
-        command = `mongo mongodb://localhost:27017/DataModelMapper --eval "db.output${id}.drop()"`
+        command = `mongosh ${config.mongo} --eval "db.output${id}.drop()"`
 
     logger.debug(`Dropping collection output${id} with command: ${command}`)
     execSync(command, { stdio: 'inherit' });
@@ -74,6 +91,7 @@ async function checkMaximumSpaceOverflow() {
         logger.warn(`MongoDB storage size is ${usedMB} MB, which exceeds the configured maximum of ${config.mongoMaxStorageMB || 500} MB. Cleaning up sessions...`)
         try {
             let sessions = await Session.find().lean();
+            logger.debug(`Found ${sessions.length} sessions in the database.`)
             for (const session of sessions) {
                 const outputId = session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId
                 if (outputId && collections.find(coll => coll.name == "output" + outputId))
@@ -96,6 +114,17 @@ async function checkMaximumSpaceOverflow() {
                         break
                 }
             }
+            for (const coll of collections.filter(coll => coll.name.includes("output"))) {
+                const outputId = coll.name.replace("output", "")
+                if (!sessions.find(session => session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId == outputId))
+                    try {
+                        dropOutput(outputId)
+                        logger.info(`Dropped collection output${outputId} not linked to any session.`)
+                    }
+                    catch (error) {
+                        logger.error(`Error dropping collection output${outputId} not linked to any session:`, error)
+                    }
+            }
         }
         catch (error) {
             logger.error("Error during MongoDB cleanup: ", error)
@@ -103,9 +132,10 @@ async function checkMaximumSpaceOverflow() {
     }
     usedMB = 0
     let cancel = false
-    let files = fs.readdirSync("./output/");
+    let files = readDirRecursive("./output/")//fs.readdirSync("./output/");
+    logger.debug(files)
     files = files
-        .map(file => ({ file, time: fs.statSync("./output/" + file).mtime.getTime() }))
+        .map(file => ({ file, time: fs.statSync("./" + file).mtime.getTime() }))
         .sort((a, b) => {
             const aTime = a.time;
             const bTime = b.time;
@@ -113,7 +143,7 @@ async function checkMaximumSpaceOverflow() {
         });
     for (const file of files) {
         //logger.debug(`Checking file ${file.file} for cleanup...`)
-        const filePath = path.join("./output/", file.file);
+        const filePath = path.join("./", file.file);
         const stats = fs.statSync(filePath);
         usedMB += stats.size / (1024 * 1024);
         if (usedMB > (config.fileMaxStorageMB || 500))
@@ -580,7 +610,8 @@ const sendOutput = async (config, res) => {
         logger.error(res.dmm)
         outputDataTempWriting.value = 'Error during output file creation.'
     }
-    await finish(outputDataTempWriting)
+    if (config.sessionLocation.filesystem)
+        await finish(outputDataTempWriting)
     await checkMaximumSpaceOverflow()
     //const deleteSession = 
     res.dmm.deleteSession()

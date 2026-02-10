@@ -19,7 +19,7 @@ services:
       - ./config.prod.json:/app/data-model-mapper-gui/login/assets/config.json
       - ./config.prod.json:/app/data-model-mapper-gui/login/loginPopup/assets/config.json
   data-model-mapper-backend:
-    image: engineeringopsilab/data-model-mapper-backend
+    image: engineeringopsilab/data-model-mapper-backend:latest
     build: 
       context: https://github.com/OPSILab/data-model-mapper.git#frontend_dev
       dockerfile: ./server

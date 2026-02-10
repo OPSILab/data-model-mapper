@@ -159,8 +159,8 @@ module.exports = async function decode(source, id) {
       if (bufferArray.length >= config.batch) {
         if (config.sessionLocation.mongo)
           await collectedOutput.insertMany(bufferArray);
-        if (config.sessionLocation.filesystem){
-          if(!fs.existsSync('./output/' + id + '/'))
+        if (config.sessionLocation.filesystem) {
+          if (!fs.existsSync('./output/' + id + '/'))
             fs.mkdirSync('./output/' + id + '/', { recursive: true });
           fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(bufferArray));
         }
@@ -181,7 +181,10 @@ module.exports = async function decode(source, id) {
     if (carry) break; // terminazione del ciclo
   }
   if (bufferArray.length > 0) {
-    await collectedOutput.insertMany(bufferArray);
+    if (config.sessionLocation.mongo)
+      await collectedOutput.insertMany(bufferArray);
+    if (config.sessionLocation.filesystem)
+      fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(bufferArray));
     logger.debug(bufferArray.length + " Datapoints salvati nel database.");
   }
 

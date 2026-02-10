@@ -1,14 +1,23 @@
-FROM node:16-alpine
+FROM node:16-bullseye
 WORKDIR /app
+COPY ./backend/package*.json ./
+RUN npm install
+RUN apt-get update && apt-get install -y gnupg \
+ && wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | apt-key add - \
+ && echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/debian bullseye/mongodb-org/7.0 main" \
+      | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
+ && apt-get update && apt-get install -y mongodb-mongosh \
+ && rm -rf /var/lib/apt/lists/*
 COPY ./backend/dataModels ./dataModels
 COPY ./backend/docs ./docs
 COPY ./backend/src ./src
 RUN mkdir ./output
+RUN mkdir ./input
 #COPY ./backend/config*.js ./
 COPY ./backend/mapper.js ./
 COPY ./backend/LICENSE ./
-COPY ./backend/package*.json ./
-RUN npm install
+COPY ./backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN date > /app/date.txt
 #RUN sed -i 's/localhost/host.docker.internal/g' /app/config.js
 CMD ["node", "mapper"]
