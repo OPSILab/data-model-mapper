@@ -70,6 +70,7 @@ async function checkMaximumSpaceOverflow() {
 
     let collections = await mongoose.connection.db.listCollections().toArray();
     const db = mongoose.connection.db;
+    await mongoose.connection.db.admin().command({ fsync: 1 });
     let usedMB = 0 //stats.storageSize;
 
     collections = await Promise.all(
