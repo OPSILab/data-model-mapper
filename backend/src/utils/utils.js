@@ -157,14 +157,8 @@ async function checkMaximumSpaceOverflow() {
                 const size = (Buffer.byteLength(JSON.stringify(session), "utf8")) / (1024 * 1024); // Convert to MB
                 await Session.deleteOne({ sessionId: session.sessionId });
                 usedMB -= size;
-                if (usedMB <= (config.mongoMaxStorageMB || 500)) {
-                    /*stats = await mongoose.connection.db.stats({
-                        scale: 1024 * 1024
-                    });
-                    usedMB = stats.storageSize;
-                    if (usedMB <= (config.mongoMaxStorageMB || 500))*/
+                if (usedMB <= (config.mongoMaxStorageMB || 500))
                     break
-                }
             }
             for (const coll of collections.filter(coll => coll.name.includes("output"))) {
                 const outputId = coll.name.replace("output", "")
@@ -184,7 +178,7 @@ async function checkMaximumSpaceOverflow() {
     }
     usedMB = 0
     let cancel = false
-    let files = readDirRecursive("./output/")//fs.readdirSync("./output/");
+    let files = readDirRecursive("./output/")
     logger.debug(files)
     files = files
         .map(file => ({ file: (file.folder || file), time: fs.statSync("./" + (file.folder || file)).mtime.getTime(), path: "./" + (file.folder || file).replaceAll("\\", "/"), type: (file.folder ? "folder" : "file") }))
@@ -195,26 +189,16 @@ async function checkMaximumSpaceOverflow() {
         });
     let sessionedOutputs = {}
     for (const file of files) {
-        //logger.debug(`Checking file ${file.file} for cleanup...`)
-        const filePath = "./" + file.file; // ./output\\shared123\1.json
+        const filePath = "./" + file.file;
         logger.debug(`Checking file ${filePath} | ${file.path} for cleanup...`)
-        //if (Object.keys(sessionedOutputs).filter(key => key.includes(filePath.)))//sessionedOutputs[filePath] === undefined)
         if (pathIsOutput(file.path)) {
-            //let folder = filePath.substring(0, filePath.lastIndexOf("\\"))
-            //let searchingSession = folder.split("\\").join("") + ".json"
             logger.debug("Is an output file, looking for session file...")
             logger.debug({ file })
-            //logger.debug(file.path)
-            //let creatingId = file.path.substring(2, file.path.lastIndexOf("/")).replace("output/", "output") //./output/shared123/1.json -> outputshared123
-            //logger.debug(creatingId)
-            //creatingId.pop()
-            //creatingId = "./output" + creatingId + ".json" //.join("") + ".json" // outputshared123 -> ./output/outputshared123.json
-            //logger.debug(creatingId)
             if (sessionedOutputs[getSessionFromOutputPath(file.path)] === undefined)
                 sessionedOutputs[getSessionFromOutputPath(file.path)] = {
                     searchingSessionFound: false,
                     searchingOutputFound: true,
-                    folderPath: getFolderFromOutputPath(file.path)//file.path.substring(0, file.path.lastIndexOf("/"))//filePath.substring(0, filePath.lastIndexOf("\\"))
+                    folderPath: getFolderFromOutputPath(file.path)
                 }
             else
                 sessionedOutputs[getSessionFromOutputPath(file.path)].searchingOutputFound = true
