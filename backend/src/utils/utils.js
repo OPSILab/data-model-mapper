@@ -37,12 +37,21 @@ const mongoose = require("mongoose");
 
 function readDirRecursive(dir) {
     let results = [];
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    let entries
+    try {
+        entries = fs.readdirSync(dir, { withFileTypes: true });
+    }
+    catch (error) {
+        logger.error(`Error reading directory ${dir}:`, error)
+        fs.mkdirSync(dir, { recursive: true });
+        return results
+    }
 
     for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
         logger.debug(entry.name)
         if (entry.isDirectory()) {
+            results.push({ folder: fullPath });
             results = results.concat(readDirRecursive(fullPath));
         } else {
             results.push(fullPath);
@@ -50,6 +59,46 @@ function readDirRecursive(dir) {
     }
 
     return results;
+}
+
+function pathIsOutput(path) {
+    logger.debug(`Checking if path ${path} is an output path...`)
+    logger.debug(
+        path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf(".")),
+        parseInt(path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."))),
+        isNaN(parseInt(path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."))))
+    )
+    return !isNaN(parseInt(path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."))))
+}
+function pathIsSession(path) {
+    return isNaN(parseInt(path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))))
+}
+function getFolderFromOutputPath(path) {
+    if (pathIsOutput(path))
+        return path.substring(0, path.lastIndexOf("/"))
+    else
+        throw new Error("Path is not an output path")
+}
+function getSessionFromOutputPath(path) {
+    if (pathIsOutput(path)) {
+        let folder = getFolderFromOutputPath(path)
+        return getSessionFromOutputFolderPath(folder)
+    }
+    else
+        throw new Error("Path is not an output path")
+}
+
+function getFolderFromSession(path) {
+    if (pathIsSession(path)) {
+        let folder = path.replace("./output/output", "./output/").replace(".json", "")
+        return folder
+    }
+    else
+        throw new Error("Path is not a session path")
+}
+
+function getSessionFromOutputFolderPath(path) {
+    return "./output/" + path.substring(2).split("/").join("") + ".json"
 }
 
 function dropOutput(id) {
@@ -107,12 +156,12 @@ async function checkMaximumSpaceOverflow() {
                 await Session.deleteOne({ sessionId: session.sessionId });
                 usedMB -= size;
                 if (usedMB <= (config.mongoMaxStorageMB || 500)) {
-                    stats = await mongoose.connection.db.stats({
+                    /*stats = await mongoose.connection.db.stats({
                         scale: 1024 * 1024
                     });
                     usedMB = stats.storageSize;
-                    if (usedMB <= (config.mongoMaxStorageMB || 500))
-                        break
+                    if (usedMB <= (config.mongoMaxStorageMB || 500))*/
+                    break
                 }
             }
             for (const coll of collections.filter(coll => coll.name.includes("output"))) {
@@ -136,27 +185,119 @@ async function checkMaximumSpaceOverflow() {
     let files = readDirRecursive("./output/")//fs.readdirSync("./output/");
     logger.debug(files)
     files = files
-        .map(file => ({ file, time: fs.statSync("./" + file).mtime.getTime() }))
+        .map(file => ({ file: (file.folder || file), time: fs.statSync("./" + (file.folder || file)).mtime.getTime(), path: "./" + (file.folder || file).replaceAll("\\", "/"), type: (file.folder ? "folder" : "file") }))
         .sort((a, b) => {
             const aTime = a.time;
             const bTime = b.time;
             return bTime - aTime;
         });
+    let sessionedOutputs = {}
     for (const file of files) {
         //logger.debug(`Checking file ${file.file} for cleanup...`)
-        const filePath = path.join("./", file.file);
-        const stats = fs.statSync(filePath);
-        usedMB += stats.size / (1024 * 1024);
+        const filePath = "./" + file.file; // ./output\\shared123\1.json
+        logger.debug(`Checking file ${filePath} | ${file.path} for cleanup...`)
+        //if (Object.keys(sessionedOutputs).filter(key => key.includes(filePath.)))//sessionedOutputs[filePath] === undefined)
+        if (pathIsOutput(file.path)) {
+            //let folder = filePath.substring(0, filePath.lastIndexOf("\\"))
+            //let searchingSession = folder.split("\\").join("") + ".json"
+            logger.debug("Is an output file, looking for session file...")
+            logger.debug({ file })
+            //logger.debug(file.path)
+            //let creatingId = file.path.substring(2, file.path.lastIndexOf("/")).replace("output/", "output") //./output/shared123/1.json -> outputshared123
+            //logger.debug(creatingId)
+            //creatingId.pop()
+            //creatingId = "./output" + creatingId + ".json" //.join("") + ".json" // outputshared123 -> ./output/outputshared123.json
+            //logger.debug(creatingId)
+            if (sessionedOutputs[getSessionFromOutputPath(file.path)] === undefined)
+                sessionedOutputs[getSessionFromOutputPath(file.path)] = {
+                    searchingSessionFound: false,
+                    searchingOutputFound: true,
+                    folderPath: getFolderFromOutputPath(file.path)//file.path.substring(0, file.path.lastIndexOf("/"))//filePath.substring(0, filePath.lastIndexOf("\\"))
+                }
+            else
+                sessionedOutputs[getSessionFromOutputPath(file.path)].searchingOutputFound = true
+        }
+        else if (file.type === "folder") {
+            logger.debug("Is a folder, looking for session file...")
+            logger.debug(file.path)
+            if (sessionedOutputs[getSessionFromOutputFolderPath(file.path)] === undefined)
+                sessionedOutputs[getSessionFromOutputFolderPath(file.path)] = {
+                    searchingSessionFound: false,
+                    searchingOutputFound: false,
+                    folderPath: file.path
+                }
+        }
+        else {
+            logger.debug("Is a session file, looking for session file...")
+            logger.debug(filePath)
+            logger.debug(file.path)
+            if (sessionedOutputs[file.path] === undefined)
+                sessionedOutputs[file.path] = {
+                    searchingSessionFound: true,
+                    searchingOutputFound: false,
+                    filePath: file.path
+                }
+            else
+                sessionedOutputs[file.path].searchingSessionFound = true
+        }
+        let stats
+        try {
+            stats = fs.statSync(file.path);
+        } catch (error) {
+            logger.error(`Error getting stats for file ${file.path}:`, error)
+            if (cancel)
+                logger.debug(`Maybe file ${file.path} was already deleted, dummy!`)
+            continue
+        }
+        usedMB += stats?.size / (1024 * 1024) || 0;
         if (usedMB > (config.fileMaxStorageMB || 500))
             cancel = true
         if (cancel)
             try {
-                fs.unlinkSync(filePath);
+                let folder //file.path.substring(0, file.path.lastIndexOf("/"))//filePath.substring(0, filePath.lastIndexOf("\\"))
+                if (pathIsOutput(file.path))
+                    folder = getFolderFromOutputPath(file.path)
+                else if (file.type === "folder")
+                    folder = file.path
+                else
+                    folder = getFolderFromSession(file.path)
+                logger.debug(`Deleting file ${file.path} and folder ${folder} for cleanup...`)
+                fs.rmSync(folder, { recursive: true, force: true });
+                logger.info(`File ${file.path} and folder ${folder} deleted.`);
+                let orphanSession //"./output/" + folder.split("/").join("") + ".json"
+                if (pathIsOutput(file.path))
+                    orphanSession = getSessionFromOutputPath(file.path)
+                else if (file.type === "folder")
+                    orphanSession = getSessionFromOutputFolderPath(file.path)
+                else
+                    orphanSession = file.path
+                logger.debug(`Checking for orphan session with id ${orphanSession} linked to deleted file...`)
+                if (fs.existsSync(orphanSession))
+                    try {
+                        fs.unlinkSync(orphanSession);
+                    } catch (error) {
+                        logger.error(`Error deleting orphan session file ${orphanSession}:`, error)
+                    }
+                else
+                    logger.debug(`No orphan session file ${orphanSession} found for deleted file.`)
+                //fs.unlinkSync(filePath);
                 //logger.info(`File ${file.file} deleted.`);
             } catch (err) {
                 logger.error(`Error deleting file ${filePath}:`, err);
             }
     }
+    for (let key in sessionedOutputs)
+        if (!sessionedOutputs[key].searchingSessionFound) {
+            logger.warn(`Orphan output detected: ${key}`)
+            logger.debug(`Deleting folder ${sessionedOutputs[key].folderPath} for orphan output...`)
+            fs.rmSync(sessionedOutputs[key].folderPath, { recursive: true, force: true });
+        }
+        else if (!sessionedOutputs[key].searchingOutputFound) {
+            logger.warn(`Orphan session detected: ${key}`)
+            logger.debug(`Deleting file ${sessionedOutputs[key].filePath} for orphan session...`)
+            fs.unlinkSync(sessionedOutputs[key].filePath)
+        }
+    logger.debug(sessionedOutputs)
     logger.debug("Current filesystem storage size for sessions and outputs: ", Number(usedMB.toFixed(3)), " MB")
 }
 
@@ -330,10 +471,10 @@ const parseFilePath = (pathString) => {
 
 /*function spaceCleaner(object) {
     stack = [object];
-
+ 
     while (stack.length > 0) {
         let current = stack.pop();
-
+ 
         for (let sub in current) {
             if (typeof current[sub] === "object" && current[sub] !== null) {
                 stack.push(current[sub]); 
@@ -342,7 +483,7 @@ const parseFilePath = (pathString) => {
             }
         }
     }
-
+ 
     return object; 
 }*/
 

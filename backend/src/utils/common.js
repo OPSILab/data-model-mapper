@@ -143,7 +143,9 @@ module.exports = {
         return (configIn || config).writers.includes('minioWriter');
     },
     async finish(obj) {
+        console.log("-------------------TRACE-------------------")
         console.trace("Waiting for value to be set in object ", obj)
+        console.log("-------------------TRACE-------------------")
         let logCounterFlag
         while (!obj.value) {
             await sleep(1)
