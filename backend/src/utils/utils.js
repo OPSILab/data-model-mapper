@@ -144,10 +144,12 @@ async function checkMaximumSpaceOverflow() {
             logger.debug(`Found ${sessions.length} sessions in the database.`)
             for (const session of sessions) {
                 const outputId = session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId
-                if (outputId && collections.find(coll => coll.name == "output" + outputId))
+                const foundCollection = collections.find(coll => coll.name == "output" + outputId)
+                if (outputId && foundCollection)
                     try {
                         dropOutput(outputId)
                         logger.info(`Dropped collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}`)
+                        usedMB -= foundCollection.storageSize
                     }
                     catch (error) {
                         logger.error(`Error dropping collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}:`, error)
