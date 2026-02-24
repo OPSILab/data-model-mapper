@@ -18,6 +18,12 @@ function errorHandler(error, name) {//TODO this should go in a utils or in a err
   } catch (e) {
     console.log("Error writing error files:", e, error.actual, error.expected)
     console.error("Nothing written to error files")
+    if (error.actual == undefined)
+      error.actual = "undefined"
+    if (error.expected == "undefined")
+      error.expected = "undefined"
+    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual, null, 2)
+    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected, null, 2)
     error.actual = "trucated because it is written to a errorResponse file"
     error.expected = "truncated because it is written to a expectedResponse file"
   }
@@ -100,10 +106,24 @@ function dmmRequestWithReport(name, body, exp) {
           errorHandler(error, name + " - non NGSI data comparison")
         }
         try {
-          chai.assert.equal(
-            JSON.stringify(actualReport),
-            JSON.stringify(expectedReport)
-          )
+          if (actualReport?.MAPPING_REPORT?.Details)
+            delete actualReport.MAPPING_REPORT.Details
+          if (actualReport?.MAPPING_REPORT?.outputId)
+            delete actualReport.MAPPING_REPORT.outputId
+          /*if (actualReport.MAPPING_REPORT.Details.outputId)
+            if (actualReport.MAPPING_REPORT.Details.errors)
+              delete actualReport.MAPPING_REPORT.Details.outputId
+            else
+              delete actualReport.MAPPING_REPORT.Details*/
+          if (body.config && body.config.mappingReport === false) {
+            if (actualReport)
+              chai.assert.equal(JSON.stringify(actualReport), JSON.stringify({ "Did not expect any report and this won't be present in response": true }))
+          }
+          else
+            chai.assert.equal(
+              JSON.stringify(actualReport),
+              JSON.stringify(expectedReport)
+            )
         } catch (error) {
           errorHandler(error, name + " - report comparison")
         }

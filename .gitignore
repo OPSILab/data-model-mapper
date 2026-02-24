@@ -78,3 +78,5 @@ technical documentation
 backend/sandbox/
 backend/config.docker.js
 postgre-minio.session.sql
+docker-compose-context-local-dev.yml
+batch/docker-build-backend-context-local-dev.bat

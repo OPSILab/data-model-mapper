@@ -39,6 +39,89 @@ function removeUndefined(obj) {
     }
 }
 
+function validateObject(obj, schema, config = { allowExtraFields: true }) {
+    let valid = true;
+    let details = []
+
+    // Funzione interna ricorsiva
+    function _validate(field, model, path = "") {
+        // --- Controllo required ---
+        if (schema.description = "Bike Hire Docking Station" && !obj.name)
+            logger.debug(model.required, obj.name)
+        if (model.required && Array.isArray(model.required)) {
+            for (let req of model.required) {
+                if (!(req in field)) {
+                    logger.error(`Missing required field: ${path ? path + "." : ""}${req}`);
+                    valid = false;
+                    details.push(`Missing required field: ${path ? path + "." : ""}${req}`)
+                }
+            }
+        }
+
+        // --- Iterazione su proprietà ---
+        if (model.properties) {
+            for (let key in model.properties) {
+                const subModel = model.properties[key];
+                const subPath = path ? `${path}.${key}` : key;
+
+                if (key in field) {
+                    const value = field[key];
+                    // Controllo tipo
+                    if (subModel.type) {
+                        const typeMatch = checkType(value, subModel.type);
+                        if (!typeMatch) {
+                            details.push(`Type mismatch at ${subPath}: expected ${subModel.type}, got ${typeof value}`)
+                            logger.error(`Type mismatch at ${subPath}: expected ${subModel.type}, got ${typeof value}`);
+                            valid = false;
+                        }
+                    }
+
+                    // Ricorsione per oggetti e array
+                    if (subModel.type === "object" && subModel.properties) {
+                        _validate(value, subModel, subPath);
+                    } else if (subModel.type === "array" && subModel.items) {
+                        if (!Array.isArray(value)) {
+                            details.push(`Expected array at ${subPath}, got ${typeof value}`)
+                            logger.error(`Expected array at ${subPath}, got ${typeof value}`);
+                            valid = false;
+                        } else {
+                            value.forEach((item, idx) => {
+                                _validate(item, subModel.items, `${subPath}[${idx}]`);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- Controllo campi extra ---
+        if (!config.allowExtraFields && model.properties) {
+            for (let key in field) {
+                if (!(key in model.properties)) {
+                    const extraPath = path ? `${path}.${key}` : key;
+                    details.push(`Extra field not allowed: ${extraPath}`)
+                    logger.error(`Extra field not allowed: ${extraPath}`);
+                    valid = false;
+                }
+            }
+        }
+    }
+
+    // --- Helper controllo tipo ---
+    function checkType(value, type) {
+        if (type === "integer") return Number.isInteger(value);
+        if (type === "number") return typeof value === "number";
+        if (type === "string") return typeof value === "string";
+        if (type === "boolean") return typeof value === "boolean";
+        if (type === "object") return value && typeof value === "object" && !Array.isArray(value);
+        if (type === "array") return Array.isArray(value);
+        return true; // se tipo non riconosciuto, non blocca
+    }
+
+    _validate(obj, schema);
+    return { valid, details };
+}
+
 function nestedFieldsHandler(field, model) {
     logger.trace("start function nestedFieldsHandler\n" + field)
     if (typeof field === "object") {
@@ -190,9 +273,13 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
         schema.anyOf = undefined;
     }
 
-    var valid
+    var valid, details
 
     if (config.disableAjv) {//TODO if you don't use ajv, valid it properly!
+        if (schema.allOf.find(oneOf => oneOf.$ref))
+            logger.debug("Found ref!")
+        if (schema.description = "Bike Hire Docking Station")
+            logger.debug(schema.description)
         /*if (typeof data == "object") {
             for (let key in data) {
                 logger.debug(data, "\n", data[key])
@@ -211,7 +298,9 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
         }
         else*/
         removeUndefined(data)
-        valid = true
+        const validationResponse = validateObject(data, schema, config)
+        valid = validationResponse.valid
+        details = validationResponse.details
     }
     else {
         try {
@@ -232,7 +321,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
             }
             catch (error) {
                 logger.error(error)
-                
+
             }
             validate = ajv.compile(schema);
             valid = validate(data)
@@ -272,12 +361,12 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
         return true;
     }
     else {
-        if (!res.dmm.apiOutput) res.dmm.apiOutput = {outputFile:{errors:[]}}
-        res.dmm.apiOutput.outputFile.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}` })
+        if (!res.dmm.errors) res.dmm.errors = []
+        res.dmm.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? "Ajv errors text unavailable because it's disabled" : ajv.errorsText(validate.errors)}`, reason : details })
 
-        logger.info(`Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}`);
+        logger.info(`Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? details : ajv.errorsText(validate.errors)}`);
         if (!isSingleField) {
-            report.info(`Source Row/Object number ${rowNumber} invalid: ${ajv.errorsText(validate.errors)}`);
+            report.info(`Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? JSON.stringify(details) : ajv.errorsText(validate.errors)}`);
         }
         logger.error("Field is not valid")
         return false

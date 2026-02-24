@@ -48,6 +48,9 @@ var config = {
         mongo: true, // if true, session output will be saved in MongoDB collection
         filesystem: false // if true, session output will be saved in filesystem
     },
+    report : {
+        errorsDetails : true
+    },
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).

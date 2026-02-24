@@ -146,6 +146,11 @@ module.exports = {
                     }
                 }
             ]
+        },
+        config : {
+            report : {
+                errorDetails : false
+            }
         }
     },
     response: [

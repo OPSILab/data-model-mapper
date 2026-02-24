@@ -1,0 +1,1 @@
+docker compose -f ../docker-compose-context-local-non-latest.yml up data-model-mapper-backend

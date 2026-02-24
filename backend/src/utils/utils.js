@@ -647,20 +647,26 @@ const sendOutput = async (config, res) => {
     }
     catch (error) {
         logger.error(error)
-        try {
-            if (!res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].details)
-                res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].details = [{ error }]
-            else
-                res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].details.push([{ error }])
-        }
-        catch (error) {
-            logger.error(error)
-        }
+        if (config.mappingReport)
+            try {
+                if (!res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details)
+                    res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details = { errors: [{ error }] }
+                else if (!res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details.errors)
+                    res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details.errors = [{ error }]
+                else
+                    res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details.errors.push([{ error }])
+            }
+            catch (error) {
+                logger.error(error)
+            }
     }
     //if (parseInt((res.dmm.outputFile[res.dmm.outputFile.length - 1].MAPPING_REPORT.Mapped_and_NOT_Validated_Objects)[0].charAt(0))) process.res.status(400).send({ errors: res.dmm.outputFile.errors || "Validation errors", report: res.dmm.outputFile[res.dmm.outputFile.length - 1] })
     //else 
     if (!config.mappingReport)
         try {
+            logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
+            if (res.dmm.outputFile[res.dmm.outputFile.length - 1].MAPPING_REPORT)
+                res.dmm.outputFile.pop()
             //await res.write(res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1));
             //await res.end()
             //await res.send(res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1));
@@ -720,7 +726,10 @@ const sendOutput = async (config, res) => {
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
     res.set('outputId', outputId);
-    res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].outputId = outputId
+    if (config.mappingReport)
+        res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].outputId = outputId
+    else
+        logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     //await Session.insertMany([{ sessionId: outputId }])
     try {
         if (config.sessionLocation.filesystem)
@@ -742,6 +751,7 @@ const sendOutput = async (config, res) => {
         await finish(outputDataTempWriting)
     await checkMaximumSpaceOverflow()
     //const deleteSession = 
+    logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     res.dmm.deleteSession()
     //res = null
     //res.dmm = {};
@@ -776,6 +786,9 @@ const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) =
                 Processed_objects: config.rowNumber,
                 Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
                 Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
+                Details: {
+                    outputId: res.dmm.outputID
+                }
             },
             ORION_REPORT: isOrionWriterActive(config) ? {
                 "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
@@ -784,6 +797,9 @@ const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) =
                 details: config.orionWriter.details
             } : "Orion writer not enabled"
         }
+
+        if (config.report?.errorsDetails)
+            res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details.errors = res.dmm.errors
 
         try {
             /*if (isMinioWriterActive()) {

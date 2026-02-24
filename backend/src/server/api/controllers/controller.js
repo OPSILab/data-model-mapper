@@ -184,7 +184,7 @@ module.exports = {
                 logger.info("Deleting session ", id)
                 //this[id] = null
                 if (!req.query.streamMode) {
-                    let outputFile = (req.body.config.mappingReport !== false && globalConfig.mappingReport) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
                 }
                 /*Session.insertMany({ sessionId: id }).then(result => {
