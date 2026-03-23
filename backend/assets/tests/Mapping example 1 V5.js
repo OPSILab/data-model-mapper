@@ -3,7 +3,8 @@ module.exports = {
         "sourceDataType": "geojson",
         "sourceDataID": "bike_1",
         "mapID": "bike_1",
-        "dataModelIn": "BikeHireDockingStation"
+        "dataModelIn": "BikeHireDockingStation",
+        "config": { "idVersion": 1 }
     },
     response: [
         {
