@@ -1,4 +1,121 @@
+const axios = require("axios")
+const authorization = require("../../token")
+
 module.exports = {
+    pre: async () => {
+        async function insertFlow(response) {
+            let sourceData = [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            9.1890425716699,
+                            45.464725436014575
+                        ]
+                    },
+                    "properties": {
+                        "ID": 1,
+                        "BIKE_SH": "001 Duomo 1",
+                        "INDIRIZZO": "P.za Duomo",
+                        "ANNO": 2008,
+                        "STALLI": 24,
+                        "LOCALIZ": "Carreggiata"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            9.197596296602454,
+                            45.46647450916635
+                        ]
+                    },
+                    "properties": {
+                        "ID": 2,
+                        "BIKE_SH": "002 San Babila",
+                        "INDIRIZZO": "P.za S.Babila",
+                        "ANNO": 2008,
+                        "STALLI": 24,
+                        "LOCALIZ": "Marciapiede"
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            9.175674275275924,
+                            45.46800482576666
+                        ]
+                    },
+                    "properties": {
+                        "ID": 3,
+                        "BIKE_SH": "003 Cadorna 1",
+                        "INDIRIZZO": "P.za Cadorna",
+                        "ANNO": 2008,
+                        "STALLI": 21,
+                        "LOCALIZ": "Marciapiede"
+                    }
+                }
+            ]
+            let insertingMapBody = {
+                id: "bike_1",
+                name: "bike_1",
+                status: "status",
+                description: "description",
+                map: {
+                    dummy: "test"
+                },
+                dataModel: {
+                    schema: "test"
+                },
+                sourceDataType: "json",
+                config: { test: "test" },
+                path: "",
+                sourceData
+            }
+            response = (await axios.post("http://localhost:5500/api/map/register", insertingMapBody, { headers: { authorization } })).data
+            let id = response._id
+            let insertingSourceBody = {
+                name: "bike_1",
+                id: "bike_1",
+                source: sourceData,
+                mapRef: id
+            }
+            response = (await axios.post("http://localhost:5500/api/source", insertingSourceBody, { headers: { authorization } })).data
+        }
+
+        let response
+
+        /**
+         * {
+          name,
+          sourceDataMinio: {
+            name: minioObjName,
+            bucket,
+            etag,
+          },
+          status: status,
+          path,
+          description: description,
+          source: sourceData,
+          mapRef,
+        }
+         */
+
+        try {
+            response = (await axios.get("http://localhost:5500/api/source?id=bike_1")).data
+            if (!response)
+                await insertFlow(response)
+        }
+        catch (error) {
+            await insertFlow(response)
+        }
+
+    },
+
     body: {
         "sourceDataType": "geojson",
         "sourceDataID": "bike_1",

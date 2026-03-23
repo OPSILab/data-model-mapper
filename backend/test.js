@@ -202,7 +202,10 @@ function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
   files.forEach(file => {
-    dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
+    /*if (require("./assets/tests/" + file).pre)
+      require("./assets/tests/" + file).pre.then(() => dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response))
+    else*/
+      dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
   });
 }
 

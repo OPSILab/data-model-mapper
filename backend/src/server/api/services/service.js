@@ -18,6 +18,7 @@ const decodeHandler = require('../../../decodeHandler');
 const Output = require('../models/output.js')
 const utils = require('../../../utils/utils.js');
 const Session = require("../models/session.js")
+const mongoose = require("mongoose")
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -206,7 +207,7 @@ module.exports = {
 
     if (map?.id) {
 
-      map = config.idVersion == 1 ? await Map.findOne({ id: map.id }) : await Map.findOne({ _id: map.id })
+      map = config.idVersion == 1 || configIn.idVersion == 1 ? await Map.findOne({ id: map.id }) : await Map.findOne({ _id: map.id })
       if (!map)
         throw { error: "No map found" }
       //logger.trace(map)
@@ -328,7 +329,10 @@ module.exports = {
 
     if (source.id && !source.data) {
       //try { 
-      source.data = await Source.findOne({ _id: source.id })
+      if (!mongoose.Types.ObjectId.isValid(source.id))
+        source.data = await Source.findOne({ name: source.id })
+      else
+        source.data = await Source.findOne({ _id: source.id })
       //}
       //catch (error) {
       //    logger.error(error)
@@ -356,7 +360,10 @@ module.exports = {
     if (dataModel.id && !dataModel.data) {
       logger.debug({ dataModel })
       //try { 
-      dataModel.data = await DataModel.findOne({ _id: dataModel.id })
+      if (!mongoose.Types.ObjectId.isValid(dataModel.id))
+        dataModel.data = await DataModel.findOne({ name: dataModel.id })
+      else
+        dataModel.data = await DataModel.findOne({ _id: dataModel.id })
       //}
       //}
       //catch (error) {
@@ -596,6 +603,11 @@ module.exports = {
   },
 
   async getSource(id, name, mapRef, prefix) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      id = undefined
+      if (!name)
+        name = id
+    }
     let source = await Source.findOne(mapRef ? { mapRef: mapRef, user: (prefix?.split("/")[0] || "shared") } : id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     if (!source) throw { code: 404, message: "NOT FOUND" }
     return source
@@ -610,6 +622,11 @@ module.exports = {
   },
 
   async getDataModel(id, name, mapRef, prefix) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      id = undefined
+      if (!name)
+        name = id
+    }
     let dataModel = await DataModel.findOne(mapRef ? { mapRef: mapRef, user: (prefix?.split("/")[0] || "shared") } : id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     if (!dataModel) throw { code: 404, message: "NOT FOUND" }
     dataModel.dataModel = this.dataModelDeClean(dataModel.dataModel)
