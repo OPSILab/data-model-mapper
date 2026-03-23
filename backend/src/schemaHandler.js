@@ -275,65 +275,66 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
 
     var valid, details
 
-    if (config.disableAjv) {//TODO if you don't use ajv, valid it properly!
-        if (schema.allOf.find(oneOf => oneOf.$ref))
-            logger.debug("Found ref!")
-        if (schema.description = "Bike Hire Docking Station")
-            logger.debug(schema.description)
-        /*if (typeof data == "object") {
-            for (let key in data) {
-                logger.debug(data, "\n", data[key])
-                if (data[key]) {
-                    logger.debug(key, " is not undefined")
-                    valid = true
+    if (!config.ignoreValidation && !config.noSchema)
+        if (config.disableAjv) {
+            if (schema.allOf.find(oneOf => oneOf.$ref))
+                logger.debug("Found ref!")
+            if (schema.description = "Bike Hire Docking Station")
+                logger.debug(schema.description)
+            /*if (typeof data == "object") {
+                for (let key in data) {
+                    logger.debug(data, "\n", data[key])
+                    if (data[key]) {
+                        logger.debug(key, " is not undefined")
+                        valid = true
+                    }
+                    else
+                        logger.debug(key, " is undefined")
                 }
+                if (valid)
+                    logger.debug(data, " is valid")
                 else
-                    logger.debug(key, " is undefined")
+                    logger.debug(data, " is not valid")
+    
             }
-            if (valid)
-                logger.debug(data, " is valid")
-            else
-                logger.debug(data, " is not valid")
-
+            else*/
+            removeUndefined(data)
+            const validationResponse = validateObject(data, schema, config)
+            valid = validationResponse.valid
+            details = validationResponse.details
         }
-        else*/
-        removeUndefined(data)
-        const validationResponse = validateObject(data, schema, config)
-        valid = validationResponse.valid
-        details = validationResponse.details
-    }
-    else {
-        try {
-            if (schema.schema == "http://json-schema.org/draft-04/schema#") schema.schema = "http://json-schema.org/schema#"
-            if (schema.$schema == "http://json-schema.org/draft-04/schema#") schema.$schema = "http://json-schema.org/schema#"
-            var validate = ajv.compile(schema);
-        } catch (error) {
-            if (schema.anyOf && schema.anyOf[0] == undefined && !isSingleField) schema.anyOf = undefined;
-            logger.error(error);
-            logger.info(schema)
-            var validate = ajv.compile(schema);
-        }
-        valid = validate(data);
-        if (valid) logger.info("Field is valid")
         else {
             try {
-                data = nestedFieldsHandler(data, schema.allOf[0].properties)
+                if (schema.schema == "http://json-schema.org/draft-04/schema#") schema.schema = "http://json-schema.org/schema#"
+                if (schema.$schema == "http://json-schema.org/draft-04/schema#") schema.$schema = "http://json-schema.org/schema#"
+                var validate = ajv.compile(schema);
+            } catch (error) {
+                if (schema.anyOf && schema.anyOf[0] == undefined && !isSingleField) schema.anyOf = undefined;
+                logger.error(error);
+                logger.info(schema)
+                var validate = ajv.compile(schema);
             }
-            catch (error) {
-                logger.error(error)
-
-            }
-            validate = ajv.compile(schema);
-            valid = validate(data)
-            if (valid) {
-                logger.info("Field is valid")
-            }
+            valid = validate(data);
+            if (valid) logger.info("Field is valid")
             else {
-                logger.warn("\n--------------------------------\n\nField is not valid\n--------------------------------\n\n")
-                logger.warn(data)
+                try {
+                    data = nestedFieldsHandler(data, schema.allOf[0].properties)
+                }
+                catch (error) {
+                    logger.error(error)
+
+                }
+                validate = ajv.compile(schema);
+                valid = validate(data)
+                if (valid) {
+                    logger.info("Field is valid")
+                }
+                else {
+                    logger.warn("\n--------------------------------\n\nField is not valid\n--------------------------------\n\n")
+                    logger.warn(data)
+                }
             }
         }
-    }
 
     if (config.mode == "server")
         if (res.dmm.outputFile)
@@ -351,7 +352,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
         schema.anyOf = anyOf;
     }
 
-    if (valid) {
+    if (valid || config.ignoreValidation || config.noSchema) {
         if (!isSingleField)
             logger.info({
                 level: 'trace',
@@ -362,7 +363,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
     }
     else {
         if (!res.dmm.errors) res.dmm.errors = []
-        res.dmm.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? "Ajv errors text unavailable because it's disabled" : ajv.errorsText(validate.errors)}`, reason : details })
+        res.dmm.errors.push({ "Field is not valid": data, details: `Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? "Ajv errors text unavailable because it's disabled" : ajv.errorsText(validate.errors)}`, reason: details })
 
         logger.info(`Source Row/Object number ${rowNumber} invalid: ${config.disableAjv ? details : ajv.errorsText(validate.errors)}`);
         if (!isSingleField) {

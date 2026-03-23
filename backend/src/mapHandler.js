@@ -301,8 +301,11 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             logger.debug(modelSchema)
             let schemaDestKey = modelSchema.allOf[0].properties[mapDestKey];
             if (schemaDestKey || mapDestKey === entityIdField || config.ignoreValidation) {//  Check if destKey is present in modelSchema ?
-                if (config.ignoreValidation && source[map[mapDestKey]])
+                if ((config.ignoreValidation || config.noSchema) && source[map[mapDestKey]]) {
+                    logger.debug(modelSchema)
                     modelSchema.allOf[0].properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }
+                    logger.debug(modelSchema.allOf[0].properties)
+                }
                 var normSourceKey = JSON.parse(unorm.nfc(JSON.stringify(mapSourceKey)));// Normalize encoding, avoiding problems 
                 let parsedSourceKey = normSourceKey;// Initialize with normalized Source Key, can be replaced in the specific cases below
                 logger.debug({ schemaDestKey, normSourceKey })
@@ -531,7 +534,7 @@ const checkPairWithDestModelSchema = (mappedObject, destKey, modelSchema, rowNum
 
     //if (config.noSchema)
     //        return true
-    var result = config.noSchema || config.ignoreValidation || validator.validateSourceValue(mappedObject, modelSchema, true, rowNumber, config, res);
+    var result = validator.validateSourceValue(mappedObject, modelSchema, true, rowNumber, config, res);
     logger.debug("Object number : ", rowNumber)
     logger.trace("Validator result : ", result)
     return result;
@@ -544,7 +547,7 @@ const checkResultWithDestModelSchema = (mappedObject, destKey, modelSchema, rowN
 
     //if (config.noSchema)
     //    return true
-    return config.noSchema || config.ignoreValidation || validator.validateSourceValue(mappedObject, modelSchema, false, rowNumber, config, res);
+    return validator.validateSourceValue(mappedObject, modelSchema, false, rowNumber, config, res);
 
 };
 
@@ -681,7 +684,7 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
             }
         });
 
-        
+
         // print Array String as output
         logger.debug({ finalArray })
         return finalArray
