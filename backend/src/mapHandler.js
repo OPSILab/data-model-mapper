@@ -168,14 +168,16 @@ const encodingHandler = (mapSourceSubField, source) => {
     return x
 };*/
 
-const getArrayItemType = (source, normSourceKey, schemaDestKey) => {
+const getArrayItemType = (source, normSourceKey, schemaDestKey) => {//TODO questa funzione non mi è chiara. Cosa dovrebbe fare esattamente ? Che range di input ha?
     //return schemaDestKey?.items?.type
     if (schemaDestKey?.items?.type)
         return schemaDestKey.items.type
     logger.debug(source, normSourceKey, schemaDestKey)
     if (
-        !isNaN(Number(source[normSourceKey][0])) ||
-        (typeof source[normSourceKey] === "string" && !isNaN(Number(source[normSourceKey][1])))
+        typeof (source[normSourceKey] == "string") &&
+        (
+            !isNaN(Number(source[normSourceKey][0])) ||
+            (typeof source[normSourceKey] === "string" && !isNaN(Number(source[normSourceKey][1]))))
     ) {
         logger.debug(
             Number(source[normSourceKey][0]),
@@ -331,7 +333,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     else
                         parsedSourceKey = source[normSourceKey] // parsedSourceKey = normSourceKey before this assigmnent, so parsedSourceKey = source[normSourceKey] and parsedSourceKey = source[parsedSourceKey] is the same
                 }
-                else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object')
+                else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object') //TODO fix : gli array vengono dirottati qui e funziona solo perché l'ho adattato anche agli array, però meglio utilizzare la funzione giusta per gli array...
                     parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
                 else if (schemaDestKey && schemaDestKey.type === 'array') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
@@ -369,7 +371,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     else if (Array.isArray(normSourceKey))
                         parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result
                     else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("static:"))
-                        parsedSourceKey = source[normSourceKey.match(staticPattern)[1]]
+                        parsedSourceKey = normSourceKey.match(staticPattern)[1]
                     else if (typeof normSourceKey === 'string' && normSourceKey.startsWith("encode:"))
                         parsedSourceKey = encodingHandler(normSourceKey, source)//TODO align if not yet
                     else if (normSourceKey.includes('.'))
@@ -720,6 +722,11 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
         //let parsed = JSON.parse(JSON.stringify(sourceFieldArray))
         try {
             logger.debug({ source, sourceFieldArray })
+            var staticMatch = sourceFieldArray.match(staticPattern);
+            if (staticMatch && staticMatch.length > 0) {
+                logger.debug({ staticMatch })
+                return staticMatch[1]
+            }
             if (typeof source[sourceFieldArray] == "string") {
                 var fixedField = fixBrokenJsonString1(source[sourceFieldArray])
                 logger.debug({ fixedField, type: typeof fixedField, isArray: Array.isArray(fixedField) })
