@@ -35,6 +35,12 @@ const Debugger = require('./utils/debugger');
 const { type } = require('os');
 const report = require('./utils/logger').report;
 
+function defineFilterMatch(staticMatch) {
+    if (config.allowParenthesis)
+        return staticMatch[1].match(/^([^\n<>"'=;]*)(\((.*)\))?(.*)$/)
+    return staticMatch[1].match(/^([^\(]*)(\((.*)\)|\n|<|>|"|'|=|;|\(|\))(.*)$/)
+}
+
 const checkSingleResult = (singleResult, source) => {
     if (typeof singleResult == "object")
         for (let key in singleResult)
@@ -303,7 +309,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             if (schemaDestKey || mapDestKey === entityIdField || config.ignoreValidation) {//  Check if destKey is present in modelSchema ?
                 if ((config.ignoreValidation || config.noSchema) && source[map[mapDestKey]]) {
                     logger.debug(modelSchema)
-                    modelSchema.allOf[0].properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }
+                    modelSchema.allOf[0].properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }//TODO FIX : questo non funziona se map[mapDestKey] ha un .
                     logger.debug(modelSchema.allOf[0].properties)
                 }
                 var normSourceKey = JSON.parse(unorm.nfc(JSON.stringify(mapSourceKey)));// Normalize encoding, avoiding problems 
@@ -566,15 +572,20 @@ const handleSourceFieldsArray = (sourceFieldArray, sourceFieldType, source) => {
         var staticMatch = value.match(staticPattern);
         if (staticMatch && staticMatch.length > 0) {
             // filter forbidden characters
-            var filterMatch = undefined;
-            if (!(filterMatch = staticMatch[1].match(/^([^\(]*)(\((.*)\)|\n|<|>|"|'|=|;|\(|\))(.*)$/)))
-                finalArray[index] = staticMatch[1];
-            else if (filterMatch.length === 1)
-                finalArray[index] = ' ';
-            else if (filterMatch.length === 5)
-                finalArray[index] = "'" + filterMatch[1] + (filterMatch[3] ? filterMatch[3] : "") + filterMatch[4] + "'";
+            if (config.filterMatch) {
+                var filterMatch = undefined;
+                //if (!(filterMatch = staticMatch[1].match(/^([^\n<>"'=;]*)(\((.*)\))?(.*)$/)))
+                if (!(filterMatch = defineFilterMatch(staticMatch)))
+                    finalArray[index] = staticMatch[1];
+                else if (filterMatch.length === 1)
+                    finalArray[index] = ' ';
+                else if (filterMatch.length === 5)
+                    finalArray[index] = config.unionDelimiter + filterMatch[1] + (filterMatch[3] ? filterMatch[3] : "") + filterMatch[4] + config.unionDelimiter;
+                else
+                    finalArray[index] = config.unionDelimiter + filterMatch[1] + filterMatch[4] + config.unionDelimiter;
+            }
             else
-                finalArray[index] = "'" + filterMatch[1] + filterMatch[4] + "'";
+                finalArray[index] = staticMatch[1]
         } else {
 
             isOnlyStatic = false;

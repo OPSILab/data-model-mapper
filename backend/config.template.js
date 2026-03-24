@@ -38,6 +38,9 @@ var config = {
     noSchema: false, // experimental mode with no schema provided
     onlyEPSG4326: false, // allows only geojson with EPSG4326 coordinates
     maxFileSize: 25, // max file size upload in MB
+    unionDelimiter : "",
+    filterMatch : false,
+    allowParenthesis : true,
     mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
     truncateLogs: false,
     stopsTestsOnErrors: false, // stops the process on errors
@@ -48,8 +51,8 @@ var config = {
         mongo: true, // if true, session output will be saved in MongoDB collection
         filesystem: false // if true, session output will be saved in filesystem
     },
-    report : {
-        errorsDetails : true
+    report: {
+        errorsDetails: true
     },
 
     /********************** 3 INPUTS CONFIGURATION ************************

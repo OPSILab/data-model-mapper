@@ -7,8 +7,8 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
     },
     response: [
         {
-            "name": "Central Park",
-            "description": "insegna (superficie_venditasq) - posto_speciale_cf,posto_speciale_cf,attivita_prevalente,settore_merceologico,settore_storico_n,settore_storico_preval,settore_storico_s",
+            "name": "insegna",
+            "description": "insegna (superficie_venditasq) - posto_speciale_cf, posto_speciale_cf, attivita_prevalente, settore_merceologico, settore_storico_n,s ettore_storico_preval, settore_storico_s",
             "address": {
                 "addressLocality": "Milan",
                 "addressRegion": "Lombardia",
