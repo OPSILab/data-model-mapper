@@ -38,15 +38,16 @@ var config = {
     noSchema: false, // experimental mode with no schema provided
     onlyEPSG4326: false, // allows only geojson with EPSG4326 coordinates
     maxFileSize: 25, // max file size upload in MB
-    unionDelimiter : "",
-    filterMatch : false,
-    allowParenthesis : true,
+    unionDelimiter: "",
+    filterMatch: false,
+    allowParenthesis: true,
     mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
     truncateLogs: false,
     stopsTestsOnErrors: false, // stops the process on errors
     mongoMaxStorageMB: 500, // max MongoDB storage in MB, after which the cleanup process is triggered
     fileMaxStorageMB: 500, // max filesystem storage in MB, after which the cleanup process is triggered
     batch: 30000, // number of records to be saved in batch in MongoDB
+    forceInitAfterMapping: true, // if true, after each mapping, the app will be reinitialized, to free memory and reset configuration
     sessionLocation: {
         mongo: true, // if true, session output will be saved in MongoDB collection
         filesystem: false // if true, session output will be saved in filesystem

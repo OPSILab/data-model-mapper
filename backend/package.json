@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@maptiler/client": "^2.0.0",
-    "axios": "^1.7.5",
+    "axios": "1.7.5",
     "body-parser": "^1.20.1",
     "chai": "^4.5.0",
     "connect-busboy": "0.0.2",

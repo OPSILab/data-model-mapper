@@ -181,7 +181,8 @@ async function checkMaximumSpaceOverflow() {
     let files = readDirRecursive("./output/")
     logger.debug(files)
     files = files
-        .map(file => ({ file: (file.folder || file), time: fs.statSync("./" + (file.folder || file)).mtime.getTime(), path: "./" + (file.folder || file).replaceAll("\\", "/"), type: (file.folder ? "folder" : "file") }))
+        .map(file => file != "output\\result.json" ? { file: (file.folder || file), time: fs.statSync("./" + (file.folder || file)).mtime.getTime(), path: "./" + (file.folder || file).replaceAll("\\", "/"), type: (file.folder ? "folder" : "file") } : null)
+        .filter(v => { return v != null })
         .sort((a, b) => {
             const aTime = a.time;
             const bTime = b.time;
@@ -258,7 +259,7 @@ async function checkMaximumSpaceOverflow() {
                 else
                     orphanSession = file.path
                 logger.debug(`Checking for orphan session with id ${orphanSession} linked to deleted file...`)
-                if (fs.existsSync(orphanSession))
+                if (fs.existsSync(orphanSession) && orphanSession !== "./output/results.json")
                     try {
                         fs.unlinkSync(orphanSession);
                     } catch (error) {
@@ -278,7 +279,7 @@ async function checkMaximumSpaceOverflow() {
             logger.debug(`Deleting folder ${sessionedOutputs[key].folderPath} for orphan output...`)
             fs.rmSync(sessionedOutputs[key].folderPath, { recursive: true, force: true });
         }
-        else if (!sessionedOutputs[key].searchingOutputFound) {
+        else if (!sessionedOutputs[key].searchingOutputFound && sessionedOutputs[key].filePath !== "./output/results.json") {
             logger.warn(`Orphan session detected: ${key}`)
             logger.debug(`Deleting file ${sessionedOutputs[key].filePath} for orphan session...`)
             fs.unlinkSync(sessionedOutputs[key].filePath)
@@ -580,58 +581,53 @@ const bodyMapper = (body, query) => {
     }
 };
 
-const init = () => {
-    let deletedCount = 0
-    fs.readdir("dataModels/", (err, files) => {
-        if (err) {
-            logger.error("Errore durante la lettura della directory:", err);
-            return;
-        }
+const init = async () => {
+    if (process.dataModelMapper)
+        process.dataModelMapper.lockMapping = true
+    let deletedCount = 0;
 
-        files.forEach((file) => {
-            const filePath = path.join("dataModels/", file);
-            if (file.includes("DataModelTemp")) {
-                fs.unlinkSync(filePath, (err) => {
-                    if (err) {
-                        logger.error(
-                            `Errore durante l'eliminazione del file ${filePath}:`,
-                            err
-                        );
+    const deleteTemp = (dir, keyword) => {
+        return new Promise((resolve, reject) => {
+            fs.readdir(dir, (err, files) => {
+                if (err) {
+                    logger.error("Errore durante la lettura della directory:", err);
+                    return reject(err);
+                }
+
+                const deletePromises = files.map((file) => {
+                    const filePath = path.join(dir, file);
+
+                    if (file.includes(keyword)) {
+                        return new Promise((res, rej) => {
+                            fs.unlink(filePath, (err) => {
+                                if (err) {
+                                    logger.error(`Errore durante l'eliminazione del file ${filePath}:`, err);
+                                    rej(err);
+                                } else {
+                                    logger.info(`File ${file} eliminato.`);
+                                    deletedCount++;
+                                    res();
+                                }
+                            });
+                        });
                     } else {
-                        logger.info(`File ${file} eliminato.`);
+                        return Promise.resolve();
                     }
                 });
-            }
-            else
-                deletedCount++
-        });
-    });
-    fs.readdir(config.sourceDataPath || "", (err, files) => {
-        if (err) {
-            logger.error("Errore durante la lettura della directory:", err);
-            return;
-        }
 
-        files.forEach((file) => {
-            const filePath = path.join(config.sourceDataPath || "", file);
-            if (file.includes("sourceFileTemp")) {
-                fs.unlinkSync(filePath, (err) => {
-                    if (err) {
-                        logger.error(
-                            `Errore durante l'eliminazione del file ${filePath}:`,
-                            err
-                        );
-                    } else {
-                        logger.info(`File ${file} eliminato.`);
-                    }
-                });
-            }
-            else
-                deletedCount++
+                Promise.all(deletePromises).then(resolve).catch(reject);
+            });
         });
-    });
-    logger.debug("Deleted trash files ", deletedCount)
-}
+    };
+
+    await Promise.all([
+        deleteTemp("dataModels/", "DataModelTemp"),
+        deleteTemp(config.sourceDataPath || "", "sourceFileTemp"),
+    ]);
+
+    logger.debug("Deleted trash files", deletedCount);
+    process.dataModelMapper.lockMapping = false
+};
 
 const hasNull = (obj) => Object.values(obj).some(value => value === null);
 const hasNumberKeys = (obj) => Object.keys(obj).some(key => Number.isFinite(parseInt(key)));
@@ -753,6 +749,8 @@ const sendOutput = async (config, res) => {
     //const deleteSession = 
     logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     res.dmm.deleteSession()
+    if (config.forceInitAfterMapping)
+        await init()
     //res = null
     //res.dmm = {};
     //res.dmm.finished = true

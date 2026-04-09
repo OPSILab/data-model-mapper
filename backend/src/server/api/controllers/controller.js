@@ -27,7 +27,7 @@ module.exports = {
             if (req.query.id === "undefined" && req.query.lastId === "undefined" || !req.query.id)
                 return res.status(400).send("id and lastId query parameters are required")
             logger.debug("Fetching output for session ", req.query.id, " with lastId ", req.query.lastId)
-            if (req.query.lastId !="undefined" || req.query.index === 0 || !globalConfig.sessionLocation.mongo)
+            if (req.query.lastId != "undefined" || req.query.index === 0 || !globalConfig.sessionLocation.mongo)
                 if (globalConfig.sessionLocation.mongo)
                     return res.send(await service.getOutput(req.query.id, req.query.lastId, parseInt(req.query.index)))
                 else if (globalConfig.sessionLocation.filesystem)
@@ -175,8 +175,13 @@ module.exports = {
 
     mapData: async (req, res) => {
 
-        //await waiting("map")
-        //process.dataModelMapper.map = "busy"
+        while (process.dataModelMapper?.lockMapping)
+            await common.sleep(100, "mapData waiting for lock")
+
+        if (globalConfig.forceInitAfterMapping) {
+            await waiting("map")
+            process.dataModelMapper.map = "busy"
+        }
         let { sourceData, map, decodeOptions, dataModel } = utils.bodyMapper(req.body, req.query)
         const emitter = new EventEmitter();
         emitter.on('message', (message) => {
