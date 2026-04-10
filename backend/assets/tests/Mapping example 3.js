@@ -19,9 +19,9 @@ module.exports = {//NOTE: 3. BikeHireDockingStationMap.json has a BOM char in LO
         },
         {
             "MAPPING_REPORT": {
-                "Processed_objects": 579,
-                "Mapped_and_Validated_Objects": "1-579",
-                "Mapped_and_NOT_Validated_Objects": "578-579"
+                "Processed_objects": 24,
+                "Mapped_and_Validated_Objects": "1-24",
+                "Mapped_and_NOT_Validated_Objects": "23-24"
             },
             "ORION_REPORT": {
                 "Object written to Orion Context Broker": "1/1",

@@ -190,7 +190,7 @@ const getArrayItemType = (source, normSourceKey, schemaDestKey) => {//TODO quest
     //schemaDestKey?.items?.type || ((Number(source[normSourceKey][0]) != NaN || Number(source[normSourceKey][1] != NaN)) && "integer")
 }
 
-const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) => {
+const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ignoreValidation) => {
     logger.debug("objectHandler")
     logger.debug({ parsedSourceKey, normSourceKey, schemaDestKey, source })
     for (let key in normSourceKey) {
@@ -202,12 +202,23 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source) =>
             logger.debug("OK SCHEMA DEST KEY")
 
         let schemaDestSubKey
-        if (schemaDestKey.properties && !schemaDestKey.oneOf)
-            schemaDestSubKey = schemaDestKey.properties[key];
-        if (schemaDestKey.oneOf)
-            for (let oneOfElement of schemaDestKey.oneOf)
-                if (oneOfElement.properties && oneOfElement.properties[key])
-                    schemaDestSubKey = oneOfElement.properties[key];
+        if (ignoreValidation) {
+            if (normSourceKey[key] && source[normSourceKey[key]])
+                schemaDestSubKey = { type: typeof source[normSourceKey[key]] }
+            else if (normSourceKey[key])
+                if (normSourceKey[key].startsWith("static:") || normSourceKey[key].startsWith("encode:"))
+                    schemaDestSubKey = { type: "string" }
+                else if (normSourceKey[key].startsWith("toarray:"))
+                    schemaDestSubKey = { type: "array" }
+        }
+        else {
+            if (schemaDestKey.properties && !schemaDestKey.oneOf)
+                schemaDestSubKey = schemaDestKey.properties[key];
+            if (schemaDestKey.oneOf)
+                for (let oneOfElement of schemaDestKey.oneOf)
+                    if (oneOfElement.properties && oneOfElement.properties[key])
+                        schemaDestSubKey = oneOfElement.properties[key];
+        }
         logger.debug({ schemaDestSubKey })
 
         if (schemaDestSubKey || schemaDestKey.type == "array") {
@@ -334,7 +345,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                         parsedSourceKey = source[normSourceKey] // parsedSourceKey = normSourceKey before this assigmnent, so parsedSourceKey = source[normSourceKey] and parsedSourceKey = source[parsedSourceKey] is the same
                 }
                 else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object') //TODO fix : gli array vengono dirottati qui e funziona solo perché l'ho adattato anche agli array, però meglio utilizzare la funzione giusta per gli array...
-                    parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
+                    parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source, config.ignoreValidation)
                 else if (schemaDestKey && schemaDestKey.type === 'array') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
                     logger.debug({ source, normSourceKey })
@@ -407,7 +418,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                     else if (normSourceKey.includes('.'))
                         parsedSourceKey = extractFromNestedField(source, normSourceKey)
                     else if (typeof normSourceKey === 'object')
-                        parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source)
+                        parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source, config.ignoreValidation)
                     else
                         parsedSourceKey = source[normSourceKey]
                 }

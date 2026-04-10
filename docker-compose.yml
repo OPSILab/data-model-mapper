@@ -25,17 +25,17 @@ services:
       dockerfile: ./server
     container_name: data-model-mapper-backend
     depends_on:
-      - db     
+      - db-mongo  
     ports:
      - 127.0.0.1:5500:5500
     restart: always
     volumes:
      - ./config.beopen.js:/app/config.js
-  db:
+  db-mongo:
     image: mongo:4.4
     container_name: data-model-mapper-db
-       #ports:
-       #  - 27017:27017
+    ports:
+      - 27017:27017
     volumes:
          - db_data:/data/db
     restart: unless-stopped

@@ -690,11 +690,12 @@ const sendOutput = async (config, res) => {
         catch (error) {
             logger.error(error)
         }
-    else
+    else {
+        //try {
+        //await res.write(res.dmm.outputFile);
+        //await res.end()
+        //await res.send(res.dmm.outputFile);
         try {
-            //await res.write(res.dmm.outputFile);
-            //await res.end()
-            //await res.send(res.dmm.outputFile);
             fs.unlinkSync(res.dmm.schemaTempName, (err) => {
                 if (err) {
                     logger.error(
@@ -705,6 +706,11 @@ const sendOutput = async (config, res) => {
                     logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
                 }
             })
+        } catch (error) {
+            logger.error(`Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`);
+            logger.error(error)
+        }
+        try {
             fs.unlinkSync(res.dmm.sourceTempName, (err) => {
                 if (err) {
                     logger.error(
@@ -717,8 +723,14 @@ const sendOutput = async (config, res) => {
             })
         }
         catch (error) {
+            logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
             logger.error(error)
         }
+        /*}
+        catch (error) {
+            logger.error(error)
+        }*/
+    }
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
     res.set('outputId', outputId);
