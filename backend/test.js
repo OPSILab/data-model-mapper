@@ -20,10 +20,8 @@ function errorHandler(error, name) {//TODO this should go in a utils or in a err
     console.error("Nothing written to error files")
     if (error.actual == undefined)
       error.actual = "undefined"
-    if (error.expected == "undefined")
-      error.expected = "undefined"
-    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual, null, 2)
-    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected, null, 2)
+    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual)
+    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected == undefined ? "undefined" : JSON.stringify(JSON.parse(error.expected), null, 2))
     error.actual = "trucated because it is written to a errorResponse file"
     error.expected = "truncated because it is written to a expectedResponse file"
   }

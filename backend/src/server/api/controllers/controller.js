@@ -12,6 +12,15 @@ const Session = require("../models/session.js");
 
 module.exports = {
 
+    checkMaximumSpaceOverflow: async (req, res) => {
+        if (!globalConfig.manualCheckMaximumSpaceOverflow) {
+            await utils.checkMaximumSpaceOverflow()
+            res.send({ message: "Maximum space overflow checked" })
+        }
+        else
+            res.status(400).send("Manual check of maximum space overflow is not enabled, so this endpoint cannot be used")
+    },
+
     getSessions: (req, res) => {
         let sessions = []
         for (let key in this)

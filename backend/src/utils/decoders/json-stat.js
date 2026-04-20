@@ -1,6 +1,6 @@
 const xlsx = require("xlsx");
 const fs = require("fs");
-const NUTS_XLSX = "./src/utils/decoders/nuts.xlsx";
+const NUTS_XLSX = process.test ? "./nuts.xlsx" : "./src/utils/decoders/nuts.xlsx";
 const config = require("../../../config");
 const log = require('../logger')
 const { Logger } = log
@@ -48,7 +48,7 @@ function codeFound(dimensions, map) {
           else if (map[excelKey].name.includes(translations[dimensions[key]]) || map[excelKey].name.toLowerCase().includes(translations[dimensions[key]].toLowerCase()))
             match += "NUTS" + map[excelKey].level.toString() + "-" + translations[dimensions[key]]
         }
-  if(!match)
+  if (!match)
     return "NUTS0 ?"
   return match
 }
@@ -155,11 +155,19 @@ module.exports = async function decode(source, id) {
   let nameStream, stream, firstRecord
   if (config.writeJsonStatOnFile) {
     nameStream = ".out" + Date.now() + ".json";
-    stream = fs.createWriteStream(nameStream, {
-      highWaterMark: 1024 * 1024
-    });
-    stream.write("[\n");
+    fs.appendFileSync(nameStream, "[\n");//slow
+    //stream = fs.createWriteStream(nameStream)//, {
+    //highWaterMark: 1024 * 1024
+    //});
+    //stream.write("[\n");
     firstRecord = true;
+    /*stream.on("finish", () => {
+      console.log("FINITO");
+    });
+
+    stream.on("error", (err) => {
+      console.error(err);
+    });*/
   }
 
   let purged = false
@@ -169,7 +177,7 @@ module.exports = async function decode(source, id) {
   while (true) {
     let flat = 0;
     let regionLevel = "unknown";
-    const humanDims = {};
+    const humanDims = config.jsonStatDims == "array" ? [] : {};
 
     for (let i = 0; i < ids.length; i++) {
       flat += indices[i] * strides[i];
@@ -179,7 +187,10 @@ module.exports = async function decode(source, id) {
       const label = indexToLabel[dim][indices[i]];
 
       if (dim === "time") dim = "year";
-      humanDims[dim] = label;
+      if (config.jsonStatDims == "array")
+        humanDims.push(label)
+      else
+        humanDims[dim] = label;
 
       if (dim === geoDimName) {
         const isRegional = !NON_REGIONAL.has(code);
@@ -208,12 +219,6 @@ module.exports = async function decode(source, id) {
         timestamp
       };
 
-      if (config.writeJsonStatOnFile) {
-        if (!firstRecord) stream.write(",\n");
-        else firstRecord = false;
-        stream.write(record);
-      }
-
       /*if (!purged) {
         await Datapoints.deleteMany({
           survey: source.extension.id || source.extension.datastructure.id,
@@ -222,7 +227,13 @@ module.exports = async function decode(source, id) {
       }*/
       if (record.region == "unknown")
         record.region = codeFound(record.dimensions, nutsMap)
-      record.dimensions = Object.values(record.dimensions)
+      //record.dimensions = Object.values(record.dimensions)
+      if (config.writeJsonStatOnFile) {
+        if (!firstRecord) fs.appendFileSync(nameStream, ",\n");//stream.write(",\n");
+        else firstRecord = false;
+        fs.appendFileSync(nameStream, JSON.stringify(record))
+        //stream.write(JSON.stringify(record));
+      }
       bufferArray.push(record)
       if (bufferArray.length >= config.batch) {
         if (config.sessionLocation.mongo)
@@ -257,8 +268,11 @@ module.exports = async function decode(source, id) {
   }
 
   if (config.writeJsonStatOnFile) {
-    stream.write("\n]");
-    stream.end();
+    fs.appendFileSync(nameStream, "\n]")
+    //stream.write("\n]");
+    /*stream.end(() => {
+      console.log("File scritto");
+    });*/
   }
 
 

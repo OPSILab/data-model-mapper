@@ -658,79 +658,47 @@ const sendOutput = async (config, res) => {
     }
     //if (parseInt((res.dmm.outputFile[res.dmm.outputFile.length - 1].MAPPING_REPORT.Mapped_and_NOT_Validated_Objects)[0].charAt(0))) process.res.status(400).send({ errors: res.dmm.outputFile.errors || "Validation errors", report: res.dmm.outputFile[res.dmm.outputFile.length - 1] })
     //else 
-    if (!config.mappingReport)
-        try {
-            logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
-            if (res.dmm.outputFile[res.dmm.outputFile.length - 1].MAPPING_REPORT)
-                res.dmm.outputFile.pop()
-            //await res.write(res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1));
-            //await res.end()
-            //await res.send(res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1));
-            fs.unlinkSync(res.dmm.schemaTempName, (err) => {
-                if (err) {
-                    logger.error(
-                        `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
-                        err
-                    );
-                } else {
-                    logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
-                }
-            })
-            fs.unlinkSync(res.dmm.sourceTempName, (err) => {
-                if (err) {
-                    logger.error(
-                        `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
-                        err
-                    );
-                } else {
-                    logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
-                }
-            })
-        }
-        catch (error) {
-            logger.error(error)
-        }
-    else {
-        //try {
-        //await res.write(res.dmm.outputFile);
-        //await res.end()
-        //await res.send(res.dmm.outputFile);
-        try {
-            fs.unlinkSync(res.dmm.schemaTempName, (err) => {
-                if (err) {
-                    logger.error(
-                        `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
-                        err
-                    );
-                } else {
-                    logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
-                }
-            })
-        } catch (error) {
-            logger.error(`Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`);
-            logger.error(error)
-        }
-        try {
-            fs.unlinkSync(res.dmm.sourceTempName, (err) => {
-                if (err) {
-                    logger.error(
-                        `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
-                        err
-                    );
-                } else {
-                    logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
-                }
-            })
-        }
-        catch (error) {
-            logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
-            logger.error(error)
-        }
-        /*}
-        catch (error) {
-            logger.error(error)
-        }*/
+    if (!config.mappingReport && res.dmm.outputFile[res.dmm.outputFile.length - 1].MAPPING_REPORT)
+        res.dmm.outputFile.pop()
+    //try {
+    //await res.write(res.dmm.outputFile);
+    //await res.end()
+    //await res.send(res.dmm.outputFile);
+    try {
+        fs.unlinkSync(res.dmm.schemaTempName, (err) => {
+            if (err) {
+                logger.error(
+                    `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
+                    err
+                );
+            } else {
+                logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
+            }
+        })
+    } catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`);
+        logger.error(error)
     }
+    try {
+        fs.unlinkSync(res.dmm.sourceTempName, (err) => {
+            if (err) {
+                logger.error(
+                    `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
+                    err
+                );
+            } else {
+                logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
+            }
+        })
+    }
+    catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
+        logger.error(error)
+    }
+    /*}
+    catch (error) {
+        logger.error(error)
+    }*/
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
     res.set('outputId', outputId);
@@ -757,7 +725,8 @@ const sendOutput = async (config, res) => {
     }
     if (config.sessionLocation.filesystem)
         await finish(outputDataTempWriting)
-    await checkMaximumSpaceOverflow()
+    if(!config.manualCheckMaximumSpaceOverflow)
+        await checkMaximumSpaceOverflow()
     //const deleteSession = 
     logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     res.dmm.deleteSession()

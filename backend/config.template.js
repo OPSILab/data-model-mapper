@@ -43,18 +43,21 @@ var config = {
     allowParenthesis: true,
     mapTilerKey: "8JYNjx8UQfefRRQUEjwZ",
     truncateLogs: false,
+    writeJsonStatOnFile: true,
+    jsonStatDims: "array",
     stopsTestsOnErrors: false, // stops the process on errors
     mongoMaxStorageMB: 500, // max MongoDB storage in MB, after which the cleanup process is triggered
     fileMaxStorageMB: 500, // max filesystem storage in MB, after which the cleanup process is triggered
     batch: 30000, // number of records to be saved in batch in MongoDB
     forceInitAfterMapping: true, // if true, after each mapping, the app will be reinitialized, to free memory and reset configuration
     sessionLocation: {
-        mongo: true, // if true, session output will be saved in MongoDB collection
+        mongo: false, // if true, session output will be saved in MongoDB collection
         filesystem: false // if true, session output will be saved in filesystem
     },
     report: {
         errorsDetails: true
     },
+    manualCheckMaximumSpaceOverflow: false, // if true, the check of maximum space overflow will be triggered only by a specific endpoint, otherwise it will be automatically checked at the end of each mapping process
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).
