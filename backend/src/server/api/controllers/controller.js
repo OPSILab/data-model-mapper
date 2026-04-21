@@ -209,14 +209,32 @@ module.exports = {
                 delete this[id]
                 logger.info(message, " ", id)
             }
-            else
+            else if (message.toString().startsWith("error")) {
+                logger.info("error")
+                delete this[id]
+                throw new Error(message.toString().substring(5))
+                logger.info(message, " ", id)
+            }
+            else {
                 logger.info("Not recognized message for session ", id, ": ", message)
+                //this[id] = null
+                if (!req.query.streamMode) {
+                    let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    res.send(outputFile);
+                }
+                delete this[id]
+                res.status(500).send(message)
+                logger.info(message, " ", id)
+            }
         });
         let id
         try {
-            function deleteSession() {
+            function deleteSession(error) {
                 logger.info("Emitting delete for session ", id)
-                emitter.emit('message', "delete");
+                if (error)
+                    emitter.emit('message', "error" + error.toString())
+                else
+                    emitter.emit('message', "delete");
             }
             id = req.body.config.group +
                 (req.body.reqId || common.createRandId())

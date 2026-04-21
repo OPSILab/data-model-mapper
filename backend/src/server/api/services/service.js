@@ -531,7 +531,41 @@ module.exports = {
     }
     catch (error) {
       logger.error(error)
-      return error.toString()
+      try {
+        fs.unlinkSync(res.dmm.schemaTempName, (err) => {
+          if (err) {
+            logger.error(
+              `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
+              err
+            );
+          } else {
+            logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
+          }
+        })
+      } catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`);
+        logger.error(error)
+      }
+      try {
+        fs.unlinkSync(res.dmm.sourceTempName, (err) => {
+          if (err) {
+            logger.error(
+              `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
+              err
+            );
+          } else {
+            logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
+          }
+        })
+      }
+      catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
+        logger.error(error)
+      }
+      res.dmm.deleteSession(error)
+      process.dataModelMapper.map = undefined
+      process.dataModelMapper.resetConfig = undefined
+      //throw error
     }
   },
 
