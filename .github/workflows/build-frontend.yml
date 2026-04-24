@@ -6,6 +6,7 @@ on:
       - frontend_dev
       - frontend
       - fullstack
+      - debug
     paths:
       - 'frontend/**'
       - 'gui**'

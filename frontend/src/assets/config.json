@@ -7,7 +7,7 @@
       "clientId": "dmm",
       "disableAuth": "false",
       "authProfile": "oidc",
-      "authRealm": "master"
+      "authRealm": "smartera"
     },
     "mailTo": "antonio.filograna@eng.it",
     "detailedErrors": true
