@@ -9,7 +9,7 @@ interface Connection {
   selector: 'app-landing',
   templateUrl: './landing.component.html',
   styleUrls: ['./landing.component.scss'],
-  encapsulation: ViewEncapsulation.None // usiamo molte classi globali dalla pagina originale
+  encapsulation: ViewEncapsulation.None
 })
 export class LandingComponent implements AfterViewInit {
   @ViewChild('connectionsSvg', { static: true }) connectionsSvg!: ElementRef<SVGSVGElement>;
@@ -29,19 +29,18 @@ export class LandingComponent implements AfterViewInit {
           const el = entry.target as HTMLElement;
           el.style.opacity = '1';
           el.style.transform = 'translateY(0)';
-          obs.unobserve(el); // animazione una sola volta
+          obs.unobserve(el); // animate once
         }
       });
-    }, { threshold: 0.2 }); // parte quando 20% della sezione è visibile
+    }, { threshold: 0.2 });
 
     this.sections.forEach(section => {
       const el = section.nativeElement;
-      // stato iniziale invisibile
       el.style.opacity = '0';
       el.style.transform = 'translateY(50px)';
       el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
 
-      observer.observe(el); // osserva la sezione
+      observer.observe(el);
     });
     //
     /*this.sections.forEach(section => {
@@ -51,7 +50,6 @@ export class LandingComponent implements AfterViewInit {
       el.style.transition = 'all 0.8s ease';
     });
 
-    // trigger iniziale in caso alcune sezioni siano già visibili
     setTimeout(() => this.revealOnScroll(), 2000);*/
     //this.revealOnScroll();
     //this.initSectionReveal();
@@ -131,7 +129,6 @@ export class LandingComponent implements AfterViewInit {
     });
   }
 
-  // Tooltip mappa Europa (gli elementi .country e #countryTooltip devono esistere nel template)
   attachMapHandlers() {
     const tooltip = document.getElementById('countryTooltip');
     const countries = document.querySelectorAll<HTMLElement>('.country');
@@ -159,8 +156,8 @@ export class LandingComponent implements AfterViewInit {
   }
 
   // CTA + demo (in Angular qui potresti aprire dialog/moduli reali)
-  simulateDataFlow() { alert('🚀 Simulazione avviata! I dati stanno fluendo attraverso la rete BeOpen...'); }
-  showDashboard() { alert('📊 Apertura dashboard...'); }
-  exploreAPI() { alert('🔧 API Explorer aperto!'); }
-  startDemo() { alert('✨ Demo richiesta! Verrai contattato per una presentazione.'); }
+  simulateDataFlow() { alert('Simulate data flow'); }
+  showDashboard() { alert('Open dashboard'); }
+  exploreAPI() { alert('API Explorer'); }
+  startDemo() { alert('Demo requested! You will be contacted for a presentation.'); }
 }
