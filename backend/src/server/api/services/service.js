@@ -378,7 +378,7 @@ module.exports = {
     logger.debug({ dataModel })
     //let sourceFileTemp2 = false
     if ((!source.data || source.data && !source.data[0]) && source.url) {
-      source.url = source.url.replace("https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/")//TODO temporary fix for sdmx ; to be removed when sdmx is ready to be tested
+      source.url = source.url.replace("https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/").split("?")[0]//TODO temporary fix for sdmx ; to be removed when sdmx is ready to be tested
       source.download = await axios.get(source.url)
       source.data = source.download.data
       delete source.download.headers
