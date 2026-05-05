@@ -8,49 +8,122 @@ const logger = new Logger(__filename)
 const Datapoints = require('./Datapoint');
 const Output = require('../../server/api/models/output');
 const translations = load8thPage()
+const nutsMap = loadNutsMap();
+//const firstPageMap = require("./nutsMap.js");
+const idx = buildIndexes(nutsMap);
+console.log("built indexes")
 
-function codeFound(dimensions, map) {
-  //dimensions è un oggetto
-  let match = ""
-  for (let key in dimensions) {
-    //logger.debug(key, " ", dimensions[key])
-    for (let excelKey in map) {
-      //logger.debug(excelKey, map[excelKey].name)
-      if (
-        (map[excelKey].name == dimensions[key])
-        ||
-        (map[excelKey].name.toLowerCase() == dimensions[key].toLowerCase())
-        ||
-        (map[excelKey].name.split("/").find(part => part === dimensions[key]))
-        ||
-        (map[excelKey].name.split("/").find(part => part.toLowerCase() === dimensions[key].toLowerCase()))
-      )
-        return "NUTS" + map[excelKey].level.toString()
-      else if (map[excelKey].name.includes(dimensions[key]) || map[excelKey].name.toLowerCase().includes(dimensions[key].toLowerCase()))
-        match += "NUTS" + map[excelKey].level.toString() + "-" + dimensions[key]
+function buildIndexes(map) {
+  const exact = new Map();
+  const lower = new Map();
+  const parts = new Map();
+
+  for (const key in map) {
+    const name = map[key].name;
+    const level = map[key].level;
+    const nuts = "NUTS" + level;
+
+    const lowerName = name.toLowerCase();
+
+    exact.set(name, nuts);
+    lower.set(lowerName, nuts);
+
+    const splitParts = name.split("/");
+
+    for (let i = 0; i < splitParts.length; i++) {
+      const part = splitParts[i];
+      parts.set(part, nuts);
+      parts.set(part.toLowerCase(), nuts);
     }
   }
-  if (match)
-    for (let key in dimensions)
-      if (translations[dimensions[key]])
-        for (let excelKey in map) {
-          //logger.debug(excelKey, map[excelKey].name)
-          if (
-            (map[excelKey].name == translations[dimensions[key]])
-            ||
-            (map[excelKey].name.toLowerCase() == translations[dimensions[key]].toLowerCase())
-            ||
-            (map[excelKey].name.split("/").find(part => part === translations[dimensions[key]]))
-            ||
-            (map[excelKey].name.split("/").find(part => part.toLowerCase() === translations[dimensions[key]].toLowerCase()))
-          )
-            return "NUTS" + map[excelKey].level.toString()
-          else if (map[excelKey].name.includes(translations[dimensions[key]]) || map[excelKey].name.toLowerCase().includes(translations[dimensions[key]].toLowerCase()))
-            match += "NUTS" + map[excelKey].level.toString() + "-" + translations[dimensions[key]]
-        }
-  if (!match)
-    return "NUTS0 ?"
-  return match
+
+  return { exact, lower, parts };
+}
+
+const stats = {
+  total: 0,
+  cacheHit: 0,
+  cacheMiss: 0,
+  originalHit: 0,
+  translationHit: 0,
+  notFound: 0
+};
+
+const codeFoundCache = new Map();
+
+function dimensionsCacheKey(dimensions) {
+  let key = "";
+
+  for (const k in dimensions) {
+    const value = dimensions[k];
+    if (value == null) continue;
+    key += k + "=" + value + "|";
+  }
+
+  return key;
+}
+
+function codeFoundCached(dimensions, idx, translations) {
+  stats.total++;
+
+  const cacheKey = dimensionsCacheKey(dimensions);
+
+  const cached = codeFoundCache.get(cacheKey);
+  if (cached !== undefined) {
+    stats.cacheHit++;
+    return cached;
+  }
+
+  stats.cacheMiss++;
+
+  const result = codeFound(dimensions, idx, translations);
+  codeFoundCache.set(cacheKey, result);
+
+  return result;
+}
+
+function codeFound(dimensions, idx, translations) {
+  for (const key in dimensions) {
+    const value = dimensions[key];
+    if (!value) continue;
+
+    const lower = value.toLowerCase();
+
+    const res =
+      idx.exact.get(value) ||
+      idx.lower.get(lower) ||
+      idx.parts.get(value) ||
+      idx.parts.get(lower);
+
+    if (res) {
+      stats.originalHit++;
+      return res;
+    }
+  }
+
+  for (const key in dimensions) {
+    const value = dimensions[key];
+    if (!value) continue;
+
+    const translated = translations[value];
+    if (!translated) continue;
+
+    const lower = translated.toLowerCase();
+
+    const res =
+      idx.exact.get(translated) ||
+      idx.lower.get(lower) ||
+      idx.parts.get(translated) ||
+      idx.parts.get(lower);
+
+    if (res) {
+      stats.translationHit++;
+      return res;
+    }
+  }
+
+  stats.notFound++;
+  return "NUTS0 ?";
 }
 
 function loadNutsMap() {
@@ -69,6 +142,35 @@ function loadNutsMap() {
     const code = row[geoIndex];
     if (code) {
       map[code] = { name: row[labelIndex], level: row[levelIndex] };
+    }
+  }
+  return map;
+}
+
+function loadAllMap() {
+  const map = {};
+  const workbook = xlsx.readFile(NUTS_XLSX);
+  for (let i = 0; i < workbook.SheetNames.length; i++) {
+    let page = map
+    const sheet = workbook.Sheets[workbook.SheetNames[i]];
+    const rows = xlsx.utils.sheet_to_json(sheet, { header: 1 });
+
+    const header = rows[0];
+
+
+    for (let row of rows.slice(1)) {
+      for (let value of row) {
+        if (!page[value])
+          page[value] = { page: { [i]: true } }
+        else
+          page[value].page[i] = true
+        for (let label of header)
+          if (!page[value][label])
+            page[value][label] = row[header.indexOf(label)]
+          else {
+            Array.isArray(page[value][label]) ? page[value][label].push(row[header.indexOf(label)]) : (page[value][label] = [page[value][label], row[header.indexOf(label)]])
+          }
+      }
     }
   }
   return map;
@@ -96,7 +198,7 @@ function load8thPage() {
 
 module.exports = async function decode(source, id) {
   const collectedOutput = Output(id)
-  const nutsMap = loadNutsMap();
+  //const nutsMap = loadNutsMap();
   const js = source;
 
   const dims = js.dimension;
@@ -226,7 +328,7 @@ module.exports = async function decode(source, id) {
         purged = true;
       }*/
       if (record.region == "unknown")
-        record.region = codeFound(record.dimensions, nutsMap)
+        record.region = codeFound(record.dimensions, idx, translations);
       //record.dimensions = Object.values(record.dimensions)
       if (config.writeJsonStatOnFile) {
         if (!firstRecord) fs.appendFileSync(nameStream, ",\n");//stream.write(",\n");
@@ -277,11 +379,16 @@ module.exports = async function decode(source, id) {
 
 
 
-  if (config.debug?.jsonStat) {
+  if (config.debug?.jsonStat){// || process.test) {
     logger.debug("Salvataggio file di output...");
     fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
     logger.debug("File salvato: out_human_nuts.json");
   }
+
+  console.log(stats);
+  console.log("cache hit %:", (stats.cacheHit / stats.total * 100).toFixed(2));
+  console.log("cache miss %:", (stats.cacheMiss / stats.total * 100).toFixed(2));
+  console.log("cache size:", codeFoundCache.size);
 
   return [{ id }]; //TODO uniformare return con la struttura del in Mapping report
 

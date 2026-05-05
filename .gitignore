@@ -81,3 +81,4 @@ postgre-minio.session.sql
 docker-compose-context-local-dev.yml
 batch/docker-build-backend-context-local-dev.bat
 backend/assets/mino/bucket default/
+tools/node-v14.17.0-win-x64.zip
