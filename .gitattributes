@@ -1,2 +1,2 @@
 backend/assets/estat_nama_10r_3gdp.xml filter=lfs diff=lfs merge=lfs -text
-backend/assets/NAMA_10R_3GDP.xml filter=lfs diff=lfs merge=lfs -text
+backend/assets/NAMA_10R_3GDP.json filter=lfs diff=lfs merge=lfs -text
