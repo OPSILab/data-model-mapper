@@ -563,7 +563,7 @@ module.exports = {
         logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
         logger.error(error)
       }
-      res.dmm.deleteSession(error)
+      res.dmm.deleteSession("error" + error.toString())
       process.dataModelMapper.map = undefined
       process.dataModelMapper.resetConfig = undefined
       //throw error

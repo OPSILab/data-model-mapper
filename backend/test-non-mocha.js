@@ -204,15 +204,17 @@ async function test9() {
 async function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
-  for (let file of files)
+  for (let file of files){
     try {
       if (require("./assets/tests/" + file).pre)
-        await require("./assets/tests/" + file).pre
+        await require("./assets/tests/" + file).pre()
       await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
     } catch (error) {
       errors++
       errorHandler({ actual: error.actual || error.message, expected: error.expected || require("./assets/tests/" + file).response, message: error.message }, file + " - pre test")
     }
+    console.log("Test 10 - ", files.indexOf(file))
+  }
 }
 
 async function runTest() {

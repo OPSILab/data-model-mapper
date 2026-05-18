@@ -379,7 +379,7 @@ module.exports = async function decode(source, id) {
 
 
 
-  if (config.debug?.jsonStat){// || process.test) {
+  if (config.debug?.writeParsedjsonStat){// || process.test) {
     logger.debug("Salvataggio file di output...");
     fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
     logger.debug("File salvato: out_human_nuts.json");

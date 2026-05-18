@@ -212,7 +212,7 @@ module.exports = {
             else if (message.toString().startsWith("error")) {
                 logger.info("error")
                 delete this[id]
-                throw new Error(message.toString().substring(5))
+                res.status(500).send(message.toString().substring(5))
                 logger.info(message, " ", id)
             }
             else {
@@ -227,10 +227,23 @@ module.exports = {
                 logger.info(message, " ", id)
             }
         });
+        emitter.on('error', (error) => {
+            logger.error("Error in mapping process for session ", id, ": ", error)
+            logger.error(error)
+            if (error.response) {
+                logger.error(error.response.data)
+                logger.error(error.request)
+                res.status(error.response.status).send(error.response.data)
+            }
+            else
+                res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+        })
         let id
         try {
             function deleteSession(error) {
                 logger.info("Emitting delete for session ", id)
+                process.dataModelMapper.map = undefined
+                process.dataModelMapper.resetConfig = undefined
                 if (error)
                     emitter.emit('message', "error" + error.toString())
                 else

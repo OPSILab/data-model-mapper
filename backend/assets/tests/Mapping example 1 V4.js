@@ -1,8 +1,13 @@
 const axios = require("axios")
 const authorization = require("../../token")
+const fs = require("fs")
+const bikeMap = JSON.parse(fs.readFileSync("./examples/1. BikeHireDockingStationMap.json"))
+const bikeSchema = JSON.parse(fs.readFileSync("./dataModels/BikeHireDockingStation.json"))
+const config = require("../../config")
 
 module.exports = {
     pre: async () => {
+        console.log("Pre test")
         async function insertFlow(response) {
             let sourceData = [
                 {
@@ -65,14 +70,10 @@ module.exports = {
                 name: "bike_1",
                 status: "status",
                 description: "description",
-                map: {
-                    dummy: "test"
-                },
-                dataModel: {
-                    schema: "test"
-                },
+                map: bikeMap,
+                dataModel: bikeSchema,
                 sourceDataType: "json",
-                config: { test: "test" },
+                config : {noSchema : false},
                 path: "",
                 sourceData
             }
@@ -106,7 +107,7 @@ module.exports = {
          */
 
         try {
-            response = (await axios.get("http://localhost:5500/api/source?id=bike_1")).data
+            response = (await axios.get("http://localhost:5500/api/source?name=bike_1")).data
             if (!response)
                 await insertFlow(response)
         }
