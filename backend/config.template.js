@@ -205,7 +205,9 @@ config.minioWriter = {
 config.debug = {
     writeParsedjsonStat: false,
     sdmxCache: true,
-    writeParsedSdmx: false
+    writeParsedSdmx: false,
+    writeParsedXml: false
+
 }
 
 module.exports = config;

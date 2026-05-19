@@ -7,6 +7,13 @@ const parser = new XMLParser({
   removeNSPrefix: true
 });
 const config = require("../../../config");
+if (global.test.writeParsedSdmx)
+  config.debug.writeParsedSdmx = true;
+if (global.test.sdmxCache)
+  config.debug.sdmxCache = true;
+if(global.test.writeParsedXml)
+  config.debug.writeParsedXml = true;
+
 
 const axios = require("axios");
 
@@ -106,7 +113,7 @@ function extractCodelistRefFromDimension(dimension) {
   if (!codelistId) return null;
 
   return {
-    agencyID: ref.agencyID || "ESTAT",
+    agencyID: ref.agencyID || "ESTAT?",
     codelistId,
     version: ref.version
   };
@@ -225,8 +232,8 @@ function translateRow(row, dictionaries, dimensionMap) {
   return translated;
 }
 
-function enrichRow(row, dictionaries, dimensionMap) {
-  const enriched = { ...row };
+function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
+  const enriched = { obs: { ...row }, dimensions: {} };
 
   for (const [dimension, code] of Object.entries(row)) {
     const codelistInfo = resolveCodelistForDimension(dimension, dimensionMap);
@@ -238,10 +245,17 @@ function enrichRow(row, dictionaries, dimensionMap) {
 
     if (!label) continue;
 
-    enriched[`${dimension}_label`] = label;
+    enriched.dimensions[dimension] = label;
   }
 
-  return enriched;
+  //enriched.region = "placeholder";
+  //enriched.source = datasetInfo.source || "ESTAT";
+  //enriched.timestamp = "placeholder";
+  //enriched.survey = datasetInfo.survey || "DEMO_R_D3DENS";
+  let value = row.value;
+  delete enriched.dimensions.value;
+  delete enriched.obs.value;
+  return {...datasetInfo, ...enriched, value};
 }
 
 function findDataSets(parsed) {
@@ -255,16 +269,85 @@ function findDataSets(parsed) {
   return asArray(dataSet);
 }
 
-function parseGenericSdmxRows(parsed) {
+function parseDataflowRef(value) {
+  if (!value) return {};
+
+  // Esempio possibile:
+  // ESTAT:BD_HGNACE_R(1.0)
+  const match = String(value).match(/^([^:]+):([^(]+)(?:\(([^)]+)\))?$/);
+
+  if (!match) {
+    return {
+      //dataflow: String(value)
+    };
+  }
+
+  return {
+    //dataflow: String(value),
+    source: match[1],
+    survey: match[2],
+    dataflowVersion: match[3]
+  };
+}
+
+function extractDatasetInfo(parsed, fallbackDatasetCode) {
+  const root =
+    parsed.GenericData ||
+    parsed.StructureSpecificData ||
+    parsed.Message ||
+    parsed;
+
+  const dataSet = asArray(root?.DataSet)[0];
+
+  const structureRef =
+    dataSet?.structureRef ||
+    dataSet?.dataflow ||
+    dataSet?.Dataflow ||
+    dataSet?.id;
+
+  let info = parseDataflowRef(structureRef);
+
+  // fallback: se l'XML non contiene un DATAFLOW comodo
+  if (!info.source) {
+    info.source = parsed.GenericData?.Header.Sender.id || "ESTAT?";
+  }
+
+  if (!info.survey) {
+    info.survey = fallbackDatasetCode?.toUpperCase() || parsed.GenericData?.Header.DataSetID || "Unknown dataset";
+  }
+
+  /*if (!info.name && info.survey) {
+    info.name = info.survey || parsed.GenericData?.Header.DataSetID || "Unknown dataset";
+  }*/
+
+  info.timestamp = parsed.GenericData?.Header.Prepared || "Unknown timestamp";
+
+  return info;
+}
+
+function parseGenericSdmxRows(parsed, enrichRow) {
   const rows = [];
 
+  const datasetInfo = extractDatasetInfo(parsed);
+
   const dataSets = findDataSets(parsed);
+
+
+
+  /*console.log(parsed)
+  console.log(parsed.GenericData?.Header.Sender.id)
+  console.log(parsed.GenericData?.Header.DataSetID)
+  console.log(parsed.GenericData?.Header.Prepared)*/
+
+  if(config.debug.writeParsedXml == true) 
+    fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
 
   for (const dataSet of dataSets) {
     const seriesList = asArray(dataSet.Series);
 
     for (const series of seriesList) {
       const baseRow = {};
+      //console.log({series, structure: parsed.GenericData?.Header.Structure})
 
       const seriesValues = asArray(series?.SeriesKey?.Value);
 
@@ -299,7 +382,7 @@ function parseGenericSdmxRows(parsed) {
           row[item.id.toLowerCase()] = item.value;
         }
 
-        rows.push(row);
+        rows.push(enrichRow(row, datasetInfo));
       }
     }
   }
@@ -307,14 +390,14 @@ function parseGenericSdmxRows(parsed) {
   return rows;
 }
 
-async function fetchDatasetRows(dataset, filters = {}) {
+async function fetchDatasetRows(dataset, filters = {}, enrichRow) {
   const filterPath = buildEurostatFilterPath(filters);
 
   const url = dataset //+ "/" + filterPath + "?format=SDMX-GenericData&detail=full";
 
   const parsed = await fetchXml(url);
 
-  return parseGenericSdmxRows(parsed);
+  return parseGenericSdmxRows(parsed, enrichRow);
 }
 
 function buildEurostatFilterPath(filters) {
@@ -336,8 +419,8 @@ async function buildEurostatTranslator(dataset, BASE) {
       return translateRow(row, dictionaries, dimensionMap);
     },
 
-    enrichRow(row) {
-      return enrichRow(row, dictionaries, dimensionMap);
+    enrichRow(row, datasetInfo) {
+      return enrichRow(row, dictionaries, dimensionMap, datasetInfo);
     }
   };
 }
@@ -346,17 +429,43 @@ async function main(dataset, datastructure, codelists, BASE) {
   try {
     const datasetCode = "NAMA_10R_3GDP";
     const translator = await buildEurostatTranslator(datastructure, BASE);
-    const rows = await fetchDatasetRows(dataset);
-    const enrichedRows = rows.map(row => translator.enrichRow(row));
+    const rows = await fetchDatasetRows(dataset, null, translator.enrichRow);
+    //const enrichedRows = rows.map(row => translator.enrichRow(row));
     //const translatedRows = rows.map(row => translator.translateRow(row));
-    console.log("Enriched rows 1 :\n", enrichedRows[0]);
+    console.log("Enriched rows 1 :\n", rows[0]);
 
+    const example = {
+      "region": "NUTS3",
+      "source": "ESTAT",
+      "timestamp": "2025-04-02T21:00:00.000Z",
+      "survey": "DEMO_R_D3DENS",
+      "dimensions": [
+        "Annual",
+        "Persons per square kilometre",
+        "Trento",
+        "2023"
+      ],
+      "value": 88.4
+    }
+
+    const actual = {
+      geo: 'AL',
+      unit: 'EUR_HAB',
+      freq: 'A',
+      value: 3100,
+      geo_label: 'Albania',
+      unit_label: 'Euro per inhabitant',
+      freq_label: 'Annual'
+    }
     if (config.debug.writeParsedSdmx)
       fs.writeFileSync(
-        "sdmx-parsed" + Date.now() + ".json",
-        JSON.stringify(enrichedRows, null, 2),
+        "./out_sdmx/sdmx-parsed" + Date.now() + ".json",
+        JSON.stringify(rows, null, 2),
         "utf8"
       );
+
+    //TODO implementare mapping verso formato coerente con db su VM
+    //TODO return finalResult
   } catch (err) {
     console.error(err);
   }
