@@ -1,11 +1,11 @@
 global.test = {
-  writeParsedSdmx: true,
+  writeParsedSdmx: false,
   writeParsedXml: false,
   sdmxCache: true
 }
 const {main} = require("./sdmx");
-const datastructure = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/NAMA_10R_3GDP/1.0?detail=referencepartial&references=descendants"
-const dataset = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/NAMA_10R_3GDP"
+const datastructure = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/bd_hgnace_r/1.0?detail=referencepartial&references=descendants"
+const dataset = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/bd_hgnace_r"
 const base = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1"
 
 main(dataset, datastructure, null, base).then(() => {

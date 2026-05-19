@@ -11,8 +11,10 @@ if (global.test.writeParsedSdmx)
   config.debug.writeParsedSdmx = true;
 if (global.test.sdmxCache)
   config.debug.sdmxCache = true;
-if(global.test.writeParsedXml)
+if (global.test.writeParsedXml)
   config.debug.writeParsedXml = true;
+
+const defaultTimeLabel = "TIME_PERIOD"
 
 
 const axios = require("axios");
@@ -96,9 +98,19 @@ function extractDimensionsFromDataStructure(dataStructure) {
 
   if (!dimensionList) return [];
 
+  const dimensions = asArray(dimensionList.Dimension).map(d => ({
+    ...d,
+    isTimeDimension: false
+  }));
+
+  const timeDimensions = asArray(dimensionList.TimeDimension).map(d => ({
+    ...d,
+    isTimeDimension: true
+  }));
+
   return [
-    ...asArray(dimensionList.Dimension),
-    ...asArray(dimensionList.TimeDimension)
+    ...dimensions,
+    ...timeDimensions
   ];
 }
 
@@ -128,13 +140,14 @@ function getDictionaryKey(info) {
   return `${info.agencyID}:${info.codelistId}:${info.version || ""}`;
 }
 
-async function getDimensionCodelistMap(dataset, BASE) {
-  const url = dataset
+async function getDatasetStructureInfo(dataset, BASE) {
+  const url = dataset;
 
   const parsed = await fetchXml(url);
   const dataStructures = findDataStructures(parsed);
 
-  const result = {};
+  const dimensionMap = {};
+  let timeDimensionId = null;
 
   for (const dataStructure of dataStructures) {
     const dimensions = extractDimensionsFromDataStructure(dataStructure);
@@ -143,6 +156,10 @@ async function getDimensionCodelistMap(dataset, BASE) {
       const dimensionId = dimension.id;
 
       if (!dimensionId) continue;
+
+      if (dimension.isTimeDimension) {
+        timeDimensionId = dimensionId;
+      }
 
       const ref = extractCodelistRefFromDimension(dimension);
 
@@ -156,11 +173,14 @@ async function getDimensionCodelistMap(dataset, BASE) {
         url: buildCodelistUrl(BASE, ref)
       };
 
-      result[dimensionId.toLowerCase()] = info;
+      dimensionMap[dimensionId.toLowerCase()] = info;
     }
   }
 
-  return result;
+  return {
+    dimensionMap,
+    timeDimensionId
+  };
 }
 
 function parseCodelistTsv(tsv) {
@@ -233,12 +253,17 @@ function translateRow(row, dictionaries, dimensionMap) {
 }
 
 function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
-  const enriched = { obs: { ...row }, dimensions: {} };
+  const enriched = { obs: { ...row }, dimensions: {}, translatedDimensions: [] };
 
   for (const [dimension, code] of Object.entries(row)) {
     const codelistInfo = resolveCodelistForDimension(dimension, dimensionMap);
 
-    if (!codelistInfo) continue;
+    if (codelistInfo)
+      enriched.translatedDimensions.push(dimension);
+    else {
+      enriched.dimensions[dimension] = code;
+      continue;
+    }
 
     const dictionaryKey = getDictionaryKey(codelistInfo);
     const label = dictionaries[dictionaryKey]?.[code];
@@ -255,7 +280,7 @@ function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
   let value = row.value;
   delete enriched.dimensions.value;
   delete enriched.obs.value;
-  return {...datasetInfo, ...enriched, value};
+  return { ...datasetInfo, ...enriched, value };
 }
 
 function findDataSets(parsed) {
@@ -272,8 +297,6 @@ function findDataSets(parsed) {
 function parseDataflowRef(value) {
   if (!value) return {};
 
-  // Esempio possibile:
-  // ESTAT:BD_HGNACE_R(1.0)
   const match = String(value).match(/^([^:]+):([^(]+)(?:\(([^)]+)\))?$/);
 
   if (!match) {
@@ -307,7 +330,6 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
 
   let info = parseDataflowRef(structureRef);
 
-  // fallback: se l'XML non contiene un DATAFLOW comodo
   if (!info.source) {
     info.source = parsed.GenericData?.Header.Sender.id || "ESTAT?";
   }
@@ -325,7 +347,7 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
   return info;
 }
 
-function parseGenericSdmxRows(parsed, enrichRow) {
+function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId) {
   const rows = [];
 
   const datasetInfo = extractDatasetInfo(parsed);
@@ -339,7 +361,7 @@ function parseGenericSdmxRows(parsed, enrichRow) {
   console.log(parsed.GenericData?.Header.DataSetID)
   console.log(parsed.GenericData?.Header.Prepared)*/
 
-  if(config.debug.writeParsedXml == true) 
+  if (config.debug.writeParsedXml == true)
     fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
 
   for (const dataSet of dataSets) {
@@ -364,8 +386,15 @@ function parseGenericSdmxRows(parsed, enrichRow) {
         const obsDimensions = asArray(obs?.ObsDimension);
 
         for (const item of obsDimensions) {
-          if (!item.id || item.value === undefined) continue;
-          row[item.id.toLowerCase()] = item.value;
+          if (item.value === undefined) continue;
+
+          const key = (
+            item.id ||
+            timeDimensionId ||
+            defaultTimeLabel
+          ).toLowerCase();
+
+          row[key] = item.value;
         }
 
         const obsValue = obs?.ObsValue?.value;
@@ -390,14 +419,12 @@ function parseGenericSdmxRows(parsed, enrichRow) {
   return rows;
 }
 
-async function fetchDatasetRows(dataset, filters = {}, enrichRow) {
-  const filterPath = buildEurostatFilterPath(filters);
-
-  const url = dataset //+ "/" + filterPath + "?format=SDMX-GenericData&detail=full";
+async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId) {
+  const url = dataset;
 
   const parsed = await fetchXml(url);
 
-  return parseGenericSdmxRows(parsed, enrichRow);
+  return parseGenericSdmxRows(parsed, enrichRow, timeDimensionId);
 }
 
 function buildEurostatFilterPath(filters) {
@@ -407,20 +434,21 @@ function buildEurostatFilterPath(filters) {
 }
 
 async function buildEurostatTranslator(dataset, BASE) {
-  const dimensionMap = await getDimensionCodelistMap(dataset, BASE);
-  const dictionaries = await loadDictionariesFromDimensionMap(dimensionMap);
+  const structureInfo = await getDatasetStructureInfo(dataset, BASE);
+  const dictionaries = await loadDictionariesFromDimensionMap(structureInfo.dimensionMap);
 
   return {
     dataset,
-    dimensionMap,
+    dimensionMap: structureInfo.dimensionMap,
+    timeDimensionId: structureInfo.timeDimensionId,
     dictionaries,
 
     translateRow(row) {
-      return translateRow(row, dictionaries, dimensionMap);
+      return translateRow(row, dictionaries, structureInfo.dimensionMap);
     },
 
     enrichRow(row, datasetInfo) {
-      return enrichRow(row, dictionaries, dimensionMap, datasetInfo);
+      return enrichRow(row, dictionaries, structureInfo.dimensionMap, datasetInfo);
     }
   };
 }
@@ -429,7 +457,13 @@ async function main(dataset, datastructure, codelists, BASE) {
   try {
     const datasetCode = "NAMA_10R_3GDP";
     const translator = await buildEurostatTranslator(datastructure, BASE);
-    const rows = await fetchDatasetRows(dataset, null, translator.enrichRow);
+
+    const rows = await fetchDatasetRows(
+      dataset,
+      null,
+      translator.enrichRow,
+      translator.timeDimensionId
+    );
     //const enrichedRows = rows.map(row => translator.enrichRow(row));
     //const translatedRows = rows.map(row => translator.translateRow(row));
     console.log("Enriched rows 1 :\n", rows[0]);
@@ -459,7 +493,7 @@ async function main(dataset, datastructure, codelists, BASE) {
     }
     if (config.debug.writeParsedSdmx)
       fs.writeFileSync(
-        "./out_sdmx/sdmx-parsed" + Date.now() + ".json",
+        "./out_sdmx/" + rows[0].survey + ".json",
         JSON.stringify(rows, null, 2),
         "utf8"
       );
