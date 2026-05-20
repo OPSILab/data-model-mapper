@@ -281,30 +281,38 @@ function translateRow(row, dictionaries, dimensionMap) {
   return translated;
 }
 
+let writeLog = true
+
 function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
-  const enriched = { obs: { ...row }, dimensions: {}, translatedDimensions: [] };
+  const enriched = { dimensions: [], obs: { ...row }, obsHR: {}, rawDimensions: [] };
+  let logToWrite = ""
 
   for (const [dimension, code] of Object.entries(row)) {
     const codelistInfo = resolveCodelistForDimension(dimension, dimensionMap);
+    let label;
 
-    if (codelistInfo)
-      enriched.translatedDimensions.push(dimension);
-    else {
-      enriched.dimensions[dimension] = code;
-      continue;
+    if (codelistInfo) {
+      if (writeLog)
+        logToWrite += `Dimension: ${dimension}, Code: ${code}\n`;
+      const dictionaryKey = getDictionaryKey(codelistInfo);
+      label = dictionaries[dictionaryKey]?.[code];
+      if (!label)
+        enriched.rawDimensions.push(dimension);
     }
+    else if (dimension.toLowerCase() !== "value") 
+      enriched.rawDimensions.push(dimension);
 
-    const dictionaryKey = getDictionaryKey(codelistInfo);
-    const label = dictionaries[dictionaryKey]?.[code];
-
-    if (!label) continue;
-
-    enriched.dimensions[dimension] = label;
+    enriched.obsHR[dimension] = label || code;
+    if (dimension.toLowerCase() !== "value")
+      enriched.dimensions.push(label || code);
   }
 
   let value = row.value;
-  delete enriched.dimensions.value;
+  delete enriched.obsHR.value;
   delete enriched.obs.value;
+  if(writeLog)
+    fs.writeFileSync("./out_sdmx/enrichmentLog.txt", logToWrite, "utf8");
+  writeLog = false;
   return { region: getNuts(row), ...datasetInfo, ...enriched, value };
 }
 
@@ -480,42 +488,14 @@ async function buildEurostatTranslator(dataset, BASE) {
 
 async function main(dataset, datastructure, codelists, BASE) {
   try {
-    const datasetCode = "NAMA_10R_3GDP";
     const translator = await buildEurostatTranslator(datastructure, BASE);
-
     const rows = await fetchDatasetRows(
       dataset,
       null,
       translator.enrichRow,
       translator.timeDimensionId
     );
-    //const enrichedRows = rows.map(row => translator.enrichRow(row));
-    //const translatedRows = rows.map(row => translator.translateRow(row));
     console.log("Enriched rows 1 :\n", rows[0]);
-
-    const example = {
-      "region": "NUTS3",
-      "source": "ESTAT",
-      "timestamp": "2025-04-02T21:00:00.000Z",
-      "survey": "DEMO_R_D3DENS",
-      "dimensions": [
-        "Annual",
-        "Persons per square kilometre",
-        "Trento",
-        "2023"
-      ],
-      "value": 88.4
-    }
-
-    const actual = {
-      geo: 'AL',
-      unit: 'EUR_HAB',
-      freq: 'A',
-      value: 3100,
-      geo_label: 'Albania',
-      unit_label: 'Euro per inhabitant',
-      freq_label: 'Annual'
-    }
     if (config.debug.writeParsedSdmx)
       fs.writeFileSync(
         "./out_sdmx/" + rows[0].survey + ".json",
@@ -523,8 +503,7 @@ async function main(dataset, datastructure, codelists, BASE) {
         "utf8"
       );
 
-    //TODO implementare mapping verso formato coerente con db su VM
-    //TODO return finalResult
+    return rows
   } catch (err) {
     console.error(err);
   }
