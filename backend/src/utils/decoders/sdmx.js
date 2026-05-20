@@ -8,8 +8,16 @@ const parser = new XMLParser({
 const config = require("../../../config");
 const defaultTimeLabel = "TIME_PERIOD"
 const axios = require("axios");
-const nuts2024 = JSON.parse(fs.readFileSync('./geojson/NUTS_RG_60M_2024_3035.geojson', 'utf-8'));
-const featureParsed = nuts2024.features.map(feature => feature.properties);
+
+const nuts = {
+  "NUTS-2024": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2024_3035.geojson', 'utf-8')),
+  "NUTS-2021": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2021_3035.geojson', 'utf-8')),
+  "NUTS-2016": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2016_3035.geojson', 'utf-8')),
+  "NUTS-2013": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2013_3035.geojson', 'utf-8')),
+  "NUTS-2010": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2010_3035.geojson', 'utf-8')),
+  "NUTS-2006": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2006_3035.geojson', 'utf-8')),
+  "NUTS-2003": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_20M_2003_3035.geojson', 'utf-8'))
+};
 
 if (global.test.writeParsedSdmx)
   config.debug.writeParsedSdmx = true;
@@ -20,14 +28,22 @@ if (global.test.writeParsedXml)
 
 function getNuts(row) {
   const values = Object.values(row);
-  for (const value of values) {
-    const match = featureParsed.filter(feature => feature.NUTS_ID === value);
-    if (match)
-      if (match.length == 1)
-        if (match[0].LEVL_CODE && match[0].LEVL_CODE != '')
-          return "NUTS" + match[0].LEVL_CODE;
-        else
-          return "NUTS" + match.map(m => m.LEVL_CODE).join("? or ");
+  const keys = Object.keys(nuts).sort().reverse();
+  let year = ""
+
+  for (const key of keys) {
+    for (const value of values) {
+      const match = nuts[key].filter(feature => feature.NUTS_ID === value);
+      if (match) {
+        if (match.length == 1) {
+          if (match[0].LEVL_CODE && match[0].LEVL_CODE != '')
+            return "NUTS" + match[0].LEVL_CODE + (year ? "(" + year + ")" : "");
+          else
+            return "NUTS" + match.map(m => m.LEVL_CODE).join("? or ") + (year ? "(" + year + ")" : "");
+        }
+      }
+    }
+    year = key.split("-")[1];
   }
   return "NON_NUTS?";
 }
@@ -289,7 +305,7 @@ function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
   let value = row.value;
   delete enriched.dimensions.value;
   delete enriched.obs.value;
-  return { region : getNuts(row), ...datasetInfo, ...enriched, value };
+  return { region: getNuts(row), ...datasetInfo, ...enriched, value };
 }
 
 function findDataSets(parsed) {
