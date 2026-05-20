@@ -1,5 +1,4 @@
 const fs = require("fs");
-
 const { XMLParser } = require("fast-xml-parser");
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -7,6 +6,11 @@ const parser = new XMLParser({
   removeNSPrefix: true
 });
 const config = require("../../../config");
+const defaultTimeLabel = "TIME_PERIOD"
+const axios = require("axios");
+const nuts2024 = JSON.parse(fs.readFileSync('./geojson/NUTS_RG_60M_2024_3035.geojson', 'utf-8'));
+const featureParsed = nuts2024.features.map(feature => feature.properties);
+
 if (global.test.writeParsedSdmx)
   config.debug.writeParsedSdmx = true;
 if (global.test.sdmxCache)
@@ -14,10 +18,19 @@ if (global.test.sdmxCache)
 if (global.test.writeParsedXml)
   config.debug.writeParsedXml = true;
 
-const defaultTimeLabel = "TIME_PERIOD"
-
-
-const axios = require("axios");
+function getNuts(row) {
+  const values = Object.values(row);
+  for (const value of values) {
+    const match = featureParsed.filter(feature => feature.NUTS_ID === value);
+    if (match)
+      if (match.length == 1)
+        if (match[0].LEVL_CODE && match[0].LEVL_CODE != '')
+          return "NUTS" + match[0].LEVL_CODE;
+        else
+          return "NUTS" + match.map(m => m.LEVL_CODE).join("? or ");
+  }
+  return "NON_NUTS?";
+}
 
 function clean(url) {
   for (let i = 0; i < url.length; i++) {
@@ -273,14 +286,10 @@ function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
     enriched.dimensions[dimension] = label;
   }
 
-  //enriched.region = "placeholder";
-  //enriched.source = datasetInfo.source || "ESTAT";
-  //enriched.timestamp = "placeholder";
-  //enriched.survey = datasetInfo.survey || "DEMO_R_D3DENS";
   let value = row.value;
   delete enriched.dimensions.value;
   delete enriched.obs.value;
-  return { ...datasetInfo, ...enriched, value };
+  return { region : getNuts(row), ...datasetInfo, ...enriched, value };
 }
 
 function findDataSets(parsed) {
