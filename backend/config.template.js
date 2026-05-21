@@ -126,9 +126,13 @@ var config = {
 
     /************************* Debugger enable *************************/
 
-    debugger: false // enable an alternate version of logger
+    debugger: false, // enable an alternate version of logger
 
     /*********************************************************************/
+    
+    decodeOptions: {
+        sdmxTryEurostatFlow: true 
+    }
 
 };
 

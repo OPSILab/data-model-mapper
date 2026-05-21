@@ -41,6 +41,32 @@ const waiting = async (flag) => {
     await process.dataModelMapper.sleep(100, "Waiting " + flag)
 }
 
+function cleanUrlForCache(url) {
+  for (let i = 0; i < url.length; i++) {
+    const char = url[i];
+    if (char === "/")
+      url = url.substring(0, i) + "_slash_" + url.substring(i + 1);
+    else if (char === ":")
+      url = url.substring(0, i) + "_colon_" + url.substring(i + 1);
+    else if (char === "?")
+      url = url.substring(0, i) + "_question_" + url.substring(i + 1);
+    else if (char === "&")
+      url = url.substring(0, i) + "_amp_" + url.substring(i + 1);
+    else if (char === "=")
+      url = url.substring(0, i) + "_eq_" + url.substring(i + 1);
+  }
+  return url;
+}
+
+function recoverUrlFromCleaned(cleaned) {
+  return cleaned
+    .replace(/_slash_/g, "/")
+    .replace(/_colon_/g, ":")
+    .replace(/_question_/g, "?")
+    .replace(/_amp_/g, "&")
+    .replace(/_eq_/g, "=");
+}
+
 module.exports = {
 
   minioObj: undefined,
@@ -378,11 +404,45 @@ module.exports = {
     logger.debug({ dataModel })
     //let sourceFileTemp2 = false
     if ((!source.data || source.data && !source.data[0]) && source.url) {
-      source.url = source.url.replace("https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/").split("?")[0]//TODO temporary fix for sdmx ; to be removed when sdmx is ready to be tested
-      source.download = await axios.get(source.url)
+      //source.url = source.url.replace("https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/").split("?")[0]//TODO temporary fix for sdmx ; to be removed when sdmx is ready to be tested
+      source.url = source.url.split("?")[0] //TODO temporary fix for sdmx ; to be removed when tar.gz is supported
+      if (source.url.includes("?"))
+        throw new Error("URL with query parameters are not supported yet, please remove query parameters from the URL and try again") //TODO temporary fix for sdmx ; to be removed when tar.gz is supported
+      if (!fs.existsSync("./cachedData"))
+        fs.mkdirSync("./cachedData", { recursive: true });
+      if (fs.existsSync(`./cachedData/${cleanUrlForCache(source.url)}`)) {
+        const cached = fs.readFileSync(`./cachedData/${cleanUrlForCache(source.url)}`, "utf8");
+        let parsed
+        try {
+          parsed = JSON.parse(cached)
+        }
+        catch (e) {
+          logger.warn("cached data could not be parsed")
+          logger.warn(e.message)
+        }
+        source.download = { data: parsed || cached }
+      }
+      else {
+        source.download = await axios.get(source.url)
+        if (config.debug.sdmxCache)
+          fs.writeFileSync(`./cachedData/${cleanUrlForCache(source.url)}`, source.download.data, "utf8");
+      }
       source.data = source.download.data
       delete source.download.headers
       delete source.download.request
+
+      if (decodeOptions)
+        decodeOptions.fromUrl = source.url
+
+      /*if (decodeOptions?.decodeFrom == "sdmx-xml" && config.decode.eurostatSdmxAdditionalOptions) {
+        let additionalOptions = {
+          datastructure: "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/dataflow/ESTAT/NAMA_10R_3GDP/1.0?detail=referencepartial&references=descendants",
+          dataset: "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/NAMA_10R_3GDP",
+          base: "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1"
+        }
+        decodeOptions = { ...decodeOptions, ...additionalOptions }
+      }*/
+
       /*
       fs.writeFile(config.sourceDataPath + 'sourceFileTemp2.' + source.type, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
           if (err) throw err;

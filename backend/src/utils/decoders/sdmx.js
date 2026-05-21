@@ -8,22 +8,26 @@ const parser = new XMLParser({
 const config = require("../../../config");
 const defaultTimeLabel = "TIME_PERIOD"
 const axios = require("axios");
+const Output = require('../../server/api/models/output');
+const log = require('../logger')//.app(module);
+const { Logger } = log
+const logger = new Logger(__filename)
 
 const nuts = {
-  "NUTS-2024": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2024_3035.geojson', 'utf-8')),
-  "NUTS-2021": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2021_3035.geojson', 'utf-8')),
-  "NUTS-2016": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2016_3035.geojson', 'utf-8')),
-  "NUTS-2013": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2013_3035.geojson', 'utf-8')),
-  "NUTS-2010": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2010_3035.geojson', 'utf-8')),
-  "NUTS-2006": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_60M_2006_3035.geojson', 'utf-8')),
-  "NUTS-2003": JSON.parse(fs.readFileSync('./lighterGeojson/lighter-NUTS_RG_20M_2003_3035.geojson', 'utf-8'))
+  "NUTS-2024": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2024_3035.geojson', 'utf-8')),
+  "NUTS-2021": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2021_3035.geojson', 'utf-8')),
+  "NUTS-2016": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2016_3035.geojson', 'utf-8')),
+  "NUTS-2013": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2013_3035.geojson', 'utf-8')),
+  "NUTS-2010": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2010_3035.geojson', 'utf-8')),
+  "NUTS-2006": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2006_3035.geojson', 'utf-8')),
+  "NUTS-2003": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_20M_2003_3035.geojson', 'utf-8'))
 };
 
-if (global.test.writeParsedSdmx)
+if (global.test?.writeParsedSdmx)
   config.debug.writeParsedSdmx = true;
-if (global.test.sdmxCache)
+if (global.test?.sdmxCache)
   config.debug.sdmxCache = true;
-if (global.test.writeParsedXml)
+if (global.test?.writeParsedXml)
   config.debug.writeParsedXml = true;
 
 function getNuts(row) {
@@ -78,7 +82,7 @@ async function fetchText(url) {
   try {
     if (config.debug.sdmxCache && fs.existsSync(`./cachedData/${clean(url)}`)) {
       const cached = fs.readFileSync(`./cachedData/${clean(url)}`, "utf8");
-      console.log(`Using cached data for ${url}`);
+      logger.info(`Using cached data for ${url}`);
       try {
         let json = JSON.parse(cached);
         return json
@@ -87,7 +91,7 @@ async function fetchText(url) {
         return cached;
       }
     }
-    console.log(`Fetching ${url}`);
+    logger.info(`Fetching ${url}`);
     const res = await axios.get(url, {
       responseType: "text"
     });
@@ -169,10 +173,12 @@ function getDictionaryKey(info) {
   return `${info.agencyID}:${info.codelistId}:${info.version || ""}`;
 }
 
-async function getDatasetStructureInfo(dataset, BASE) {
-  const url = dataset;
+async function getDatasetStructureInfo(datastructureUrl, BASE) {
 
-  const parsed = await fetchXml(url);
+  if (!datastructureUrl)
+    return null;
+
+  const parsed = await fetchXml(datastructureUrl);
   const dataStructures = findDataStructures(parsed);
 
   const dimensionMap = {};
@@ -243,6 +249,8 @@ function parseCodelistTsv(tsv) {
 }
 
 async function loadDictionariesFromDimensionMap(dimensionMap) {
+  if (!dimensionMap)
+    return null
   const dictionaries = {};
   const uniqueCodelists = new Map();
 
@@ -259,6 +267,8 @@ async function loadDictionariesFromDimensionMap(dimensionMap) {
 }
 
 function resolveCodelistForDimension(dimension, dimensionMap) {
+  if (!dimensionMap)
+    return null;
   return dimensionMap[dimension.toLowerCase()] || null;
 }
 
@@ -281,7 +291,7 @@ function translateRow(row, dictionaries, dimensionMap) {
   return translated;
 }
 
-let writeLog = true
+let writeLog = false
 
 function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
   const enriched = { dimensions: [], obs: { ...row }, obsHR: {}, rawDimensions: [] };
@@ -299,7 +309,7 @@ function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
       if (!label)
         enriched.rawDimensions.push(dimension);
     }
-    else if (dimension.toLowerCase() !== "value") 
+    else if (dimension.toLowerCase() !== "value")
       enriched.rawDimensions.push(dimension);
 
     enriched.obsHR[dimension] = label || code;
@@ -310,7 +320,7 @@ function enrichRow(row, dictionaries, dimensionMap, datasetInfo) {
   let value = row.value;
   delete enriched.obsHR.value;
   delete enriched.obs.value;
-  if(writeLog)
+  if (writeLog)
     fs.writeFileSync("./out_sdmx/enrichmentLog.txt", logToWrite, "utf8");
   writeLog = false;
   return { region: getNuts(row), ...datasetInfo, ...enriched, value };
@@ -380,19 +390,12 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
   return info;
 }
 
-function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId) {
-  const rows = [];
+async function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id) {
 
+  let rows = [];
+  let part = 1;
   const datasetInfo = extractDatasetInfo(parsed);
-
   const dataSets = findDataSets(parsed);
-
-
-
-  /*console.log(parsed)
-  console.log(parsed.GenericData?.Header.Sender.id)
-  console.log(parsed.GenericData?.Header.DataSetID)
-  console.log(parsed.GenericData?.Header.Prepared)*/
 
   if (config.debug.writeParsedXml == true)
     fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
@@ -402,7 +405,7 @@ function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId) {
 
     for (const series of seriesList) {
       const baseRow = {};
-      //console.log({series, structure: parsed.GenericData?.Header.Structure})
+      //logger.info({series, structure: parsed.GenericData?.Header.Structure})
 
       const seriesValues = asArray(series?.SeriesKey?.Value);
 
@@ -445,19 +448,39 @@ function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId) {
         }
 
         rows.push(enrichRow(row, datasetInfo));
+        if (rows.length > config.batch) {
+          if (config.sessionLocation.mongo)
+            if (!collectedOutput)
+              logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
+            else
+              await collectedOutput.insertMany(rows);
+          if (config.sessionLocation.filesystem) {
+            if (!fs.existsSync('./output/' + id + '/'))
+              fs.mkdirSync('./output/' + id + '/', { recursive: true });
+            fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
+          }
+          logger.debug(rows.length + " Datapoints salvati nel database.");
+          rows = [];
+        }
       }
     }
   }
-
-  return rows;
+  if (rows.length > 0) {
+    if (config.sessionLocation.mongo)
+      await collectedOutput.insertMany(rows);
+    if (config.sessionLocation.filesystem) {
+      if (!fs.existsSync('./output/' + id + '/'))
+        fs.mkdirSync('./output/' + id + '/', { recursive: true });
+      fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
+    }
+    logger.debug(rows.length + " Datapoints salvati nel database.");
+  }
 }
 
-async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId) {
-  const url = dataset;
+async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id) {
+  const parsed = parser.parse(dataset)
 
-  const parsed = await fetchXml(url);
-
-  return parseGenericSdmxRows(parsed, enrichRow, timeDimensionId);
+  await parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
 }
 
 function buildEurostatFilterPath(filters) {
@@ -466,47 +489,66 @@ function buildEurostatFilterPath(filters) {
   return "";
 }
 
-async function buildEurostatTranslator(dataset, BASE) {
-  const structureInfo = await getDatasetStructureInfo(dataset, BASE);
-  const dictionaries = await loadDictionariesFromDimensionMap(structureInfo.dimensionMap);
+async function buildEurostatTranslator(datastructure, BASE) {
+  let structureInfo, dictionaries;
+  try {
+    structureInfo = await getDatasetStructureInfo(datastructure, BASE);
+    dictionaries = await loadDictionariesFromDimensionMap(structureInfo?.dimensionMap);
+  }
+  catch (err) {
+    logger.error("Errore durante la costruzione del traduttore Eurostat:", err);
+    structureInfo = null;
+    dictionaries = null;
+  }
 
   return {
-    dataset,
-    dimensionMap: structureInfo.dimensionMap,
-    timeDimensionId: structureInfo.timeDimensionId,
+    timeDimensionId: structureInfo?.timeDimensionId,
     dictionaries,
-
-    translateRow(row) {
-      return translateRow(row, dictionaries, structureInfo.dimensionMap);
-    },
-
     enrichRow(row, datasetInfo) {
-      return enrichRow(row, dictionaries, structureInfo.dimensionMap, datasetInfo);
+      return enrichRow(row, dictionaries, structureInfo?.dimensionMap, datasetInfo);
     }
   };
 }
 
-async function main(dataset, datastructure, codelists, BASE) {
+async function tryEurostatFlow(dataset, BASE, fromUrl) {
+  const survey = fromUrl.split("data/")[1].split("?")[0];
+  if (!BASE)
+    BASE = fromUrl.split("/data/")[0]
+  const dataStructureUrl = `${BASE}/dataflow/ESTAT/${survey}/1.0?detail=referencepartial&references=descendants`;
+  logger.debug({ BASE, dataStructureUrl })
+  return { BASE, dataStructureUrl }
+}
+
+
+async function sdmxDecoder(dataset, datastructure, codelists, BASE, fromUrl, id) {
+  logger.info({dataset, datastructure, codelists, BASE, fromUrl, id})
+  const collectedOutput = config.sessionLocation.mongo ? Output(id) : null;
   try {
+    if (!datastructure && config.decodeOptions.sdmxTryEurostatFlow) {
+      const info = await tryEurostatFlow(dataset, BASE, fromUrl);
+      if (info) {
+        datastructure = info.dataStructureUrl;
+        if (!BASE)
+          BASE = info.BASE;
+      }
+      else 
+        logger.info("Impossible to retrieve dataflow info from Eurostat. Proceeding without it");
+    }
     const translator = await buildEurostatTranslator(datastructure, BASE);
-    const rows = await fetchDatasetRows(
+    await fetchDatasetRows(
       dataset,
       null,
       translator.enrichRow,
-      translator.timeDimensionId
+      translator.timeDimensionId,
+      collectedOutput,
+      id
     );
-    console.log("Enriched rows 1 :\n", rows[0]);
-    if (config.debug.writeParsedSdmx)
-      fs.writeFileSync(
-        "./out_sdmx/" + rows[0].survey + ".json",
-        JSON.stringify(rows, null, 2),
-        "utf8"
-      );
 
-    return rows
+    return [{ id }];
   } catch (err) {
-    console.error(err);
+    logger.error(err);
+    throw err;
   }
 }
 
-module.exports = { main }
+module.exports = sdmxDecoder 

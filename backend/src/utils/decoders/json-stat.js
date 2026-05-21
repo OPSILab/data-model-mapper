@@ -364,8 +364,11 @@ module.exports = async function decode(source, id) {
   if (bufferArray.length > 0) {
     if (config.sessionLocation.mongo)
       await collectedOutput.insertMany(bufferArray);
-    if (config.sessionLocation.filesystem)
+    if (config.sessionLocation.filesystem) {
+      if (!fs.existsSync('./output/' + id + '/'))
+        fs.mkdirSync('./output/' + id + '/', { recursive: true });
       fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(bufferArray));
+    }
     logger.debug(bufferArray.length + " Datapoints salvati nel database.");
   }
 
@@ -379,7 +382,7 @@ module.exports = async function decode(source, id) {
 
 
 
-  if (config.debug?.writeParsedjsonStat){// || process.test) {
+  if (config.debug?.writeParsedjsonStat) {// || process.test) {
     logger.debug("Salvataggio file di output...");
     fs.writeFileSync("out_human_nuts.json", JSON.stringify(output, null, 2));
     logger.debug("File salvato: out_human_nuts.json");
