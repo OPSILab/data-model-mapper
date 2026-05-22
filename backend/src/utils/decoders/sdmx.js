@@ -363,6 +363,7 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
     parsed.Message ||
     parsed;
 
+  const header = root?.Header;
   const dataSet = asArray(root?.DataSet)[0];
 
   const structureRef =
@@ -374,18 +375,22 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
   let info = parseDataflowRef(structureRef);
 
   if (!info.source) {
-    info.source = parsed.GenericData?.Header.Sender.id || "ESTAT?";
+    info.source = header?.Sender?.id || "ESTAT?";
   }
 
   if (!info.survey) {
-    info.survey = fallbackDatasetCode?.toUpperCase() || parsed.GenericData?.Header.DataSetID || "Unknown dataset";
+    info.survey =
+      fallbackDatasetCode?.toUpperCase() ||
+      header?.Structure?.StructureUsage?.Ref?.id ||
+      header?.DataSetID ||
+      "Unknown dataset";
   }
 
   /*if (!info.name && info.survey) {
-    info.name = info.survey || parsed.GenericData?.Header.DataSetID || "Unknown dataset";
+    info.name = info.survey || header?.DataSetID || "Unknown dataset";
   }*/
 
-  info.timestamp = parsed.GenericData?.Header.Prepared || "Unknown timestamp";
+  info.timestamp = header?.Prepared || "Unknown timestamp";
 
   return info;
 }
@@ -477,10 +482,86 @@ async function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collecte
   }
 }
 
-async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id) {
-  const parsed = parser.parse(dataset)
+async function parseStructureSpecificRows(parsed, enrichRow, timeDimensionId, collectedOutput, id) {
+  let rows = [];
+  let part = 1;
+  const datasetInfo = extractDatasetInfo(parsed);
+  const dataSets = findDataSets(parsed);
 
-  await parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
+  if (config.debug.writeParsedXml == true)
+    fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
+
+  const SKIP_ATTRS = new Set(['s:structureRef', 's:dataScope', 'xsi:type', 'structureRef', 'dataScope', 'type']);
+  const OBS_VALUE_KEY = 'OBS_VALUE';
+
+  for (const dataSet of dataSets) {
+    const seriesList = asArray(dataSet.Series);
+
+    for (const series of seriesList) {
+      const baseRow = {};
+
+      for (const [key, val] of Object.entries(series)) {
+        if (key === 'Obs') continue;          
+        if (SKIP_ATTRS.has(key)) continue;
+        baseRow[key.toLowerCase()] = val;
+      }
+
+      const observations = asArray(series.Obs);
+
+      for (const obs of observations) {
+        const row = { ...baseRow };
+
+        for (const [key, val] of Object.entries(obs)) {
+          if (SKIP_ATTRS.has(key)) continue;
+
+          if (key === OBS_VALUE_KEY) {
+            const num = Number(val);
+            row.value = Number.isNaN(num) ? val : num;
+          } else {
+            row[key.toLowerCase()] = val;
+          }
+        }
+
+        rows.push(enrichRow(row, datasetInfo));
+
+        if (rows.length > config.batch) {
+          if (config.sessionLocation.mongo)
+            if (!collectedOutput)
+              logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
+            else
+              await collectedOutput.insertMany(rows);
+          if (config.sessionLocation.filesystem) {
+            if (!fs.existsSync('./output/' + id + '/'))
+              fs.mkdirSync('./output/' + id + '/', { recursive: true });
+            fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
+          }
+          logger.debug(rows.length + " Datapoints salvati nel database.");
+          rows = [];
+        }
+      }
+    }
+  }
+
+  if (rows.length > 0) {
+    if (config.sessionLocation.mongo)
+      await collectedOutput.insertMany(rows);
+    if (config.sessionLocation.filesystem) {
+      if (!fs.existsSync('./output/' + id + '/'))
+        fs.mkdirSync('./output/' + id + '/', { recursive: true });
+      fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
+    }
+    logger.debug(rows.length + " Datapoints salvati nel database.");
+  }
+}
+
+async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id) {
+  const parsed = parser.parse(dataset);
+
+  if (parsed.StructureSpecificData) {
+    await parseStructureSpecificRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
+  } else {
+    await parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
+  }
 }
 
 function buildEurostatFilterPath(filters) {
