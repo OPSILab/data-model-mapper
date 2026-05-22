@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { XMLParser } = require("fast-xml-parser");
+const { SaxesParser } = require("saxes");
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "",
@@ -395,172 +396,218 @@ function extractDatasetInfo(parsed, fallbackDatasetCode) {
   return info;
 }
 
-async function parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id) {
 
-  let rows = [];
-  let part = 1;
-  const datasetInfo = extractDatasetInfo(parsed);
-  const dataSets = findDataSets(parsed);
 
-  if (config.debug.writeParsedXml == true)
-    fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
+const SKIP_DATASET_ATTRS = new Set(['structureRef', 'dataScope', 'type']);
+const localName = name => name.includes(':') ? name.split(':')[1] : name;
+const CHUNK_SIZE = 64 * 1024; 
 
-  for (const dataSet of dataSets) {
-    const seriesList = asArray(dataSet.Series);
+function extractDatasetInfoFromHeader(headerFields, datasetAttrs) {
+  const structureRef = datasetAttrs?.dataflow || datasetAttrs?.Dataflow || datasetAttrs?.id;
+  let info = parseDataflowRef(structureRef);
 
-    for (const series of seriesList) {
-      const baseRow = {};
-      //logger.info({series, structure: parsed.GenericData?.Header.Structure})
+  if (!info.source)
+    info.source = headerFields?.Sender_id || "ESTAT?";
 
-      const seriesValues = asArray(series?.SeriesKey?.Value);
-
-      for (const item of seriesValues) {
-        if (!item.id || item.value === undefined) continue;
-        baseRow[item.id.toLowerCase()] = item.value;
-      }
-
-      const observations = asArray(series.Obs);
-
-      for (const obs of observations) {
-        const row = { ...baseRow };
-
-        const obsDimensions = asArray(obs?.ObsDimension);
-
-        for (const item of obsDimensions) {
-          if (item.value === undefined) continue;
-
-          const key = (
-            item.id ||
-            timeDimensionId ||
-            defaultTimeLabel
-          ).toLowerCase();
-
-          row[key] = item.value;
-        }
-
-        const obsValue = obs?.ObsValue?.value;
-
-        if (obsValue !== undefined) {
-          const num = Number(obsValue);
-          row.value = Number.isNaN(num) ? obsValue : num;
-        }
-
-        const attributes = asArray(obs?.Attributes?.Value);
-
-        for (const item of attributes) {
-          if (!item.id || item.value === undefined) continue;
-          row[item.id.toLowerCase()] = item.value;
-        }
-
-        rows.push(enrichRow(row, datasetInfo));
-        if (rows.length > config.batch) {
-          if (config.sessionLocation.mongo)
-            if (!collectedOutput)
-              logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
-            else
-              await collectedOutput.insertMany(rows);
-          if (config.sessionLocation.filesystem) {
-            if (!fs.existsSync('./output/' + id + '/'))
-              fs.mkdirSync('./output/' + id + '/', { recursive: true });
-            fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
-          }
-          logger.debug(rows.length + " Datapoints salvati nel database.");
-          rows = [];
-        }
-      }
-    }
+  if (!info.survey) {
+    
+    info.survey =
+      headerFields?.Structure_StructureUsage_Ref_id ||
+      headerFields?.DataSetID ||
+      "Unknown dataset";
   }
-  if (rows.length > 0) {
-    if (config.sessionLocation.mongo)
-      await collectedOutput.insertMany(rows);
-    if (config.sessionLocation.filesystem) {
-      if (!fs.existsSync('./output/' + id + '/'))
-        fs.mkdirSync('./output/' + id + '/', { recursive: true });
-      fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
-    }
-    logger.debug(rows.length + " Datapoints salvati nel database.");
-  }
+
+  info.timestamp = headerFields?.Prepared || "Unknown timestamp";
+  return info;
 }
 
-async function parseStructureSpecificRows(parsed, enrichRow, timeDimensionId, collectedOutput, id) {
-  let rows = [];
-  let part = 1;
-  const datasetInfo = extractDatasetInfo(parsed);
-  const dataSets = findDataSets(parsed);
+async function flushRows(rows, collectedOutput, id, part) {
+  
+  const snapshot = rows.splice(0, config.batch);
+  if (config.sessionLocation.mongo) {
+    if (!collectedOutput)
+      logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
+    else
+      await collectedOutput.insertMany(snapshot);
+  }
+  if (config.sessionLocation.filesystem) {
+    if (!fs.existsSync('./output/' + id + '/'))
+      fs.mkdirSync('./output/' + id + '/', { recursive: true });
+    fs.writeFileSync('./output/' + id + '/' + part + '.json', JSON.stringify(snapshot), 'utf8');
+  }
+  logger.debug(snapshot.length + " Datapoints salvati nel database.");
+}
 
-  if (config.debug.writeParsedXml == true)
-    fs.writeFileSync("./out_sdmx/parsedXml.json", JSON.stringify(parsed), "utf8");
+async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id) {
+  return new Promise(async (resolve, reject) => {
+    const saxParser = new SaxesParser({ xmlns: false });
+    let rows = [], part = 1;
+    let inSeriesKey = false, currentSeriesKey = {};
+    let inObs = false, currentObs = {};
+    let inHeader = false, headerPath = [], headerFields = {};
+    let datasetAttrs = {};
+    let datasetInfo = null;
+    let inSender = false;
 
-  const SKIP_ATTRS = new Set(['s:structureRef', 's:dataScope', 'xsi:type', 'structureRef', 'dataScope', 'type']);
-  const OBS_VALUE_KEY = 'OBS_VALUE';
+    saxParser.on('opentag', node => {
+      const n = localName(node.name);
 
-  for (const dataSet of dataSets) {
-    const seriesList = asArray(dataSet.Series);
-
-    for (const series of seriesList) {
-      const baseRow = {};
-
-      for (const [key, val] of Object.entries(series)) {
-        if (key === 'Obs') continue;          
-        if (SKIP_ATTRS.has(key)) continue;
-        baseRow[key.toLowerCase()] = val;
+      if (n === 'Header') { inHeader = true; return; }
+      if (inHeader) {
+        headerPath.push(n);
+        for (const [k, v] of Object.entries(node.attributes))
+          headerFields[n + '_' + k] = v;
+        return;
       }
-
-      const observations = asArray(series.Obs);
-
-      for (const obs of observations) {
-        const row = { ...baseRow };
-
-        for (const [key, val] of Object.entries(obs)) {
-          if (SKIP_ATTRS.has(key)) continue;
-
-          if (key === OBS_VALUE_KEY) {
-            const num = Number(val);
-            row.value = Number.isNaN(num) ? val : num;
-          } else {
-            row[key.toLowerCase()] = val;
-          }
+      if (n === 'DataSet') { datasetAttrs = node.attributes; return; }
+      if (n === 'SeriesKey') { inSeriesKey = true; currentSeriesKey = {}; return; }
+      if (n === 'Value' && inSeriesKey) {
+        if (node.attributes.id)
+          currentSeriesKey[node.attributes.id.toLowerCase()] = node.attributes.value ?? node.attributes.value;
+        return;
+      }
+      if (n === 'Obs') { inObs = true; currentObs = { ...currentSeriesKey }; return; }
+      if (inObs) {
+        if (n === 'ObsDimension') {
+          const key = (node.attributes.id || timeDimensionId || 'time_period').toLowerCase();
+          currentObs[key] = node.attributes.value;
+        } else if (n === 'ObsValue') {
+          const v = node.attributes.value;
+          currentObs.value = isNaN(Number(v)) ? v : Number(v);
+        } else if (n === 'Attributes') {
+        } else {
+          const attrs = node.attributes;
+          if (attrs.id && attrs.value !== undefined)
+            currentObs[attrs.id.toLowerCase()] = attrs.value;
         }
+      }
+    });
 
-        rows.push(enrichRow(row, datasetInfo));
+    saxParser.on('closetag', node => {
+      const n = localName(node.name);
+      if (n === 'Header') {
+        inHeader = false;
+        headerPath = [];
+        datasetInfo = extractDatasetInfoFromHeader(headerFields, datasetAttrs);
+        return;
+      }
+      if (inHeader) { headerPath.pop(); return; }
+      if (n === 'SeriesKey') { inSeriesKey = false; return; }
+      if (n === 'Series') { currentSeriesKey = {}; return; }
+      if (n === 'Obs') {
+        if (datasetInfo) rows.push(enrichRowFn({ ...currentObs }, datasetInfo));
+        inObs = false; currentObs = {};
+      }
+    });
 
+    saxParser.on('text', text => {
+      const t = text.trim();
+      if (!t || !inHeader || !headerPath.length) return;
+      headerFields[headerPath[headerPath.length - 1]] = t;
+    });
+
+    saxParser.on('error', reject);
+
+    try {
+      const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+      for (let i = 0; i < buf.length; i += CHUNK_SIZE) {
+        saxParser.write(buf.slice(i, i + CHUNK_SIZE).toString('utf8'));
         if (rows.length > config.batch) {
-          if (config.sessionLocation.mongo)
-            if (!collectedOutput)
-              logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
-            else
-              await collectedOutput.insertMany(rows);
-          if (config.sessionLocation.filesystem) {
-            if (!fs.existsSync('./output/' + id + '/'))
-              fs.mkdirSync('./output/' + id + '/', { recursive: true });
-            fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
-          }
-          logger.debug(rows.length + " Datapoints salvati nel database.");
-          rows = [];
+          await flushRows(rows, collectedOutput, id, part++);
         }
       }
-    }
-  }
+      saxParser.close();
+      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++);
+      resolve();
+    } catch (err) { reject(err); }
+  });
+}
 
-  if (rows.length > 0) {
-    if (config.sessionLocation.mongo)
-      await collectedOutput.insertMany(rows);
-    if (config.sessionLocation.filesystem) {
-      if (!fs.existsSync('./output/' + id + '/'))
-        fs.mkdirSync('./output/' + id + '/', { recursive: true });
-      fs.writeFileSync('./output/' + id + '/' + (part++) + '.json', JSON.stringify(rows), 'utf8');
-    }
-    logger.debug(rows.length + " Datapoints salvati nel database.");
-  }
+async function parseStructureSpecificRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id) {
+  return new Promise(async (resolve, reject) => {
+    const saxParser = new SaxesParser({ xmlns: false });
+    let rows = [], part = 1;
+    let currentSeriesAttrs = null;
+    let inHeader = false, headerPath = [], headerFields = {};
+    let datasetAttrs = {};
+    let datasetInfo = null;
+
+    saxParser.on('opentag', node => {
+      const n = localName(node.name);
+
+      if (n === 'Header') { inHeader = true; return; }
+      if (inHeader) {
+        headerPath.push(n);
+        for (const [k, v] of Object.entries(node.attributes))
+          headerFields[n + '_' + k] = v;
+        return;
+      }
+      if (n === 'DataSet') { datasetAttrs = node.attributes; return; }
+
+      if (n === 'Series') {
+        currentSeriesAttrs = {};
+        for (const [k, v] of Object.entries(node.attributes)) {
+          if (!SKIP_DATASET_ATTRS.has(k))
+            currentSeriesAttrs[k.toLowerCase()] = v;
+        }
+        return;
+      }
+
+      if (n === 'Obs' && currentSeriesAttrs) {
+        const row = { ...currentSeriesAttrs };
+        for (const [k, v] of Object.entries(node.attributes)) {
+          if (SKIP_DATASET_ATTRS.has(k)) continue;
+          if (k === 'OBS_VALUE') row.value = isNaN(Number(v)) ? v : Number(v);
+          else row[k.toLowerCase()] = v;
+        }
+        if (datasetInfo) rows.push(enrichRowFn(row, datasetInfo));
+      }
+    });
+
+    saxParser.on('closetag', node => {
+      const n = localName(node.name);
+      if (n === 'Header') {
+        inHeader = false;
+        headerPath = [];
+        datasetInfo = extractDatasetInfoFromHeader(headerFields, datasetAttrs);
+        return;
+      }
+      if (inHeader) { headerPath.pop(); return; }
+      if (n === 'Series') currentSeriesAttrs = null;
+    });
+
+    saxParser.on('text', text => {
+      const t = text.trim();
+      if (!t || !inHeader || !headerPath.length) return;
+      headerFields[headerPath[headerPath.length - 1]] = t;
+    });
+
+    saxParser.on('error', reject);
+
+    try {
+      const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+      for (let i = 0; i < buf.length; i += CHUNK_SIZE) {
+        saxParser.write(buf.slice(i, i + CHUNK_SIZE).toString('utf8'));
+        if (rows.length > config.batch) {
+          await flushRows(rows, collectedOutput, id, part++);
+        }
+      }
+      saxParser.close();
+      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++);
+      resolve();
+    } catch (err) { reject(err); }
+  });
 }
 
 async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id) {
-  const parsed = parser.parse(dataset);
+  const buf = Buffer.isBuffer(dataset) ? dataset : Buffer.from(dataset);
+  const sniff = buf.slice(0, 512).toString('utf8');
+  const isStructureSpecific = sniff.includes('StructureSpecificData');
 
-  if (parsed.StructureSpecificData) {
-    await parseStructureSpecificRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
+  if (isStructureSpecific) {
+    await parseStructureSpecificRows(buf, enrichRow, timeDimensionId, collectedOutput, id);
   } else {
-    await parseGenericSdmxRows(parsed, enrichRow, timeDimensionId, collectedOutput, id);
+    await parseGenericSdmxRows(buf, enrichRow, timeDimensionId, collectedOutput, id);
   }
 }
 
@@ -602,7 +649,6 @@ async function tryEurostatFlow(dataset, BASE, fromUrl) {
 
 
 async function sdmxDecoder(dataset, datastructure, codelists, BASE, fromUrl, id) {
-  logger.info({dataset, datastructure, codelists, BASE, fromUrl, id})
   const collectedOutput = config.sessionLocation.mongo ? Output(id) : null;
   try {
     if (!datastructure && config.decodeOptions.sdmxTryEurostatFlow) {

@@ -708,24 +708,36 @@ const sendOutput = async (config, res) => {
         logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     //await Session.insertMany([{ sessionId: outputId }])
     try {
-        if (config.sessionLocation.filesystem)
-            fs.writeFile('./output/output' + outputId + ".json", JSON.stringify(res.dmm), function (err) {
-                //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
-                if (err) throw err;
+        if (res.dmm.source.data && res.dmm.source.url)
+            res.dmm.source.data = undefined
+        if (config.sessionLocation.filesystem) {
+            const JsonStreamStringify = require('json-stream-stringify');
+
+            const writeStream = fs.createWriteStream('./output/output' + outputId + '.json');
+            const jsonStream = new JsonStreamStringify(res.dmm);
+
+            jsonStream.pipe(writeStream);
+
+            writeStream.on('finish', () => {
                 logger.debug('File output is created successfully.');
-                outputDataTempWriting.value = 'File output is created successfully.'
-            })
+                outputDataTempWriting.value = 'File output is created successfully.';
+            });
+
+            writeStream.on('error', (err) => {
+                throw err;
+            });
+        }
         if (config.sessionLocation.mongo)
             await Session.insertMany([{ sessionId: outputId, data: res.dmm }])
     }
     catch (error) {
         logger.error(error)
-        logger.error(res.dmm)
+        //logger.error(res.dmm)
         outputDataTempWriting.value = 'Error during output file creation.'
     }
     if (config.sessionLocation.filesystem)
         await finish(outputDataTempWriting)
-    if(!config.manualCheckMaximumSpaceOverflow)
+    if (!config.manualCheckMaximumSpaceOverflow)
         await checkMaximumSpaceOverflow()
     //const deleteSession = 
     logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])

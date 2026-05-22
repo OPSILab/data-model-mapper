@@ -476,12 +476,12 @@ module.exports = {
     //}
 
     let sourceTempId, schemaTempId
-    logger.debug({ source })
+    logger.debug("{ source }")
 
-    if (source.data) {
+    if (source.data && !decodeOptions) {
       let sourceDataTempWriting = {}
       sourceTempId = common.createRandId() //common.createRandId() + source.type
-      fs.writeFile(config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
+      fs.writeFile(config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type, source.type == "csv" ? source.data : typeof source.data === "object" || Array.isArray(source.data) ? JSON.stringify(source.data) : source.data, function (err) {
         //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
         if (err) throw err;
         logger.debug('File sourceData temp is created successfully.');

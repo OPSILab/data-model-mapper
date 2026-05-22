@@ -31,12 +31,14 @@ async function downloadAndParse(url) {
             };
         }
 
-        const decompressedText = decompressed.toString("utf8").trim();
+        const sniff = decompressed.slice(0, 6).toString("utf8").trimStart();
+        const isXmlContent = sniff.startsWith("<?xml") || sniff.startsWith("<");
 
         if (
             contentType.includes("json") ||
             filename.toLowerCase().endsWith(".json.gz")
         ) {
+            const decompressedText = decompressed.toString("utf8").trim();
             return {
                 type: "json.gz",
                 filename,
@@ -48,18 +50,18 @@ async function downloadAndParse(url) {
         if (
             contentType.includes("xml") ||
             filename.toLowerCase().endsWith(".xml.gz") ||
-            decompressedText.startsWith("<?xml") ||
-            decompressedText.startsWith("<")
+            isXmlContent
         ) {
             return {
                 type: "xml.gz",
                 filename,
                 contentType,
-                data: decompressedText
+                data: decompressed  
             };
         }
 
         try {
+            const decompressedText = decompressed.toString("utf8").trim();
             return {
                 type: "json.gz",
                 filename,
@@ -88,13 +90,24 @@ async function downloadAndParse(url) {
     }
 
     if (contentType.includes("xml") || filename.toLowerCase().endsWith(".xml")) {
-        const text = buffer.toString("utf8");
-
         return {
             type: "xml",
             filename,
             contentType,
-            data: text
+            data: buffer  
+        };
+    }
+
+    
+    const sniffPlain = buffer.slice(0, 6).toString("utf8").trimStart();
+    const isXmlPlain = sniffPlain.startsWith("<?xml") || sniffPlain.startsWith("<");
+
+    if (isXmlPlain) {
+        return {
+            type: "xml",
+            filename,
+            contentType,
+            data: buffer  
         };
     }
 
@@ -108,15 +121,6 @@ async function downloadAndParse(url) {
             data: JSON.parse(text)
         };
     } catch { }
-
-    if (text.startsWith("<?xml") || text.startsWith("<")) {
-        return {
-            type: "xml",
-            filename,
-            contentType,
-            data: text
-        };
-    }
 
     return {
         type: "unknown",
@@ -241,7 +245,7 @@ async function download(url) {
 
     const result = await downloadAndParse(url);
 
-    logResult(result);
+    //logResult(result);
     return result
 }
 
