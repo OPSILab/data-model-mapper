@@ -19,6 +19,7 @@ const Output = require('../models/output.js')
 const utils = require('../../../utils/utils.js');
 const Session = require("../models/session.js")
 const mongoose = require("mongoose")
+const downloader = require('../../../utils/downloader.js')
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -404,10 +405,6 @@ module.exports = {
     logger.debug({ dataModel })
     //let sourceFileTemp2 = false
     if ((!source.data || source.data && !source.data[0]) && source.url) {
-      //source.url = source.url.replace("https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/", "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/").split("?")[0]//TODO temporary fix for sdmx ; to be removed when sdmx is ready to be tested
-      source.url = source.url.split("?")[0] //TODO temporary fix for sdmx ; to be removed when tar.gz is supported
-      if (source.url.includes("?"))
-        throw new Error("URL with query parameters are not supported yet, please remove query parameters from the URL and try again") //TODO temporary fix for sdmx ; to be removed when tar.gz is supported
       if (!fs.existsSync("./cachedData"))
         fs.mkdirSync("./cachedData", { recursive: true });
       if (fs.existsSync(`./cachedData/${cleanUrlForCache(source.url)}`)) {
@@ -423,8 +420,8 @@ module.exports = {
         source.download = { data: parsed || cached }
       }
       else {
-        source.download = await axios.get(source.url)
-        if (config.debug.sdmxCache)
+        source.download = await downloader(source.url)
+        if (config.debug.sdmxCache || config.debug.cacheDownloadedData)
           fs.writeFileSync(`./cachedData/${cleanUrlForCache(source.url)}`, source.download.data, "utf8");
       }
       source.data = source.download.data

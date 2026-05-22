@@ -210,7 +210,8 @@ config.debug = {
     writeParsedjsonStat: false,
     sdmxCache: true,
     writeParsedSdmx: false,
-    writeParsedXml: false
+    writeParsedXml: false,
+    cacheDownloadedData: false
 
 }
 

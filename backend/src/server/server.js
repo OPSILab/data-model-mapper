@@ -53,6 +53,8 @@ module.exports = () => {
             })
             utils.checkMaximumSpaceOverflow().then(() => {
               logger.info("Finished checking MongoDB and filesystem storage size on startup.")
+              if(config.debug.sdmxCache || config.debug.cacheDownloadedData)
+                logger.warn("IMPORTANT WARNING: Cache for downloaded data and SDMX is enabled. This can led dmm use obsolete data!")
             }).catch(err => {
               logger.error("Error checking MongoDB storage size on startup:", err);
             })

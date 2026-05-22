@@ -44,6 +44,7 @@
     "stream-to-string": "^1.1.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^4.6.0",
+    "tar-stream": "^3.2.0",
     "terraformer": "^1.0.12",
     "terraformer-proj4js": "^0.2.2",
     "unorm": "^1.4.1",
