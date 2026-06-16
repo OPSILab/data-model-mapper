@@ -714,16 +714,8 @@ const sendOutput = async (config, res) => {
     try {
         if (res.dmm.source.data && res.dmm.source.url)
             res.dmm.source.data = undefined
-        if (config.sessionLocation.filesystem) {
-            await new Promise((resolve, reject) => {
-                const writeStream = fs.createWriteStream('./output/output' + outputId + '.json');
-                const jsonStream = new JsonStreamStringify(res.dmm);
-                jsonStream.pipe(writeStream);
-                writeStream.on('finish', resolve);
-                writeStream.on('error', reject);
-                jsonStream.on('error', reject);
-            });
-        }
+        if (config.sessionLocation.filesystem)
+            fs.writeFileSync('./output/output' + outputId + '.json', config.enableSessions ? res.data : "Sessions disabled", "utf8");
         if (config.sessionLocation.mongo)
             await Session.insertMany([{ sessionId: outputId, data: res.dmm }])
     }
