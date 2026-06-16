@@ -574,7 +574,7 @@ module.exports = {
         logger.debug(decodeOptions)
         logger.debug(map)
         res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions, id)
-        utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
+        await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
         //res.dmm.outputFile = res.dmm.outputFile[0]
         //res.dmm.deleteSession()
       }

@@ -34,6 +34,7 @@ const fs = require("fs");
 const Session = require('../server/api/models/session');
 const Output = require('../server/api/models/output.js')
 const mongoose = require("mongoose");
+const { JsonStreamStringify } = require('json-stream-stringify').default || require('json-stream-stringify');
 
 function readDirRecursive(dir) {
     let results = [];
@@ -115,7 +116,7 @@ function dropOutput(id) {
     logger.debug(`Collection output${id} dropped successfully.`)
 }
 
-async function checkMaximumSpaceOverflow() {
+async function checkMaximumSpaceOverflow(ignoringOutputId) {
 
     let collections = await mongoose.connection.db.listCollections().toArray();
     const db = mongoose.connection.db;
@@ -248,25 +249,28 @@ async function checkMaximumSpaceOverflow() {
                     folder = file.path
                 else
                     folder = getFolderFromSession(file.path)
-                logger.debug(`Deleting file ${file.path} and folder ${folder} for cleanup...`)
-                fs.rmSync(folder, { recursive: true, force: true });
-                logger.info(`File ${file.path} and folder ${folder} deleted.`);
-                let orphanSession //"./output/" + folder.split("/").join("") + ".json"
-                if (pathIsOutput(file.path))
-                    orphanSession = getSessionFromOutputPath(file.path)
-                else if (file.type === "folder")
-                    orphanSession = getSessionFromOutputFolderPath(file.path)
-                else
-                    orphanSession = file.path
-                logger.debug(`Checking for orphan session with id ${orphanSession} linked to deleted file...`)
-                if (fs.existsSync(orphanSession) && orphanSession !== "./output/results.json")
-                    try {
-                        fs.unlinkSync(orphanSession);
-                    } catch (error) {
-                        logger.error(`Error deleting orphan session file ${orphanSession}:`, error)
-                    }
-                else
-                    logger.debug(`No orphan session file ${orphanSession} found for deleted file.`)
+                if (!ignoringOutputId || (ignoringOutputId && !folder.includes(ignoringOutputId))) {
+                    logger.debug(`Deleting file ${file.path} and folder ${folder} for cleanup...`)
+                    fs.rmSync(folder, { recursive: true, force: true });
+                    logger.info(`File ${file.path} and folder ${folder} deleted.`);
+
+                    let orphanSession //"./output/" + folder.split("/").join("") + ".json"
+                    if (pathIsOutput(file.path))
+                        orphanSession = getSessionFromOutputPath(file.path)
+                    else if (file.type === "folder")
+                        orphanSession = getSessionFromOutputFolderPath(file.path)
+                    else
+                        orphanSession = file.path
+                    logger.debug(`Checking for orphan session with id ${orphanSession} linked to deleted file...`)
+                    if (fs.existsSync(orphanSession) && orphanSession !== "./output/results.json")
+                        try {
+                            fs.unlinkSync(orphanSession);
+                        } catch (error) {
+                            logger.error(`Error deleting orphan session file ${orphanSession}:`, error)
+                        }
+                    else
+                        logger.debug(`No orphan session file ${orphanSession} found for deleted file.`)
+                }
                 //fs.unlinkSync(filePath);
                 //logger.info(`File ${file.file} deleted.`);
             } catch (err) {
@@ -711,20 +715,13 @@ const sendOutput = async (config, res) => {
         if (res.dmm.source.data && res.dmm.source.url)
             res.dmm.source.data = undefined
         if (config.sessionLocation.filesystem) {
-            const JsonStreamStringify = require('json-stream-stringify');
-
-            const writeStream = fs.createWriteStream('./output/output' + outputId + '.json');
-            const jsonStream = new JsonStreamStringify(res.dmm);
-
-            jsonStream.pipe(writeStream);
-
-            writeStream.on('finish', () => {
-                logger.debug('File output is created successfully.');
-                outputDataTempWriting.value = 'File output is created successfully.';
-            });
-
-            writeStream.on('error', (err) => {
-                throw err;
+            await new Promise((resolve, reject) => {
+                const writeStream = fs.createWriteStream('./output/output' + outputId + '.json');
+                const jsonStream = new JsonStreamStringify(res.dmm);
+                jsonStream.pipe(writeStream);
+                writeStream.on('finish', resolve);
+                writeStream.on('error', reject);
+                jsonStream.on('error', reject);
             });
         }
         if (config.sessionLocation.mongo)
@@ -735,10 +732,10 @@ const sendOutput = async (config, res) => {
         //logger.error(res.dmm)
         outputDataTempWriting.value = 'Error during output file creation.'
     }
-    if (config.sessionLocation.filesystem)
-        await finish(outputDataTempWriting)
+    //if (config.sessionLocation.filesystem)
+    //    await finish(outputDataTempWriting)
     if (!config.manualCheckMaximumSpaceOverflow)
-        await checkMaximumSpaceOverflow()
+        await checkMaximumSpaceOverflow(outputId)
     //const deleteSession = 
     logger.debug(res.dmm.outputFile[res.dmm.outputFile.length - 1])
     res.dmm.deleteSession()
