@@ -715,7 +715,7 @@ const sendOutput = async (config, res) => {
         if (res.dmm.source.data && res.dmm.source.url)
             res.dmm.source.data = undefined
         if (config.sessionLocation.filesystem)
-            fs.writeFileSync('./output/output' + outputId + '.json', config.enableSessions ? res.data : "Sessions disabled", "utf8");
+            fs.writeFileSync('./output/output' + outputId + '.json', config.enableSessions ? res.dmm : "Sessions disabled", "utf8");
         if (config.sessionLocation.mongo)
             await Session.insertMany([{ sessionId: outputId, data: res.dmm }])
     }
