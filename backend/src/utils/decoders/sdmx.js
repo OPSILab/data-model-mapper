@@ -50,6 +50,8 @@ function getNuts(row) {
     }
     year = key.split("-")[1];
   }
+  if (row.geo)
+    return row.geo;
   return "NON_NUTS?";
 }
 
