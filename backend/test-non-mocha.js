@@ -12,10 +12,47 @@ let n = 1;
 let errors = 0;
 let successes = 0;
 function equal(a, b) {
+  if (a != b) {
+    if (typeof a === "string" && typeof b === "string") {
+      let aJson, bJson
+      try {
+        aJson = JSON.parse(a)
+      } catch (e) {
+        aJson = null
+      }
+      try {
+        bJson = JSON.parse(b)
+      } catch (e) {
+        bJson = null
+      }
+      if (aJson && bJson) {
+        aId = aJson.id
+        aType = aJson.type
+        bId = bJson.id
+        bType = bJson.type
+        if (aId || bId) {
+          console.assert(aId == bId, "Expected:", bId, "\nActual:", aId)
+          errors++
+          throw { expected: bId, actual: aId, message: "Expected and actual values are different" }
+        }
+        if (aType || bType) {
+          console.assert(aType == bType, "Expected:", bType, "\nActual:", aType)
+          errors++
+          throw { expected: bType, actual: aType, message: "Expected and actual values are different" }
+        }
+      }
+      if (aJson && !bJson || !aJson && bJson) {
+        console.error("One of the values is not a valid JSON string", a, b)
+        errors++
+        throw { expected: b, actual: a, message: "One of the values is not a valid JSON string" }
+      }
+    }
+
+  }
   console.assert(a == b, "Expected:", b, "\nActual:", a)
   if (a !== b) {
     errors++
-    throw { expected: b, actual: a, message: "Expected and actual values are different"}
+    throw { expected: b, actual: a, message: "Expected and actual values are different" }
   }
   successes++
   return a == b
@@ -24,23 +61,41 @@ function equal(a, b) {
 function minify(str) {
   if (typeof str !== "string")
     str = JSON.stringify(str)
-  if (str.length <= 200)
+  if (!str || str.length <= 200)
     return str
   return str.substring(0, 100) + "..." + str.substring(str.length - 100)
 }
 
+function stringify(obj){
+  try {
+    return JSON.stringify(obj, null, 2)
+  }
+  catch (e) {
+    return obj.toString()
+  }
+}
+
+function parse(str){
+  try {
+    return JSON.parse(str)
+  }
+  catch (e) {
+    return str
+  }
+}
+
 function errorHandler(error, name) {//TODO this should go in a utils or in a errorHanlder file
   try {
-    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual ? JSON.stringify(JSON.parse(error.actual), null, 2) : JSON.stringify({ message: error.message }))
-    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected ? JSON.stringify(JSON.parse(error.expected), null, 2) : "no expected")
+    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual ? stringify(parse(error.actual), null, 2) : stringify({ message: error.message }))
+    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected ? stringify(parse(error.expected), null, 2) : "no expected")
     console.error(minify(error.actual), minify(error.expected), error.message)
   } catch (e) {
     console.log("Error writing error files:", e, error?.actual || "no actual", error?.expected || "no expected")
     console.error("Nothing written to error files")
     if (error.actual == undefined)
       error.actual = "undefined"
-    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.message ? JSON.stringify({ message: error.message }) : error.actual)
-    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected ? JSON.stringify(error.expected, null, 2) : "no expected")
+    fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.message ? stringify({ message: error.message }) : error.actual)
+    fs.writeFileSync("./tests/" + name + " - expectedResponse.json", error.expected ? stringify(error.expected, null, 2) : "no expected")
     error.actual = "trucated because it is written to a errorResponse file"
     error.expected = "truncated because it is written to a expectedResponse file"
     console.error(minify(error.actual), minify(error.expected), error.message)
@@ -204,10 +259,13 @@ async function test9() {
 async function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
-  for (let file of files){
+  for (let file of files) {
     try {
-      if (require("./assets/tests/" + file).pre)
+      if (require("./assets/tests/" + file).pre){
+        console.log("Running pre test for", file)
         await require("./assets/tests/" + file).pre()
+        console.log("Pre test for", file, "finished")
+      }
       await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
     } catch (error) {
       errors++

@@ -25,23 +25,23 @@ const { Logger } = log
 const logger = new Logger(__filename)
 const utils = require('../utils/utils');
 
-module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res) => {
+module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res, decodeOptions, rawSourceData, sourceDataType) => {
     logger.info("Initializing Mapper in " + (config.mode == "commandLine" ? "Command Line " : "Server ") + "Mode");
-    logger.debug({sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj})
+    logger.debug({sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, decodeOptions, rawSourceData})
 
     if (Array.isArray(sourceDataIn)) sourceDataIn = sourceDataIn[0]
 
-    if (commandLine.init(sourceDataIn, mapPathIn, dataModelIn, config)) {
+    if (commandLine.init(sourceDataIn, mapPathIn, dataModelIn, config, rawSourceData)) {
 
         logger.debug("commandLine.init()");
 
         // file path or directly string/binary content 
-        var sourceData = sourceDataIn || commandLine.getParam('sourceDataPath');
+        var sourceData = rawSourceData? null : sourceDataIn || commandLine.getParam('sourceDataPath');
         var mapPath = mapPathIn || commandLine.getParam('mapPath');
         var dataModelPath = utils.getDataModelPath(dataModelIn) || commandLine.getParam('targetDataModel');
 
         try {
-            await dmmProcess.processSource(sourceData, "", mapPath, dataModelPath, schema, NGSI_entity, minioObj, config, res)
+            await dmmProcess.processSource(sourceData, sourceDataType, mapPath, dataModelPath, schema, NGSI_entity, minioObj, config, res, rawSourceData, decodeOptions)
         } catch (error) {
             logger.error(error)
             dmmProcess.dataModelMapper.setupError = error
@@ -51,7 +51,7 @@ module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entit
         logger.debug("process.processSource end")
 
     } else {
-        logger.error(sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res?.body, res?.dmm)
+        //logger.error(sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res?.body, res?.dmm)
         logger.error("There was an error while initializing Mapper configuration")
         if (!dmmProcess.dataModelMapper)
             dmmProcess.dataModelMapper = {}

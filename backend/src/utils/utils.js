@@ -554,7 +554,11 @@ const bodyMapper = (body, query) => {
             "mapData"
         ]
     }
-
+    else if (body.mapDescription) {
+        map = {
+            description: body.mapDescription
+        }
+    }
     let dataModel = {
         name: body.dataModelIn,
         id: body.dataModelID,
@@ -684,16 +688,21 @@ const sendOutput = async (config, res) => {
         logger.error(error)
     }
     try {
-        fs.unlinkSync(res.dmm.sourceTempName, (err) => {
-            if (err) {
-                logger.error(
-                    `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
-                    err
-                );
-            } else {
-                logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
-            }
-        })
+        if (fs.existsSync(res.dmm.sourceTempName))
+            fs.unlinkSync(res.dmm.sourceTempName, (err) => {
+                if (err) {
+                    logger.error(
+                        `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
+                        err
+                    );
+                } else {
+                    logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
+                }
+            })
+        else if (config.dontWriteTempFiles)
+            logger.debug("no files to delete")
+        else 
+            logger.warn("Strangely, no files to delete. Control your own to prevent memory leak")
     }
     catch (error) {
         logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);

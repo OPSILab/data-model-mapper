@@ -232,9 +232,15 @@ module.exports = {
     let schema, NGSI_entity, minioObj
     let config = JSON.parse(JSON.stringify(configGlobal))
 
-    if (map?.id) {
+    if (map?.id || map?.description) {
 
-      map = config.idVersion == 1 || configIn.idVersion == 1 ? await Map.findOne({ id: map.id }) : await Map.findOne({ _id: map.id })
+      if (map.description)
+        map = await Map.findOne({ description: map.description })
+      else if (config.idVersion == 1 || configIn.idVersion == 1)
+        map = await Map.findOne({ id: map.id })
+      else
+        map = await Map.findOne({ _id: map.id })
+
       if (!map)
         throw { error: "No map found" }
       //logger.trace(map)
@@ -249,16 +255,20 @@ module.exports = {
           //dataModel.data.$id || 
           config.modelSchemaFolder + '/DataModelTemp.json'
 
-      if (map.sourceDataIn && !source.name) source.name = map.sourceDataIn
-      if (map.sourceData && !source.data) source.data = map.sourceData
-      if (map.sourceDataID && !source.id) source.id = map.sourceDataID
-      if (map.sourceDataURL && !source.url) source.url = map.sourceDataURL
-      if (map.dataModelIn && !dataModel.name) dataModel.name = map.dataModelIn
-      if (map.dataModel && !dataModel.data) dataModel.data = map.dataModel
-      if (map.dataModelID && !dataModel.id) dataModel.id = map.dataModelID
-      if (map.dataModelURL && !dataModel.url) dataModel.url = map.dataModelURL
-      if (map.sourceDataType) source.type = map.sourceDataType
-      if (map.config) configIn = map.config
+      if (!(source.data || source.name || source.id || source.url)) {
+        if (map.sourceDataIn && !source.name) source.name = map.sourceDataIn
+        if (map.sourceData && !source.data) source.data = map.sourceData
+        if (map.sourceDataID && !source.id) source.id = map.sourceDataID
+        if (map.sourceDataURL && !source.url) source.url = map.sourceDataURL
+      }
+      if (!(dataModel.name || dataModel.data || dataModel.id || dataModel.url)) {
+        if (map.dataModelIn && !dataModel.name) dataModel.name = map.dataModelIn
+        if (map.dataModel && !dataModel.data) dataModel.data = map.dataModel
+        if (map.dataModelID && !dataModel.id) dataModel.id = map.dataModelID
+        if (map.dataModelURL && !dataModel.url) dataModel.url = map.dataModelURL
+      }
+      if (map.sourceDataType && !source.type) source.type = map.sourceDataType
+      if (map.config && !configIn) configIn = map.config
 
       logger.debug({ dataModel })
 
@@ -478,7 +488,7 @@ module.exports = {
     let sourceTempId, schemaTempId
     logger.debug("{ source }")
 
-    if (source.data && !decodeOptions) {
+    if (source.data && !decodeOptions && !config.dontWriteTempFiles) {
       let sourceDataTempWriting = {}
       sourceTempId = common.createRandId() //common.createRandId() + source.type
       fs.writeFile(config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type, source.type == "csv" ? source.data : typeof source.data === "object" || Array.isArray(source.data) ? JSON.stringify(source.data) : source.data, function (err) {
@@ -568,8 +578,11 @@ module.exports = {
     logger.debug(dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId)
     logger.debug(source.name, sourceTempId)
 
+    if (id && decodeOptions)
+      decodeOptions.id = id
+
     try {
-      if (decodeOptions) {
+      if (decodeOptions && !config.newSdmxDecode) {
         logger.debug("Decode options provided, using decodeOptions mapping")
         logger.debug(decodeOptions)
         logger.debug(map)
@@ -581,10 +594,12 @@ module.exports = {
       else
         await cli(
           //source.name ? config.sourceDataPath + source.name : config.sourceDataPath + sourceFileTemp2 ? 'sourceFileTemp2.' + source.type : 'sourceFileTemp.' + source.type,
-          source.name ? config.sourceDataPath + source.name : config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type,
+          source.data ? null : source.name ? config.sourceDataPath + source.name : config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type,
           map,
           dataModel.name ? dataModel.name : dataModel.schema_id ? this.getFilename(dataModel.schema_id) : "DataModelTemp" + schemaTempId,
-          schema, NGSI_entity, minioObj, config, res, decodeOptions
+          schema, NGSI_entity, minioObj, config, res, decodeOptions,
+          source.data,
+          source.type
         );
     }
     catch (error) {

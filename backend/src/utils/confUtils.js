@@ -161,7 +161,7 @@ const help = () => {
 /* Check if mandatory configuration parameters are set either via CLI args or config file 
  * 
  **/
-const checkAndInitConf = (sourceDataIn, mapPathIn, dataModelPath, config) => {
+const checkAndInitConf = (sourceDataIn, mapPathIn, dataModelPath, config, rawSourceData) => {
 
     /************ MAPPING CONFIGURATION PARAMETERS ************/
     var mapPath = mapPathIn || nconf.get('mapPath');
@@ -174,8 +174,8 @@ const checkAndInitConf = (sourceDataIn, mapPathIn, dataModelPath, config) => {
         return false;
     }
 
-    var sourcePath = sourceDataIn || nconf.get('sourceDataPath');
-    if (!sourcePath) {
+    var sourcePath = rawSourceData? null : sourceDataIn || nconf.get('sourceDataPath');
+    if (!sourcePath && !rawSourceData) {
         logger.error('You need to specify the source file path');
         return false;
     }
@@ -190,7 +190,7 @@ const checkAndInitConf = (sourceDataIn, mapPathIn, dataModelPath, config) => {
             logger.error(error)            
             return false;
         }
-    } else {
+    } else if (!rawSourceData) {
         logger.error('Incorrect source file path');
         //logger.info(sourcePath)
         return false;
@@ -304,9 +304,9 @@ const checkAndInitConf = (sourceDataIn, mapPathIn, dataModelPath, config) => {
     return true;
 };
 
-function init(sourceDataIn, mapPathIn, dataModelPath, config) {
+function init(sourceDataIn, mapPathIn, dataModelPath, config, rawSourceData) {
     help();
-    return checkAndInitConf(sourceDataIn, mapPathIn, dataModelPath, config);
+    return checkAndInitConf(sourceDataIn, mapPathIn, dataModelPath, config, rawSourceData);
 };
 
 const getParam = (par) => {

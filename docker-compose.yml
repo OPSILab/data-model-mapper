@@ -2,6 +2,7 @@ version: "3.8"
 services:
   data-model-mapper-gui:
     image: engineeringopsilab/data-model-mapper-gui
+    pull_policy: always
     build:
       context: https://github.com/OPSILab/data-model-mapper.git#frontend_dev
       dockerfile: ./gui

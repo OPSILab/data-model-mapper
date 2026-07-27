@@ -318,12 +318,15 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             let mapSourceKey = map[mapDestKey]; // sourceField map object or key-value pair
             let singleResult = undefined;
             logger.debug(modelSchema)
-            let schemaDestKey = modelSchema.allOf[0].properties[mapDestKey];
+            let schemaDestKey = modelSchema.allOf?.[0].properties[mapDestKey] || modelSchema.properties[mapDestKey];
             if (schemaDestKey || mapDestKey === entityIdField || config.ignoreValidation) {//  Check if destKey is present in modelSchema ?
                 if ((config.ignoreValidation || config.noSchema) && source[map[mapDestKey]]) {
                     logger.debug(modelSchema)
-                    modelSchema.allOf[0].properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }//TODO FIX : questo non funziona se map[mapDestKey] ha un .
-                    logger.debug(modelSchema.allOf[0].properties)
+                    if(modelSchema.allOf)
+                        modelSchema.allOf[0].properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }//TODO FIX : questo non funziona se map[mapDestKey] ha un .
+                    else 
+                        modelSchema.properties[mapDestKey] = { "type": typeof source[map[mapDestKey]] }
+                    logger.debug(modelSchema.allOf?.[0].properties || modelSchema.properties)
                 }
                 var normSourceKey = JSON.parse(unorm.nfc(JSON.stringify(mapSourceKey)));// Normalize encoding, avoiding problems 
                 let parsedSourceKey = normSourceKey;// Initialize with normalized Source Key, can be replaced in the specific cases below

@@ -76,21 +76,47 @@ module.exports = {
                 //logger.debug("!" + jwtToken, "\n", Buffer.from(jwtToken.split(".")[1], 'base64').toString())
 
                 let verifiedToken
-                try {
-                    verifiedToken = jwt.verify(jwtToken, //Buffer.from(
-                        authConfig.publicKey
-                        //, 'base64').toString()
-                        //-------//
-                        , { algorithms: ['RS256'] })
+                if (authConfig.publicKeys) {
+                    let authenticated = false
+                    let error
+                    for (let publicKey of authConfig.publicKeys)
+                        try {
+                            verifiedToken = jwt.verify(jwtToken, //Buffer.from(
+                                publicKey
+                                //, 'base64').toString()
+                                //-------//
+                                , { algorithms: ['RS256'] })
+                            authenticated = true
+                            break
+                        }
+                        catch (err) {
+                            logger.warn("Still trying to validate token... ", err.message)
+                            error = err
+                        }
+                    if (!authenticated) {
+                        logger.error(error)
+                        if (error.message == "invalid token" || error.message == "jwt expired" || error.message == "jwt malformed")
+                            return send(res, 403);
+                        else
+                            return send(res, 500);
+                    }
                 }
-                catch (error) {
+                else
+                    try {
+                        verifiedToken = jwt.verify(jwtToken, //Buffer.from(
+                            authConfig.publicKey
+                            //, 'base64').toString()
+                            //-------//
+                            , { algorithms: ['RS256'] })
+                    }
+                    catch (error) {
 
-                    logger.error(error)
-                    if (error.message == "invalid token" || error.message == "jwt expired" || error.message == "jwt malformed")
-                        return send(res, 403);
-                    else
-                        return send(res, 500);
-                }
+                        logger.error(error)
+                        if (error.message == "invalid token" || error.message == "jwt expired" || error.message == "jwt malformed")
+                            return send(res, 403);
+                        else
+                            return send(res, 500);
+                    }
 
 
                 if (authConfig.introspect) {
@@ -144,9 +170,9 @@ module.exports = {
                                 }
                             }
 
-                            let pilot = data?.pilot || "shared"
-                            let email = data?.email || "shared"
-                            let username = data?.username || "shared"
+                            let pilot = data?.pilot || decodedToken.pilot || "shared"
+                            let email = data?.email || decodedToken.email || "shared"
+                            let username = data?.username || decodedToken.username || "shared"
 
                             if (!req.body.config)
                                 req.body.config = {

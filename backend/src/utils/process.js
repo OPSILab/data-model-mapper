@@ -32,10 +32,11 @@ const utils = require('../utils/utils.js');
 const common = require('../utils/common.js');
 const config = require("../../config.js");
 const { load } = require('nconf');
+const sdmxDecoder = require('../parsers/sdmx.js');
 
 //var promises = [];
 
-const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res) => {
+const processSource = async (sourceData, sourceDataType, mapData, dataModelSchemaPath, schema, NGSI_entity, minioObj, config, res, rawSourceData, decodeOptions) => {
 
     logger.debug({ sourceData })
 
@@ -60,34 +61,36 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
 
         logger.debug("dataModelSchemaPath && mapData")
 
-        if (sourceData) {
+        if (sourceData || rawSourceData) {
 
             //logger.trace("sourceData:");
             //logger.trace(sourceData);
             //logger.debug(typeof sourceData)
 
-            if (typeof sourceData === 'object') sourceData = sourceData.toString()
-            //logger.trace(sourceData);
+            if (sourceData) {
+                if (typeof sourceData === 'object') sourceData = sourceData.toString()
+                //logger.trace(sourceData);
 
-            if (typeof sourceData === 'string') {
+                if (typeof sourceData === 'string') {
 
-                sourceData = utils.parseFilePath(sourceData);
+                    sourceData = utils.parseFilePath(sourceData);
 
-                for (let i in sourceData)
-                    if (sourceData[i][sourceData[i].length - 1] == ",")
-                        sourceData[i] = sourceData[i].slice(0, sourceData[i].length - 1)
+                    for (let i in sourceData)
+                        if (sourceData[i][sourceData[i].length - 1] == ",")
+                            sourceData[i] = sourceData[i].slice(0, sourceData[i].length - 1)
 
-                var extension = sourceData.ext;
-                if (!extension) {
+                    var extension = sourceData.ext;
+                    if (!extension) {
+                        // No file path provided nor dataType
+                        logger.error('The provided url/file path does not have file extension');
+                        return Promise.reject('The provided url / file path does not have file extension');
+                    }
+
+                } else if (!sourceDataType) {
                     // No file path provided nor dataType
-                    logger.error('The provided url/file path does not have file extension');
-                    return Promise.reject('The provided url / file path does not have file extension');
+                    logger.error('No file path provided nor dataType');
+                    return Promise.reject('No file path provided nor dataType');
                 }
-
-            } else if (!sourceDataType) {
-                // No file path provided nor dataType
-                logger.error('No file path provided nor dataType');
-                return Promise.reject('No file path provided nor dataType');
             }
 
             if (typeof mapData === 'string' && !mapData.startsWith("{")) {
@@ -137,25 +140,44 @@ const processSource = async (sourceData, sourceDataType, mapData, dataModelSchem
                 }
 
                 logger.info('Starting to Map Source Object');
+                logger.debug(extension || sourceDataType.toLowerCase())
 
                 switch (extension || sourceDataType.toLowerCase()) {
 
                     case '.txt':
                     case 'txt':
-                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
+                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
                         break;
                     case '.csv':
                     case 'csv':
-                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
+                        csvParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
                         break;
                     case '.json':
                     case 'json':
-                        await jsonParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
+                        await jsonParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
                         break;
                     case '.geojson':
                     case 'geojson':
-                        geoParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res);
+                        geoParser.sourceDataToRowStream(sourceData, map, loadedSchema, processRow, processMappedObject, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
                         break;
+                    case 'sdmx-xml':
+                        await await sdmxDecoder(
+                            (Array.isArray(rawSourceData) && rawSourceData[0] || rawSourceData),
+                            null,
+                            null,
+                            null,
+                            decodeOptions.fromUrl,
+                            decodeOptions.id,
+                            config,
+                            processRow,
+                            processMappedObject,
+                            finalizeProcess,
+                            NGSI_entity,
+                            minioObj,
+                            res,
+                            map,
+                            loadedSchema
+                        );
                     default:
                         break;
                 }
@@ -206,7 +228,7 @@ const processRow = async (rowNumber, row, map, schema, mappedHandler, NGSI_entit
     logger.debug("Row: " + rowNumber + " - Object mapped correctly ");
     //logger.trace("Result: " + JSON.stringify(result))
     await mappedHandler(rowNumber, result, schema, res.dmm.promises, config);
-
+    return result
 };
 
 const processMappedObject = async (objNumber, obj, modelSchema, promises, config) => {

@@ -107,12 +107,15 @@ module.exports = {
          */
 
         try {
-            response = (await axios.get("http://localhost:5500/api/source?name=bike_1")).data
+            response = (await axios.get("http://localhost:5500/api/source?name=bike_1", { headers: { authorization } })).data
             if (!response)
                 await insertFlow(response)
         }
         catch (error) {
-            await insertFlow(response)
+            if (error.response && error.response.status === 404) {
+                await insertFlow(response)
+            }
+            else throw error
         }
 
     },

@@ -21,18 +21,19 @@ const request = require('request');
 const fs = require('fs');
 const utils = require('../utils/utils.js');
 const log = require('../utils/logger')//.app(module);
-const {Logger} = log
+const { Logger } = log
 const logger = new Logger(__filename)
 const report = require('../utils/logger').report;
 const config = require('./../../config');
+const { type } = require('os');
 
-function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
+function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
 
     // The source Data is the file content itself
     if (sourceData && !sourceData.ext) {
 
         try {
-            fileToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
+            fileToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
         }
         catch (err) {
             logger.error('There was an error while getting buffer from source data: ');
@@ -42,18 +43,28 @@ function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandle
     }
 
     // The source Data is the file URL
-    else if (utils.httpPattern.test(sourceData.path))
-        urlToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
+    else if (sourceData && utils.httpPattern.test(sourceData.path))
+        urlToRowStream(sourceData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
 
     // The Source Data is the file path
-    else if (sourceData.ext)
-        fileToRowStream(fs.createReadStream(sourceData.absolute), map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res);
+    else if (sourceData && sourceData.ext)
+        fileToRowStream(fs.createReadStream(sourceData.absolute), map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
+    else if (rawSourceData) {
+        logger.debug("The Source Data is the raw data")
+        try {
+            fileToRowStream(null, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
+        }
+        catch (err) {
+            logger.error('There was an error while getting buffer from source data: \n');
+            logger.error(err)
+        }
+    }
     else
         logger.error("No valid Source Data was provided");
 
 }
 
-function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
+function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
 
     var rowNumber = Number(config.rowNumber);
     var rowStart = Number(config.rowStart);
@@ -63,23 +74,16 @@ function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizePro
         .on('error', function (err) {
             logger.error(err);
         })
-        .on('header', function (columns) {
-            //  logger.info('Columns: ' + columns);
-        })
-        .on('data', function (data) {
+        .on('data', function (row) {
 
             rowNumber = Number(config.rowNumber) + 1;
             config.rowNumber = rowNumber;
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res, rawSourceData);
 
             }
-        })
-        .on('column', function (key, value) {
-            // outputs the column name associated with the value found
-            // logger.info('#' + key + ' = ' + value);
         })
         .on('end', function () {
             try {
@@ -96,43 +100,63 @@ function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizePro
 }
 
 
-function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res) {
+function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
 
     var rowNumber = Number(config.rowNumber);
     var rowStart = Number(config.rowStart);
     var rowEnd = Number(config.rowEnd);
-
-    inputData.pipe(geo.parse())
-        .on('error', function (err) {
-            logger.error(err);
-        })
-        .on('header', function (columns) {
-            // logger.info(columns);
-        })
-        .on('data', function (row) {
-
-            rowNumber++;
+    logger.debug(typeof rawSourceData)
+    if (Array.isArray(rawSourceData) && rawSourceData[0].features)
+        rawSourceData = rawSourceData[0]
+    //logger.debug(rawSourceData)
+    //if(!rawSourceData.features)
+    //    throw {error : "No features"}
+    if (rawSourceData) {
+        for (let row of (rawSourceData.features || rawSourceData)) {
+            rowNumber = Number(config.rowNumber) + 1;
             config.rowNumber = rowNumber;
-            // outputs an object containing a set of key/value pair representing a line found in the csv file.
+
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                try {
+                    rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                }
+                catch (error) {
+                    logger.error("Error during row handler")
+                    logger.error(error);
+                }
 
             }
+        }
+        finalizeProcess(minioObj, config, res).then(() =>
+            logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)")
+        ).catch(error => logger.error(error))
+    }
+    else
+        inputData.pipe(geo.parse())
+            .on('error', function (err) {
+                logger.error(err);
+            })
+            .on('data', function (row) {
 
-        })
-        .on('column', function (key, value) {
-            // outputs the column name associated with the value found
-            //logger.info('#' + key + ' = ' + value);
-        })
-        .on('end', function () {
+                rowNumber++;
+                config.rowNumber = rowNumber;
+                // outputs an object containing a set of key/value pair representing a line found in the csv file.
+                if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-            finalizeProcess(minioObj, config, res);
-            logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");
-            //utils.printFinalReportAndSendResponse(log);
-            //utils.printFinalReportAndSendResponse(report);
+                    rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
 
-        });
+                }
+
+            })
+            .on('end', async function () {
+
+                await finalizeProcess(minioObj, config, res);
+                logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");
+                //utils.printFinalReportAndSendResponse(log);
+                //utils.printFinalReportAndSendResponse(report);
+
+            });
 
 }
 

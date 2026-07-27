@@ -570,7 +570,7 @@ function toOrionObject(obj, schema, config) {
             else {
 
 
-                var modelField = schema.allOf[0].properties[key];
+                var modelField = (schema.allOf?.[0] || schema).properties[key];
                 var modelFieldType = modelField.type;
                 var modelFieldFormat = modelField.format;
                 var objField = obj[key];

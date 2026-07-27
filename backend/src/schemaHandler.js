@@ -277,7 +277,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
 
     if (!config.ignoreValidation && !config.noSchema)
         if (config.disableAjv) {
-            if (schema.allOf.find(oneOf => oneOf.$ref))
+            if (schema.allOf && schema.allOf.find(oneOf => oneOf.$ref))
                 logger.debug("Found ref!")
             if (schema.description = "Bike Hire Docking Station")
                 logger.debug(schema.description)
@@ -318,7 +318,7 @@ function validateSourceValue(data, schema, isSingleField, rowNumber, config, res
             if (valid) logger.info("Field is valid")
             else {
                 try {
-                    data = nestedFieldsHandler(data, schema.allOf[0].properties)
+                    data = nestedFieldsHandler(data, (schema.allOf?.[0].properties || schema.properties))
                 }
                 catch (error) {
                     logger.error(error)
