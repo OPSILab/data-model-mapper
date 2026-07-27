@@ -318,7 +318,7 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
             let mapSourceKey = map[mapDestKey]; // sourceField map object or key-value pair
             let singleResult = undefined;
             logger.debug(modelSchema)
-            let schemaDestKey = modelSchema.allOf?.[0].properties[mapDestKey] || modelSchema.properties[mapDestKey];
+            let schemaDestKey = modelSchema.allOf?.[0]?.properties?.[mapDestKey] || modelSchema.properties?.[mapDestKey];
             if (schemaDestKey || mapDestKey === entityIdField || config.ignoreValidation) {//  Check if destKey is present in modelSchema ?
                 if ((config.ignoreValidation || config.noSchema) && source[map[mapDestKey]]) {
                     logger.debug(modelSchema)
@@ -399,17 +399,19 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                 else {
                     logger.error("No schemaDestKey")
                     if (Array.isArray(normSourceKey)) {
-                        let destFieldArray//, destFieldString
-                        if (schemaDestKey.oneOf)
+                        let destFieldArray, destFieldString
+                        if (schemaDestKey?.oneOf)
                             for (let oneOfElement of schemaDestKey.oneOf)
                                 if (oneOfElement.type === 'array')
                                     destFieldArray = oneOfElement
-                        //else if (oneOfElement.type === 'string')
-                        //    destFieldString = oneOfElement
-                        if (schemaDestKey.type === 'array')
+                                else if (oneOfElement.type === 'string')
+                                    destFieldString = oneOfElement
+                        if (schemaDestKey?.type === 'array')
                             parsedSourceKey = handleSourceFieldsToDestArray(normSourceKey, source, destFieldArray?.items?.type)
                         else {
-                            let resIdFields = destFieldString ? handleSourceFieldsArray(normSourceKey, false, source) : handleSourceFieldsArray(normSourceKey, 'number', source);
+                            // Only coerce to number when the schema actually says so; with no schema
+                            // (e.g. ignoreValidation) keep the raw values instead of producing NaN.
+                            let resIdFields = handleSourceFieldsArray(normSourceKey, (schemaDestKey && !destFieldString) ? 'number' : false, source);
                             parsedSourceKey = resIdFields.result;
                             isIdPrefix = resIdFields.isOnlyStatic;
                         }

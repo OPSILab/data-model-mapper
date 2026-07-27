@@ -1,0 +1,105 @@
+# Build
+*/Debug/
+*/debug/
+*/DebugPublic/
+*/debugPublic/
+*/Release/
+*/release/
+*/Releases/
+*/releases/
+*/x64/
+*/x86/
+*/bld/
+*/Bin/
+*/bin/
+*/Obj/
+*/obj/
+
+# IDE
+*/.vs/
+*/.vscode/
+.idea/
+
+# Dependencies
+*/node_modules/
+
+# Generated folders
+*/reports/
+*/logs/
+*/testing/
+*/input/
+backend/output/
+backup/
+minio-storage/
+backend/cachedData/
+backend/src/utils/decoders/out_sdmx/
+
+# Temporary files
+*/sourceFileTemp*
+*.sandbox
+*.sandbox.*
+*errorResponse.json
+*expectedResponse.json
+
+# Logs
+*/validation.log
+*/log*.json
+*/debug.txt
+
+# Backend specific
+backend/config.js
+backend/config.docker.js
+backend/config.beopen.js
+backend/config.msi.js
+backend/config.waze.js
+backend/config,asus.js
+backend/token.js
+backend/monster.js
+backend/result.json
+
+# Data model temporary/history
+backend/dataModels/DataModelTemp.json
+backend/dataModels/test_nested_datamodel.json
+backend/dataModels/nonNgsi.json
+backend/dataModels/schema.json
+backend/dataModels/schema1.json
+backend/dataModels/schema2.json
+
+# Tests / examples
+backend/tests/
+backend/examples/
+backend/sandbox/
+backend/testing/
+backend/docs/tests/.history/
+backend/docs/tests/NonNGSI/NonNGSI - Copia.bat
+
+# Frontend temporary/test
+frontend/src/assets/bikeCiclabili.json
+frontend/src/assets/TrafficFlowObservedWaze.json
+frontend/src/app/pages/data-model-mapper/next/
+frontend/src/app/pages/data-model-mapper/testModule.ts
+frontend/src/app/pages/data-model-mapper/stepper_test.html
+
+# History
+*/.history/
+backend/Funzionalità.docx
+backend/Funzionalità.pdf
+
+# Source/dev files
+backend/src/utils/common_dev.js
+backend/src/utils/threads.js
+backend/src/writers/orionWriter.old.js
+
+# Misc
+minio.yml
+mongo.yml
+docker-compose-always-pull.yml
+docker-compose-context-local-dev.yml
+postgre-minio.session.sql
+deploy_server-linux
+build-frontend.sh
+batch/docker-build-backend-context-local-dev.bat
+tools/node-v14.17.0-win-x64.zip
+backend/assets/mino/bucket default/
+technical documentation
+\ffsyncignore
