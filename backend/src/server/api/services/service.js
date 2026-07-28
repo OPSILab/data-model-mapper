@@ -244,11 +244,15 @@ module.exports = {
       else if (mongoose.Types.ObjectId.isValid(map.id))
         map = await Map.findOne({ _id: map.id })
       else
-        // A mapID (or adapterID, which utils.js maps onto mapID) may be a NAME rather
-        // than an ObjectId. Passing it as _id makes Mongo raise
-        // "CastError: Cast to ObjectId failed for value ... at path _id for model map".
-        map = await Map.findOne({ name: map.id })
-          || await Map.findOne({ id: map.id })
+        // A mapID (or adapterID, which utils.js maps onto mapID) is not an ObjectId here.
+        // Passing it as _id would make Mongo raise "CastError: Cast to ObjectId failed
+        // for value ... at path _id for model map".
+        // The "id" String field is the legacy identifier, so it comes first; the name is
+        // only a courtesy fallback.
+        // TODO the cleaner route is for legacy callers (adapterID / mapperRecordID) to
+        // carry idVersion == 1, which selects the "id" lookup explicitly.
+        map = await Map.findOne({ id: map.id })
+          || await Map.findOne({ name: map.id })
 
       if (!map)
         throw { error: "No map found" }
