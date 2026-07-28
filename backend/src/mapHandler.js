@@ -67,38 +67,129 @@ const loadMap = (mapData) => {
 
 };
 
-const fixBrokenJsonString1 = (field) => {
-    let fixedField
-    field = field.replaceAll('[', '["')
-    field = field.replaceAll(']', '"]')
-    while (field.replaceAll("{ ", '{') != field) field = field.replaceAll("{ ", '{')
-    while (field.replaceAll(" {", '{') != field) field = field.replaceAll(" {", '{')
-    while (field.replaceAll("} ", '}') != field) field = field.replaceAll("} ", '}')
-    while (field.replaceAll(" }", '}') != field) field = field.replaceAll(" }", '}')
-    while (field.replaceAll(" : ", ':') != field) field = field.replaceAll(" : ", ':')
-    while (field.replaceAll(", ", ',') != field) field = field.replaceAll(", ", ',')
-    field = field.replaceAll("{", '{"');
-    field = field.replaceAll("}", '"}');
-    field = field.replaceAll(",", '","');
-    field = field.replaceAll(":", '":"');
+/* Parse the "relaxed JSON" that CSV cells often hold: unquoted keys and values, nested
+ * arbitrarily deep, e.g.
+ *   [{identifier: e, code: EUR, hasCost: 3, description: [{locale: af, description: 3}]}]
+ * The previous implementation chained replaceAll() calls, which cannot handle nesting by
+ * construction (it failed with "Expected ',' or ']' after array element"), so this is a
+ * small recursive descent parser instead.
+ *
+ * Typing rule, chosen to match the rest of the pipeline:
+ *  - OBJECT property values are type-inferred (number / boolean / null), because nothing
+ *    downstream is able to do it for them;
+ *  - BARE ARRAY elements are left as strings, because handleSourceFieldsToDestArray
+ *    converts them according to the schema's items type (a CSV cell "[1,2,3]" must stay
+ *    ["1","2","3"] unless the Data Model declares integer items).
+ * Returns the input unchanged when it cannot be parsed, preserving the old contract.
+ */
+const parseRelaxedJson = (input) => {
+    if (typeof input !== 'string')
+        return input;
+    const text = input.trim();
+    if (!text)
+        return input;
+
+    // Top-level array scalars are handed back as strings even when they parse as numbers:
+    // a CSV cell "[1,2,3]" is valid JSON, but the caller is the one that applies the
+    // schema's items type, so returning numbers here would bypass that decision.
+    const scalarsAsStrings = (parsed) => Array.isArray(parsed)
+        ? parsed.map(element => (typeof element === 'number' || typeof element === 'boolean')
+            ? String(element)
+            : element)
+        : parsed;
+
     try {
-        fixedField = JSON.parse(field)
-    }
-    catch (error) {
-        logger.error(error.message)
-        field = field.replaceAll('}","{', '},{');
-        while (field.replaceAll('" ', '"') != field) field = field.replaceAll('" ', '"')
-        while (field.replaceAll(' "', '"') != field) field = field.replaceAll(' "', '"')
-        while (field.replaceAll('":"{', '":{') != field) field = field.replaceAll('":"{', '":{');
-        while (field.replaceAll('}"', '}') != field) field = field.replaceAll('}"', '}');
-        field = field.replaceAll('["{', '[{');
-        //field = field.replaceAll('\"', '"');
-        fixedField = JSON.parse(field)
-    }
+        return scalarsAsStrings(JSON.parse(text)); // already valid JSON
+    } catch (error) { /* fall through to the relaxed parser */ }
+    if (text[0] !== '[' && text[0] !== '{')
+        return input;
 
-    return fixedField || field
+    let i = 0;
+    const ws = () => { while (i < text.length && /\s/.test(text[i])) i++; };
+    const fail = () => { throw new SyntaxError('unexpected token at position ' + i); };
 
-}
+    const readScalar = (stops) => {
+        ws();
+        const quote = text[i];
+        if (quote === '"' || quote === "'") {
+            i++;
+            let out = '';
+            while (i < text.length && text[i] !== quote) {
+                out += (text[i] === '\\' && i + 1 < text.length) ? text[++i] : text[i];
+                i++;
+            }
+            if (text[i] !== quote) fail();
+            i++;
+            return { raw: out, quoted: true };
+        }
+        const start = i;
+        while (i < text.length && !stops.includes(text[i])) i++;
+        return { raw: text.slice(start, i).trim(), quoted: false };
+    };
+
+    const coerce = (token) => {
+        if (token.quoted) return token.raw;
+        const raw = token.raw;
+        if (raw === 'true') return true;
+        if (raw === 'false') return false;
+        if (raw === 'null') return null;
+        if (raw !== '' && !isNaN(Number(raw))) return Number(raw);
+        return raw;
+    };
+
+    const readValue = (stops, inferType) => {
+        ws();
+        if (text[i] === '{') return readObject();
+        if (text[i] === '[') return readArray();
+        const token = readScalar(stops);
+        return inferType ? coerce(token) : token.raw;
+    };
+
+    const readObject = () => {
+        i++;
+        const out = {};
+        ws();
+        if (text[i] === '}') { i++; return out; }
+        for (;;) {
+            const key = readScalar([':', ',', '}']);
+            ws();
+            if (text[i] !== ':') fail();
+            i++;
+            out[key.raw] = readValue([',', '}'], true);
+            ws();
+            if (text[i] === ',') { i++; continue; }
+            if (text[i] === '}') { i++; return out; }
+            fail();
+        }
+    };
+
+    const readArray = () => {
+        i++;
+        const out = [];
+        ws();
+        if (text[i] === ']') { i++; return out; }
+        for (;;) {
+            out.push(readValue([',', ']'], false));
+            ws();
+            if (text[i] === ',') { i++; continue; }
+            if (text[i] === ']') { i++; return out; }
+            fail();
+        }
+    };
+
+    try {
+        const parsed = readValue([], false);
+        ws();
+        if (i !== text.length)
+            return input; // trailing garbage: safer to hand back the raw value
+        return scalarsAsStrings(parsed);
+    } catch (error) {
+        logger.error('Could not parse relaxed JSON field: ' + error.message);
+        return input;
+    }
+};
+
+const fixBrokenJsonString1 = (field) => parseRelaxedJson(field);
 
 const cleanValue = (value) => {
     let parsed = false
@@ -190,6 +281,30 @@ const getArrayItemType = (source, normSourceKey, schemaDestKey) => {//TODO quest
     //schemaDestKey?.items?.type || ((Number(source[normSourceKey][0]) != NaN || Number(source[normSourceKey][1] != NaN)) && "integer")
 }
 
+/* Fresh accumulator matching the shape of the map node, so arrays stay arrays. */
+const freshContainer = (mapNode) => Array.isArray(mapNode) ? [] : {};
+
+/* Resolve a map leaf against the source when the destination schema has no entry for it.
+ * Mirrors the schema-less handling done at top level, so that a nested key which is absent
+ * from the Data Model still gets its SOURCE VALUE, instead of leaking the raw map value
+ * (e.g. a CSV column name or an unstripped "static:" prefix) into the output.
+ */
+const resolveWithoutSchema = (mapSourceSubField, source) => {
+    if (Array.isArray(mapSourceSubField))
+        return handleSourceFieldsArray(mapSourceSubField, false, source).result;
+    if (typeof mapSourceSubField !== 'string')
+        return undefined;
+    if (mapSourceSubField.startsWith("static:"))
+        return mapSourceSubField.match(staticPattern)[1];
+    if (mapSourceSubField.startsWith("encode:"))
+        return encodingHandler(mapSourceSubField, source);
+    if (Object.prototype.hasOwnProperty.call(source, mapSourceSubField))
+        return source[mapSourceSubField];
+    if (mapSourceSubField.includes('.'))
+        return extractFromNestedField(source, mapSourceSubField);
+    return source[mapSourceSubField];
+};
+
 const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ignoreValidation) => {
     logger.debug("objectHandler")
     logger.debug({ parsedSourceKey, normSourceKey, schemaDestKey, source })
@@ -203,27 +318,31 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ig
 
         let schemaDestSubKey
         if (ignoreValidation) {
-            if (normSourceKey[key] && source[normSourceKey[key]])
-                schemaDestSubKey = { type: typeof source[normSourceKey[key]] }
-            else if (normSourceKey[key])
-                if (normSourceKey[key].startsWith("static:") || normSourceKey[key].startsWith("encode:"))
+            // Only string map values carry the "static:"/"encode:"/"toarray:" operators. Nested
+            // objects/arrays must fall through with no sub-schema, otherwise .startsWith() throws
+            // and the whole field is silently swallowed by the caller's try/catch.
+            if (typeof normSourceKey[key] === 'string') {
+                if (source[normSourceKey[key]] !== undefined)
+                    schemaDestSubKey = { type: typeof source[normSourceKey[key]] }
+                else if (normSourceKey[key].startsWith("static:") || normSourceKey[key].startsWith("encode:"))
                     schemaDestSubKey = { type: "string" }
                 else if (normSourceKey[key].startsWith("toarray:"))
                     schemaDestSubKey = { type: "array" }
+            }
         }
         else {
-            if (schemaDestKey.properties && !schemaDestKey.oneOf)
+            if (schemaDestKey?.properties && !schemaDestKey.oneOf)
                 schemaDestSubKey = schemaDestKey.properties[key];
-            if (schemaDestKey.oneOf)
+            if (schemaDestKey?.oneOf)
                 for (let oneOfElement of schemaDestKey.oneOf)
                     if (oneOfElement.properties && oneOfElement.properties[key])
                         schemaDestSubKey = oneOfElement.properties[key];
         }
         logger.debug({ schemaDestSubKey })
 
-        if (schemaDestSubKey || schemaDestKey.type == "array") {
+        if (schemaDestSubKey || schemaDestKey?.type == "array") {
 
-            let schemaFieldType = schemaDestSubKey?.type || (schemaDestKey.type == "string" && "string");
+            let schemaFieldType = schemaDestSubKey?.type || (schemaDestKey?.type == "string" && "string");
             let schemaFieldFormat = schemaDestSubKey?.format;
             let mapSourceSubField = normSourceKey[key];
             logger.debug({ mapSourceSubField })
@@ -262,7 +381,9 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ig
             }
             else if (schemaFieldType === 'object') {
                 logger.debug("schemaFieldType === 'object'")
-                parsedSourceKey[key] = objectHandler(mapSourceSubField, mapSourceSubField, schemaDestSubKey, source)
+                // Accumulate into a FRESH object: passing mapSourceSubField as destination mutated
+                // the map in place and left unmatched sub-keys holding the raw map value.
+                parsedSourceKey[key] = objectHandler(freshContainer(mapSourceSubField), mapSourceSubField, schemaDestSubKey, source, ignoreValidation)
             } else if (mapSourceSubField.includes('.')) {// && dotPattern.test(key)) 
                 logger.debug("mapSourceSubField.includes(.)")
                 parsedSourceKey[key] = extractFromNestedField(source, mapSourceSubField);
@@ -275,8 +396,22 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ig
             // Add type to the nested map field
             //parsedNorm[key]['type'] = new Function("input", "return '" + schemaFieldType + "'");
         }
-        else if (Array.isArray(normSourceKey) && schemaDestKey.type == "string")
+        else if (Array.isArray(normSourceKey) && schemaDestKey?.type == "string")
             parsedSourceKey = handleSourceFieldsArray(normSourceKey, false, source).result;
+        else {
+            // No schema entry for this sub-key: resolve it against the source anyway, or drop it.
+            // Never leave the raw map value in the output.
+            let mapSourceSubField = normSourceKey[key];
+            if (typeof mapSourceSubField === 'object' && mapSourceSubField !== null)
+                parsedSourceKey[key] = objectHandler(freshContainer(mapSourceSubField), mapSourceSubField, undefined, source, ignoreValidation);
+            else {
+                let resolved = resolveWithoutSchema(mapSourceSubField, source);
+                if (resolved !== undefined)
+                    parsedSourceKey[key] = resolved;
+                else
+                    delete parsedSourceKey[key];
+            }
+        }
     }
     return parsedSourceKey;
 };
@@ -348,7 +483,9 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                         parsedSourceKey = source[normSourceKey] // parsedSourceKey = normSourceKey before this assigmnent, so parsedSourceKey = source[normSourceKey] and parsedSourceKey = source[parsedSourceKey] is the same
                 }
                 else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object') //TODO fix : gli array vengono dirottati qui e funziona solo perché l'ho adattato anche agli array, però meglio utilizzare la funzione giusta per gli array...
-                    parsedSourceKey = objectHandler(parsedSourceKey, normSourceKey, schemaDestKey, source, config.ignoreValidation)
+                    // Fresh accumulator: parsedSourceKey is still === normSourceKey (the map) here,
+                    // so reusing it mutated the map and leaked raw map values into the output.
+                    parsedSourceKey = objectHandler(freshContainer(normSourceKey), normSourceKey, schemaDestKey, source, config.ignoreValidation)
                 else if (schemaDestKey && schemaDestKey.type === 'array') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
                     logger.debug({ source, normSourceKey })
@@ -526,7 +663,11 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
         }
     }
     else
-        if (result[entityIdField]) result[entityIdField] = result[entityIdField].concat(rowNumber)
+        // Presence check, not a truthiness one: an entityIdField mapped to an empty string
+        // (e.g. "static:") is a legitimate prefix, and testing it as falsy skipped the row
+        // index altogether, leaving "" instead of "1".
+        if (result[entityIdField] !== undefined && result[entityIdField] !== null)
+            result[entityIdField] = ('' + result[entityIdField]).concat(rowNumber)
 
     /** Once we added only valid mapped single entries, let's do a final validation against the whole final mapped object
     * Despite single validations, the following one is mandatory to be successful

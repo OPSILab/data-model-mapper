@@ -18,7 +18,7 @@ module.exports = {
             "description": "static:Search output element",
             "content": "encode:base64:[\"institution\", \"static:-\", \"name\", \"static:-\", \"degree\", \"static:-\", \"semester\", \"static:-\", \"applicationPeriodFrom\", \"static:-\", \"applicationPeriodTo\"]",
             "contentType": "static:text/plain",
-            "entitySourceId": "static:search",
+            "search": "static:",
             "targetDataModel": "DataModelTemp"
         },
         "dataModel": {
@@ -44,23 +44,25 @@ module.exports = {
                 },
                 "contentType": {
                     "type": "string"
+                },
+                "type" : {
+                    "type" : "string"
                 }
             }
         },
-        config: { NGSI_entity: false, writers: [] }
+        config: { NGSI_entity: false, writers: [], "entityNameField": "search", }
 
     },
     response: [
         {
-            "output": {
-                "outputId": "searchOutput1",
-                "title": "Search output",
-                "type": "string",
-                "language": "English",
-                "description": "Search output element",
-                "content": "VW5pdmVyc2l0eS1VTklQQS1tYXN0ZXItMS0wMS8xMC8yMDIyLTAxLzAzLzIwMjM=",
-                "contentType": "text/plain"
-            },
+
+            "outputId": "searchOutput1",
+            "title": "Search output",
+            "type": "string",
+            "language": "English",
+            "description": "Search output element",
+            "content": "VW5pdmVyc2l0eS1VTklQQS1tYXN0ZXItMS0wMS8xMC8yMDIyLTAxLzAzLzIwMjM=",
+            "contentType": "text/plain",
             "search": "1"
         },
         {

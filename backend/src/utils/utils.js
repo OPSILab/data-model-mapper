@@ -292,23 +292,50 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
     logger.debug("Current filesystem storage size for sessions and outputs: ", Number(usedMB.toFixed(3)), " MB")
 }
 
-function ngsi(NGSI_entity) {
-    return (((NGSI_entity == undefined) && config.NGSI_entity || NGSI_entity).toString() === 'true')
+function ngsi(NGSI_entity, confIn) {
+    const conf = confIn || config;
+    return (((NGSI_entity == undefined) && conf.NGSI_entity || NGSI_entity).toString() === 'true')
 }
 
-const cleanString = (string, NGSI_entity, config) => {
+/* The per-request config is built with JSON.parse(JSON.stringify(config)) (see auth.js),
+ * a round-trip that turns RegExp literals into {} and would silently disable all cleaning.
+ * Resolve the pattern defensively: use it if it is a real RegExp, rebuild it if it arrived
+ * as a string (the documented "regex provided from the request in server mode"), and
+ * otherwise fall back to the module-level config, which always holds real RegExp objects.
+ */
+const resolveCleanRegex = (conf, NGSI_entity) => {
+    const key = ngsi(NGSI_entity, conf) ? "default" : "custom";
+    const candidate = conf && conf.regexClean ? conf.regexClean[key] : undefined;
+    if (candidate instanceof RegExp)
+        return candidate;
+    if (typeof candidate === 'string' && candidate.length > 0)
+        try {
+            return new RegExp(candidate, 'g');
+        } catch (error) {
+            logger.error(`Invalid regexClean.${key} provided: ${candidate}`);
+        }
+    return config.regexClean[key];
+};
+
+const cleanString = (string, NGSI_entity, conf) => {
     var result = '';
     if (typeof string === 'string')
-        result = string.replace(config.regexClean[ngsi(NGSI_entity) ? "default" : "custom"], ' ');
+        // Data values and field names are only stripped when regexCleanDest is "all".
+        // With any other value the regexClean profile applies to entity ids only
+        // (cleanIdString), since characters such as "(" ")" are legitimate in values.
+        result = (conf || config).regexCleanDest === "all"
+            ? string.replace(resolveCleanRegex(conf, NGSI_entity), ' ')
+            : string;
 
     return result;
 
 };
 
-const cleanIdString = (string, NGSI_entity, config) => {
+const cleanIdString = (string, NGSI_entity, conf) => {
     var result = '';
     if (typeof string === 'string')
-        result = string.replace(config.regexClean[ngsi(NGSI_entity) ? "default" : "custom"], ' ')
+        // Ids are ALWAYS cleaned, regardless of regexCleanDest.
+        result = string.replace(resolveCleanRegex(conf, NGSI_entity), ' ')
             .replace(/à/g, 'a')
             .replace(/ù/g, 'u')
             .replace(/é|è/g, 'e')
@@ -322,8 +349,14 @@ const cleanNumber = (number) => {
     return number;
 };
 
-const cleanPair = (key, value, NGSI_entity) => {
+/* confIn is the PER-REQUEST config. It must be threaded all the way down to cleanString,
+ * otherwise options such as regexCleanDest only work when set in config.js and are
+ * silently ignored when specified in the body of a single mapping request.
+ * Falls back to the module-level config when omitted, for backward compatibility.
+ */
+const cleanPair = (key, value, NGSI_entity, confIn) => {
 
+    const conf = confIn || config;
 
     if (value instanceof Array) {
         var arrayResult = {};
@@ -331,9 +364,9 @@ const cleanPair = (key, value, NGSI_entity) => {
         for (var i = 0; i < value.length; i++) {
             var elem = value[i];
 
-            arrayValues[i] = cleanPair(key, elem, NGSI_entity).value;
+            arrayValues[i] = cleanPair(key, elem, NGSI_entity, conf).value;
         }
-        arrayResult.key = cleanString(key, NGSI_entity, config);
+        arrayResult.key = cleanString(key, NGSI_entity, conf);
         arrayResult.value = arrayValues;
         return arrayResult;
 
@@ -341,19 +374,19 @@ const cleanPair = (key, value, NGSI_entity) => {
         var result = {};
         var objResult = {};
         Object.keys(value).forEach(function (objKey) {
-            var aux = cleanPair(objKey, value[objKey], NGSI_entity);
+            var aux = cleanPair(objKey, value[objKey], NGSI_entity, conf);
             objResult[aux.key] = aux.value;
         });
-        result.key = cleanString(key, NGSI_entity, config);
+        result.key = cleanString(key, NGSI_entity, conf);
         result.value = objResult;
         return result;
 
     } else {
 
         var result = {};
-        result.key = cleanString(key, NGSI_entity, config);
+        result.key = cleanString(key, NGSI_entity, conf);
         if (typeof value === 'string')
-            result.value = cleanString(value, NGSI_entity, config);
+            result.value = cleanString(value, NGSI_entity, conf);
         else if (value !== null) {
             result.value = cleanNumber(value, NGSI_entity);
         }
@@ -364,13 +397,13 @@ const cleanPair = (key, value, NGSI_entity) => {
     }
 };
 
-const cleanRow = (row, NGSI_entity) => {
+const cleanRow = (row, NGSI_entity, confIn) => {
 
     var result = {};
 
     Object.keys(row).forEach(function (key) {
         var value = row[key];
-        var newPair = cleanPair(key, value, NGSI_entity);
+        var newPair = cleanPair(key, value, NGSI_entity, confIn || config);
         result[newPair.key] = newPair.value;
     });
 

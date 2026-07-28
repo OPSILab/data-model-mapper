@@ -84,6 +84,18 @@ function parse(str){
   }
 }
 
+/* An axios failure carries the server's explanation in error.response.data, while
+ * error.message is only "Request failed with status code NNN". Without this the
+ * errorResponse files record the status code and throw away the actual cause.
+ */
+function serverError(error) {
+  const data = error?.response?.data
+  if (data === undefined || data === null || data === '')
+    return undefined
+  const status = error.response.status
+  return { httpStatus: status, serverResponse: data, message: error.message }
+}
+
 function errorHandler(error, name) {//TODO this should go in a utils or in a errorHanlder file
   try {
     fs.writeFileSync("./tests/" + name + " - errorResponse.json", error.actual ? stringify(parse(error.actual), null, 2) : stringify({ message: error.message }))
@@ -196,7 +208,7 @@ async function dmmRequestWithReport(name, body, exp) {
           JSON.stringify(expectedReport)
         )
     } catch (error) {
-      errorHandler({ actual: error.actual || actualReport || error.message, expected: error.expected || expectedReport, message: error.message }, name + " - report comparison")
+      errorHandler({ actual: error.actual || serverError(error) || actualReport || error.message, expected: error.expected || expectedReport, message: error.message }, name + " - report comparison")
     }
   }
   else
@@ -218,7 +230,7 @@ async function test5() {
     )
   }
   catch (error) {
-    errorHandler({ actual: error.actual || res.data[0] || error.message, expected: error.expected || assets.testMultiPartResponse, message: error.message }, "05 Multipart test")
+    errorHandler({ actual: error.actual || serverError(error) || res.data[0] || error.message, expected: error.expected || assets.testMultiPartResponse, message: error.message }, "05 Multipart test")
   }
 }
 
@@ -235,7 +247,7 @@ async function test8() {
     )
   }
   catch (error) {
-    errorHandler({ actual: error.actual || res.data || error.message, expected: error.expected || assets.testGetFromMinio, message: error.message }, "08 Get object from minio")
+    errorHandler({ actual: error.actual || serverError(error) || res.data || error.message, expected: error.expected || assets.testGetFromMinio, message: error.message }, "08 Get object from minio")
   }
 }
 
@@ -252,7 +264,7 @@ async function test9() {
     )
   }
   catch (error) {
-    errorHandler({ actual: error.actual || res.data || error.message, expected: error.expected || authorization, message: error.message }, "09 Get bearer")
+    errorHandler({ actual: error.actual || serverError(error) || res.data || error.message, expected: error.expected || authorization, message: error.message }, "09 Get bearer")
   }
 }
 
@@ -269,7 +281,7 @@ async function test10() {
       await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
     } catch (error) {
       errors++
-      errorHandler({ actual: error.actual || error.message, expected: error.expected || require("./assets/tests/" + file).response, message: error.message }, file + " - pre test")
+      errorHandler({ actual: error.actual || serverError(error) || error.message, expected: error.expected || require("./assets/tests/" + file).response, message: error.message }, file + " - pre test")
     }
     console.log("Test 10 - ", files.indexOf(file))
   }

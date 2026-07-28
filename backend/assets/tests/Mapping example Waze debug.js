@@ -881,6 +881,7 @@ module.exports = {
                 "addressLocality": "Cluj-Napoca",
                 "streetAddress": "Str. Baba Novac"
             },
+            "averageVehicleSpeed": 0,
             "location": {
                 "type": "LineString",
                 "coordinates": [

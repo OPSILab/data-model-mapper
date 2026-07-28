@@ -407,7 +407,7 @@ module.exports = {
                 "addressCountry": "country",
                 "addressLocality": "city",
                 "streetAddress": "street",
-                "type": "PostalAddress"
+                "type": "static:PostalAddress"
             },
             "averageVehicleSpeed": "speedKMH",
             "location": {
@@ -885,6 +885,7 @@ module.exports = {
                 "streetAddress": "Str. Baba Novac",
                 "type": "PostalAddress"
             },
+            "averageVehicleSpeed": 0,
             "location": {
                 "type": "LineString",
                 "coordinates": [

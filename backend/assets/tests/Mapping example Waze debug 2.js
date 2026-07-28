@@ -885,6 +885,7 @@ module.exports = {
                 "postalCode": "98052",
                 "streetAddress": "20341 Whitworth Institute 405 N. Whitworth"
             },
+            "averageVehicleSpeed": 0,
             "location": {
                 "type": "LineString",
                 "coordinates": [

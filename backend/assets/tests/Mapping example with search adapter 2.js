@@ -13,7 +13,7 @@ module.exports = {
         ],
         "mapData": {
             "output": {
-                "outputId": "concat:[\"institution\",\"name\"]",
+                "outputId": ["institution", "name"],
                 "title": "static:Search output",
                 "type": "static:string",
                 "language": "static:English",
@@ -21,7 +21,7 @@ module.exports = {
                 "content": "encode:base64:[\"institution\", \"static:-\", \"name\", \"static:-\", \"degree\", \"static:-\", \"semester\", \"static:-\", \"applicationPeriodFrom\", \"static:-\", \"applicationPeriodTo\"]",
                 "contentType": "static:text/plain"
             },
-            "entitySourceId": "static:search",
+            "search": "static:",
             "targetDataModel": "DataModelTemp"
         },
         "dataModel": {
@@ -49,12 +49,15 @@ module.exports = {
                         },
                         "contentType": {
                             "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
                         }
                     }
                 }
             }
         },
-        config: { NGSI_entity: false, writers: [] }
+        config: { NGSI_entity: false, writers: [], "entityNameField": "search", }
     },
     response: [
         {

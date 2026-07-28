@@ -237,9 +237,18 @@ module.exports = {
       if (map.description)
         map = await Map.findOne({ description: map.description })
       else if (config.idVersion == 1 || configIn.idVersion == 1)
+        // Fall back to the name when no record carries that custom id, instead of
+        // failing outright with "No map found".
         map = await Map.findOne({ id: map.id })
-      else
+          || await Map.findOne({ name: map.id })
+      else if (mongoose.Types.ObjectId.isValid(map.id))
         map = await Map.findOne({ _id: map.id })
+      else
+        // A mapID (or adapterID, which utils.js maps onto mapID) may be a NAME rather
+        // than an ObjectId. Passing it as _id makes Mongo raise
+        // "CastError: Cast to ObjectId failed for value ... at path _id for model map".
+        map = await Map.findOne({ name: map.id })
+          || await Map.findOne({ id: map.id })
 
       if (!map)
         throw { error: "No map found" }
@@ -710,10 +719,13 @@ module.exports = {
   },
 
   async getSource(id, name, mapRef, prefix) {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      id = undefined
+    // The id may legitimately be a NAME. Copy it into name BEFORE clearing it:
+    // doing it after (name = id, with id already undefined) silently lost the value
+    // and the lookup degenerated into findOne({ name: undefined }).
+    if (id && !mongoose.Types.ObjectId.isValid(id)) {
       if (!name)
         name = id
+      id = undefined
     }
     let source = await Source.findOne(mapRef ? { mapRef: mapRef, user: (prefix?.split("/")[0] || "shared") } : id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     if (!source) throw { code: 404, message: "NOT FOUND" }
@@ -721,6 +733,14 @@ module.exports = {
   },
 
   async getMap(id, name, prefix) {
+    // Same treatment already applied to sources and Data Models: a mapID/adapterID may be
+    // a NAME rather than an ObjectId. Without this, Mongo raises
+    // "CastError: Cast to ObjectId failed for value ... at path _id for model map".
+    if (id && !mongoose.Types.ObjectId.isValid(id)) {
+      if (!name)
+        name = id
+      id = undefined
+    }
     let map = await Map.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     if (!map) throw { code: 404, message: "NOT FOUND" }
     if (map.dataModel)
@@ -729,10 +749,11 @@ module.exports = {
   },
 
   async getDataModel(id, name, mapRef, prefix) {
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      id = undefined
+    // See getSource: name must be taken from id before id is cleared.
+    if (id && !mongoose.Types.ObjectId.isValid(id)) {
       if (!name)
         name = id
+      id = undefined
     }
     let dataModel = await DataModel.findOne(mapRef ? { mapRef: mapRef, user: (prefix?.split("/")[0] || "shared") } : id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     if (!dataModel) throw { code: 404, message: "NOT FOUND" }

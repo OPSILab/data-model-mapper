@@ -218,7 +218,7 @@ const processRow = async (rowNumber, row, map, schema, mappedHandler, NGSI_entit
     delete map['idService'];
     delete map['idGroup'];
     try {
-        var result = mapHandler.mapObjectToDataModel(rowNumber, utils.cleanRow(row, NGSI_entity), map, schema, config.idSite, config.idService, config.idGroup, config.entityNameField, NGSI_entity, minioObj, config, res);
+        var result = mapHandler.mapObjectToDataModel(rowNumber, utils.cleanRow(row, NGSI_entity, config), map, schema, config.idSite, config.idService, config.idGroup, config.entityNameField, NGSI_entity, minioObj, config, res);
     }
     catch (error) {
         logger.error(error, "\n", error.message)

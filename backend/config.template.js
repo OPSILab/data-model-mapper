@@ -82,8 +82,13 @@ var config = {
 
     regexClean: {
         custom: /\0/g, // the regex provided from the request in server mode
-        default: /\n|'|<|>|"|'|=|;|\(|\)/g // DO NOT TOUCH this is the default value for ngsi entity 
+        default: /\n|'|<|>|"|'|=|;|\(|\)/g // DO NOT TOUCH this is the default value for ngsi entity
     },
+
+    // Which output strings the regexClean profile above is applied to:
+    //   "all" -> entity ids AND every data value / field name (legacy behaviour)
+    //   anything else (default) -> entity ids only, via cleanIdString
+    regexCleanDest: "id",
 
     /************************* CSV Parser configuration *******************
      * Configuration parameters in case of CSV input

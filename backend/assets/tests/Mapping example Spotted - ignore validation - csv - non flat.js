@@ -8,12 +8,12 @@ module.exports = {
             ],
             "fields": {
                 "address": {
-                    "addressCountry": "",
-                    "addressLocality": "",
+                    "addressCountry": "static:",
+                    "addressLocality": "static:",
                     "streetAddress": "anagrafica"
                 },
                 "location": "Location",
-                "name": "",
+                "name": "static:",
                 "targetDataModel": "Spotted"
             }
         },
@@ -22,7 +22,9 @@ module.exports = {
         "csvDelimiter": ";",
         "config": {
             "rowEnd": 2,
-            "ignoreValidation": true
+            "ignoreValidation": true,
+            regexCleanDest: "id",
+            writers: []
         }
     },
     response: [
@@ -56,15 +58,11 @@ module.exports = {
         },
         {
             "MAPPING_REPORT": {
-                "Processed_objects": 4093,
-                "Mapped_and_Validated_Objects": "2-4093",
-                "Mapped_and_NOT_Validated_Objects": "4091-4093"
+                "Processed_objects": 4154,
+                "Mapped_and_Validated_Objects": "2-4154",
+                "Mapped_and_NOT_Validated_Objects": "4152-4154"
             },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "2/2",
-                "Object NOT written to Orion Context Broker": "0/2",
-                "Object SKIPPED": "0/2"
-            }
+            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

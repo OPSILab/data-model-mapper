@@ -7708,6 +7708,7 @@ module.exports = {
                 "addressLocality": "Cluj-Napoca",
                 "streetAddress": "Str. Baba Novac"
             },
+            "averageVehicleSpeed": 0,
             "location": {
                 "type": "LineString",
                 "coordinates": [
@@ -11114,6 +11115,7 @@ module.exports = {
                                     "streetAddress": "DN1C - Str. Clujului"
                                 },
                                 "averageVehicleSpeed": 36.26,
+                                "averageVehicleSpeed": 0,
                                 "location": {
                                     "type": "LineString",
                                     "coordinates": [

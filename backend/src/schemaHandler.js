@@ -29,12 +29,19 @@ const report = require('./utils/logger').report;
 const config = require('../config')
 
 // this function completes the compatibility with array inside nested objects and objects inside an array
+/* Drops keys that carry NO value. It must test for undefined/null explicitly: a falsy
+ * check also deletes "" and 0, which are legitimate mapped values, and since this
+ * mutates the object it is handed (the mapped pair in validateSourceValue) the field
+ * then disappears from the output entirely. Empty objects/arrays keep being removed.
+ */
 function removeUndefined(obj) {
     for (let key in obj) {
-        if ((typeof obj[key] != "boolean" && !obj[key]) || (typeof obj[key] == "object" && Object.keys(obj[key]).length === 0)) {
+        const value = obj[key];
+        if (value === undefined || value === null || Number.isNaN(value)
+            || (typeof value === "object" && Object.keys(value).length === 0)) {
             delete obj[key];
-        } else if (typeof obj[key] === 'object') {
-            removeUndefined(obj[key]);
+        } else if (typeof value === 'object') {
+            removeUndefined(value);
         }
     }
 }
