@@ -6514,8 +6514,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:13.880Z",
             "dateObserved": "1759925413880",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103203492"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103203492",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 94273304,
@@ -6774,8 +6774,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:01:38.076Z",
             "dateObserved": "1759924898076",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic101712790"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic101712790",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 101062286,
@@ -6820,8 +6820,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:58:12.375Z",
             "dateObserved": "1759924692375",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic101062286"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic101062286",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103613860,
@@ -6874,8 +6874,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:00.666Z",
             "dateObserved": "1759925580666",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103613860"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103613860",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 92201460,
@@ -7008,8 +7008,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:06:17.104Z",
             "dateObserved": "1759921577104",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic92201460"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic92201460",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103661218,
@@ -7050,8 +7050,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:06.134Z",
             "dateObserved": "1759925586134",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103661218"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103661218",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102659852,
@@ -7148,8 +7148,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:09.291Z",
             "dateObserved": "1759925229291",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102659852"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102659852",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103234866,
@@ -7206,8 +7206,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:12.388Z",
             "dateObserved": "1759925412388",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103234866"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103234866",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 75604628,
@@ -7260,8 +7260,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T08:33:28.586Z",
             "dateObserved": "1759912408586",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic75604628"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic75604628",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99029488,
@@ -7496,8 +7496,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:01.318Z",
             "dateObserved": "1759925581318",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103648442"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103648442",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 97418070,
@@ -7578,8 +7578,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:37:04.718Z",
             "dateObserved": "1759923424718",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic97418070"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic97418070",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103125180,
@@ -7660,8 +7660,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:07.482Z",
             "dateObserved": "1759925407482",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103125180"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103125180",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102242818,
@@ -7698,8 +7698,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:04:18.053Z",
             "dateObserved": "1759925058053",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102242818"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102242818",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 1726062334,
@@ -7728,8 +7728,8 @@ module.exports = {
             },
             "dateModified": "2025-09-23T10:55:46.147Z",
             "dateObserved": "1758624946147",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic1726062334"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic1726062334",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99537870,
@@ -7802,8 +7802,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:49:15.622Z",
             "dateObserved": "1759924155622",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99537870"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99537870",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99037760,
@@ -7836,8 +7836,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:46:18.700Z",
             "dateObserved": "1759923978700",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99037760"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99037760",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102699062,
@@ -7974,8 +7974,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:08.732Z",
             "dateObserved": "1759925228732",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102699062"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102699062",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99522242,
@@ -8052,8 +8052,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:49:13.913Z",
             "dateObserved": "1759924153913",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99522242"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99522242",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 93276834,
@@ -8126,8 +8126,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:12:33.106Z",
             "dateObserved": "1759921953106",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic93276834"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic93276834",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99091544,
@@ -8180,8 +8180,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:46:18.454Z",
             "dateObserved": "1759923978454",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99091544"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99091544",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102148900,
@@ -8218,8 +8218,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:04:12.756Z",
             "dateObserved": "1759925052756",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102148900"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102148900",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 100598348,
@@ -8292,8 +8292,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:55:28.717Z",
             "dateObserved": "1759924528717",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic100598348"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic100598348",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 87598208,
@@ -8426,8 +8426,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T10:38:46.963Z",
             "dateObserved": "1759919926963",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic87598208"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic87598208",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102621602,
@@ -8464,8 +8464,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:10.914Z",
             "dateObserved": "1759925230914",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102621602"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102621602",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 91660982,
@@ -8578,8 +8578,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:03:09.743Z",
             "dateObserved": "1759921389743",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic91660982"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic91660982",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 87695610,
@@ -8632,8 +8632,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T10:38:49.847Z",
             "dateObserved": "1759919929847",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic87695610"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic87695610",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 100624190,
@@ -8678,8 +8678,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:55:14.826Z",
             "dateObserved": "1759924514826",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic100624190"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic100624190",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103723366,
@@ -8720,8 +8720,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:04.174Z",
             "dateObserved": "1759925584174",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103723366"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103723366",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102613844,
@@ -8770,8 +8770,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:12.231Z",
             "dateObserved": "1759925232231",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102613844"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102613844",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103683556,
@@ -8816,15 +8816,17 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:00.139Z",
             "dateObserved": "1759925580139",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103683556"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103683556",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 1857969908,
             "address": {
                 "addressCountry": "RO",
-                "addressLocality": "Florești"
+                "addressLocality": "Florești",
+                "streetAddress": ""
             },
+            "averageVehicleSpeed": 0,
             "location": {
                 "type": "LineString",
                 "coordinates": [
@@ -8946,8 +8948,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:00.521Z",
             "dateObserved": "1759925580521",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103594082"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103594082",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 94358990,
@@ -8992,8 +8994,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:18:37.549Z",
             "dateObserved": "1759922317549",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic94358990"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic94358990",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 91179702,
@@ -9050,8 +9052,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:00:01.330Z",
             "dateObserved": "1759921201330",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic91179702"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic91179702",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99021498,
@@ -9156,8 +9158,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:46:14.291Z",
             "dateObserved": "1759923974291",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Apahidatraffic99021498"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Apahidatraffic99021498",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103723340,
@@ -9198,8 +9200,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:03.987Z",
             "dateObserved": "1759925583987",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103723340"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103723340",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 99526026,
@@ -9280,8 +9282,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:49:12.451Z",
             "dateObserved": "1759924152451",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99526026"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic99526026",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 96873646,
@@ -9394,8 +9396,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:34:00.646Z",
             "dateObserved": "1759923240646",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic96873646"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic96873646",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102610420,
@@ -9460,8 +9462,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:13.452Z",
             "dateObserved": "1759925233452",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102610420"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102610420",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103613760,
@@ -9712,8 +9714,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:05.809Z",
             "dateObserved": "1759925405809",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103160520"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103160520",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 97499296,
@@ -9782,8 +9784,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T11:37:01.891Z",
             "dateObserved": "1759923421891",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic97499296"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic97499296",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102695406,
@@ -9860,8 +9862,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:07:10.720Z",
             "dateObserved": "1759925230720",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102695406"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102695406",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103160786,
@@ -9902,8 +9904,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:08.672Z",
             "dateObserved": "1759925408672",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103160786"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103160786",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103195614,
@@ -9944,8 +9946,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:10:11.215Z",
             "dateObserved": "1759925411215",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103195614"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103195614",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 102129388,
@@ -9998,14 +10000,15 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:04:15.488Z",
             "dateObserved": "1759925055488",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102129388"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic102129388",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 103648726,
             "address": {
                 "addressCountry": "RO",
-                "addressLocality": "Cluj-Napoca"
+                "addressLocality": "Cluj-Napoca",
+                "streetAddress": ""
             },
             "averageVehicleSpeed": 4.87,
             "location": {
@@ -10035,8 +10038,8 @@ module.exports = {
             },
             "dateModified": "2025-10-08T12:13:03.422Z",
             "dateObserved": "1759925583422",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103648726"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic103648726",
+            "type": "TrafficFlowObserved"
         },
         {
             "laneId": 82655122,
@@ -10153,14 +10156,18 @@ module.exports = {
             },
             "dateModified": "2025-10-08T10:00:45.773Z",
             "dateObserved": "1759917645773",
-            "type": "TrafficFlowObserved",
-            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic82655122"
+            "id": "urn:ngsi-ld:TrafficFlowObserved:gabriele.percoco@demetrix.it:Cluj-Napocatraffic82655122",
+            "type": "TrafficFlowObserved"
         },
         {
             "MAPPING_REPORT": {
                 "Processed_objects": 50,
                 "Mapped_and_Validated_Objects": "50-50",
-                "Mapped_and_NOT_Validated_Objects": "0-50"
+                "Mapped_and_NOT_Validated_Objects": "0-50",
+                "Details": {
+                    "outputId": "gabriele.percoco@demetrix.it1785255996016489"
+                },
+                "outputId": "gabriele.percoco@demetrix.it1785255996016489"
             },
             "ORION_REPORT": {
                 "Object written to Orion Context Broker": "46/50",
@@ -10878,8 +10885,10 @@ module.exports = {
                             "laneId": 1857969908,
                             "address": {
                                 "addressCountry": "RO",
-                                "addressLocality": "Florești"
+                                "addressLocality": "Florești",
+                                "streetAddress": ""
                             },
+                            "averageVehicleSpeed": 0,
                             "location": {
                                 "type": "LineString",
                                 "coordinates": [
@@ -10935,8 +10944,10 @@ module.exports = {
                                 "laneId": 1857969908,
                                 "address": {
                                     "addressCountry": "RO",
-                                    "addressLocality": "Florești"
+                                    "addressLocality": "Florești",
+                                    "streetAddress": ""
                                 },
+                                "averageVehicleSpeed": 0,
                                 "location": {
                                     "type": "LineString",
                                     "coordinates": [
@@ -11115,7 +11126,6 @@ module.exports = {
                                     "streetAddress": "DN1C - Str. Clujului"
                                 },
                                 "averageVehicleSpeed": 36.26,
-                                "averageVehicleSpeed": 0,
                                 "location": {
                                     "type": "LineString",
                                     "coordinates": [
