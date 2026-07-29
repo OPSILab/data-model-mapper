@@ -50,8 +50,8 @@ module.exports = {
             "hasServiceInstance": {
                 "serviceProvider": {
                     "businessId": "businessId1",
-                    "name": "hasServiceInstanceserviceProvidername",
-                    "hasAddress": "name",
+                    "name": "name",
+                    "hasAddress": "hasAddress1",
                     "postalcode": "90015",
                     "city": "city",
                     "state": "state",

@@ -13,15 +13,13 @@ module.exports = {
     },
     response: [
         {
-            "output": {
-                "outputId": "UniversityUNIPA",
-                "title": "Search output",
-                "type": "string",
-                "language": "English",
-                "description": "Search output element",
-                "content": "VW5pdmVyc2l0eS1VTklQQS1tYXN0ZXItMS0wMS8xMC8yMDIyLTAxLzAzLzIwMjM=",
-                "contentType": "text/plain"
-            }
+            "outputId": "UniversityUNIPA",
+            "title": "Search output",
+            "type": "string",
+            "language": "English",
+            "description": "Search output element",
+            "content": "VW5pdmVyc2l0eS1VTklQQS1tYXN0ZXItMS0wMS8xMC8yMDIyLTAxLzAzLzIwMjM=",//University-UNIPA-master-1-01/10/2022-01/03/2023
+            "contentType": "text/plain"
         },
         {
             "MAPPING_REPORT": {
@@ -29,11 +27,7 @@ module.exports = {
                 "Mapped_and_Validated_Objects": "1-1",
                 "Mapped_and_NOT_Validated_Objects": "0-1"
             },
-            "ORION_REPORT": {
-                "Object written to Orion Context Broker": "1/1",
-                "Object NOT written to Orion Context Broker": "0/1",
-                "Object SKIPPED": "0/1"
-            }
+            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

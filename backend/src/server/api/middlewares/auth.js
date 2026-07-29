@@ -13,6 +13,7 @@ const logger = new Logger(__filename)
 const common = require("../../../utils/common")
 const minioWriter = common.isMinioWriterActive() ? require("../../../writers/minioWriter") : null
 const mergeConfig = require("../../../utils/configHandler").mergeConfig
+const mongoose = require("mongoose")
 
 function parseJwt(token) {
     return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
@@ -46,6 +47,23 @@ module.exports = {
                     req.body.file = req.file.buffer.toString('utf8');
                 else
                     req.body = { file: req.file.buffer.toString('utf8') }
+
+        if (req.body.mapID || req.body.mapDescription || req.body.adapterID) {
+            const Map = process.shared.Map
+            let map
+            if (req.body.mapDescription)
+                map = await Map.findOne({ description: req.body.mapDescription })
+            else if (config.idVersion == 1 || req.body.config?.idVersion == 1)
+                map = await Map.findOne({ id: req.body.mapID || req.body.adapterID })
+                    || await Map.findOne({ name: req.body.mapID || req.body.adapterID })
+            else if (mongoose.Types.ObjectId.isValid(req.body.mapID || req.body.adapterID))
+                map = await Map.findOne({ _id: req.body.mapID || req.body.adapterID })
+            else
+                map = await Map.findOne({ id: req.body.mapID || req.body.adapterID })
+                    || await Map.findOne({ name: req.body.mapID || req.body.adapterID })
+            if (map?.config)
+                req.body.config = map.config
+        }
 
         req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
 

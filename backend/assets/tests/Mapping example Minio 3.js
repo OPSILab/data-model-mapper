@@ -9,7 +9,7 @@ module.exports = {
             "targetDataModel": "DataModelTemp"
         },
 
-        "dataModelID": "68d6b07557c0b362add9a8c9",
+        "dataModelID": "6a69cec197ff64be7b4daf03",
         "sourceDataMinio": {
             "name": "gabriele.percoco@demetrix.it/Data model mapper/source.json",
             "bucket": "default",

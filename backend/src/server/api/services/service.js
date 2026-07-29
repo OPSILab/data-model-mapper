@@ -20,6 +20,7 @@ const utils = require('../../../utils/utils.js');
 const Session = require("../models/session.js")
 const mongoose = require("mongoose")
 const downloader = require('../../../utils/downloader.js')
+process.shared = {Map}
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -281,6 +282,7 @@ module.exports = {
         if (map.dataModelURL && !dataModel.url) dataModel.url = map.dataModelURL
       }
       if (map.sourceDataType && !source.type) source.type = map.sourceDataType
+      logger.debug(configIn)
       if (map.config && !configIn) configIn = map.config
 
       logger.debug({ dataModel })
