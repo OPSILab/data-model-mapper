@@ -284,6 +284,19 @@ const getArrayItemType = (source, normSourceKey, schemaDestKey) => {//TODO quest
 /* Fresh accumulator matching the shape of the map node, so arrays stay arrays. */
 const freshContainer = (mapNode) => Array.isArray(mapNode) ? [] : {};
 
+/* Coerce a source value to boolean. A JSON source delivers real booleans, whereas CSV
+ * delivers strings, so this must not assume either: calling .toLowerCase() on a boolean
+ * throws "toLowerCase is not a function", and optional chaining does NOT help there
+ * (it only guards null/undefined, not a value of the wrong type).
+ */
+const toBoolean = (raw) => {
+    if (typeof raw === 'boolean')
+        return raw;
+    if (typeof raw === 'string')
+        return raw.toLowerCase() === 'true' || raw === '1';
+    return raw == 1;
+};
+
 /* Resolve a map leaf against the source when the destination schema has no entry for it.
  * Mirrors the schema-less handling done at top level, so that a nested key which is absent
  * from the Data Model still gets its SOURCE VALUE, instead of leaking the raw map value
@@ -356,7 +369,7 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ig
                 parsedSourceKey[key] = Number(source[mapSourceSubField])
             } else if (schemaFieldType === 'boolean') {
                 logger.debug("schemaFieldType === 'boolean'")
-                parsedSourceKey[key] = source[mapSourceSubField].toLowerCase() == 'true' || source[mapSourceSubField] == 1 || source[mapSourceSubField] == '1'
+                parsedSourceKey[key] = toBoolean(source[mapSourceSubField])
             } else if (schemaFieldType === 'string' && schemaFieldFormat === 'date-time') {
                 logger.debug("schemaFieldType === 'string' && schemaFieldFormat === 'date-time'")
                 parsedSourceKey[key] = new Date(source[mapSourceSubField]).toISOString();
@@ -483,9 +496,19 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                         parsedSourceKey = source[normSourceKey] // parsedSourceKey = normSourceKey before this assigmnent, so parsedSourceKey = source[normSourceKey] and parsedSourceKey = source[parsedSourceKey] is the same
                 }
                 else if (schemaDestKey && schemaDestKey.type === 'object' || typeof normSourceKey === 'object') //TODO fix : gli array vengono dirottati qui e funziona solo perché l'ho adattato anche agli array, però meglio utilizzare la funzione giusta per gli array...
-                    // Fresh accumulator: parsedSourceKey is still === normSourceKey (the map) here,
-                    // so reusing it mutated the map and leaked raw map values into the output.
-                    parsedSourceKey = objectHandler(freshContainer(normSourceKey), normSourceKey, schemaDestKey, source, config.ignoreValidation)
+                    // An object destination whose map value is a STRING names a source field
+                    // holding the whole nested object (e.g. "obs": "obs"): resolve it directly.
+                    // objectHandler expects the map node to MIRROR the destination structure,
+                    // so handing it a string made it iterate the string's characters ("o","b","s")
+                    // and return {}.
+                    // TODO per-field alternative: expand the string into a synthetic map node
+                    // ({ geo: "obs.geo", ... }) so the normal objectHandler flow validates each
+                    // field. Note it must map onto dotted PATHS, not onto the source values.
+                    parsedSourceKey = (schemaDestKey?.type === 'object' && typeof normSourceKey === 'string')
+                        ? resolveWithoutSchema(normSourceKey, source)
+                        // Fresh accumulator: parsedSourceKey is still === normSourceKey (the map)
+                        // here, so reusing it mutated the map and leaked raw map values.
+                        : objectHandler(freshContainer(normSourceKey), normSourceKey, schemaDestKey, source, config.ignoreValidation)
                 else if (schemaDestKey && schemaDestKey.type === 'array') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'array'")
                     logger.debug({ source, normSourceKey })
@@ -509,7 +532,8 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                 }
                 else if (schemaDestKey && (schemaDestKey.type === 'boolean')) {
                     logger.debug("schemaDestKey && (schemaDestKey.type === 'boolean')")
-                    parsedSourceKey = source[normSourceKey].toLowerCase() == 'true' || source[normSourceKey] == 1 || source[normSourceKey] == '1'
+                    logger.debug(source[normSourceKey], source)
+                    parsedSourceKey = toBoolean(source[normSourceKey])
                 }
                 else if (schemaDestKey && schemaDestKey.type === 'string') {
                     logger.debug("schemaDestKey && schemaDestKey.type === 'string'")
@@ -883,6 +907,17 @@ const handleSourceFieldsToDestArray = (sourceFieldArray, source, itemsType) => {
             if (staticMatch && staticMatch.length > 0) {
                 logger.debug({ staticMatch })
                 return staticMatch[1]
+            }
+            // A dotted key addresses a NESTED source field (e.g. "obsHR.freq"). Plain string
+            // destinations already honour it via extractFromNestedField, so do the same here:
+            // looking up a literal "obsHR.freq" key just yields undefined, which is how an
+            // array of dotted paths ended up as [null, null, ...].
+            if (typeof sourceFieldArray === 'string'
+                && !Object.prototype.hasOwnProperty.call(source, sourceFieldArray)
+                && sourceFieldArray.includes('.')) {
+                const nested = extractFromNestedField(source, sourceFieldArray);
+                if (nested !== undefined)
+                    return itemsType == "integer" ? Number(nested) : nested;
             }
             if (typeof source[sourceFieldArray] == "string") {
                 var fixedField = fixBrokenJsonString1(source[sourceFieldArray])
