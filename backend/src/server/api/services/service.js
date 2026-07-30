@@ -20,7 +20,7 @@ const utils = require('../../../utils/utils.js');
 const Session = require("../models/session.js")
 const mongoose = require("mongoose")
 const downloader = require('../../../utils/downloader.js')
-process.shared = {Map}
+process.shared = { Map }
 
 if (!configGlobal.idVersion)
   configGlobal.idVersion = 2
@@ -657,6 +657,200 @@ module.exports = {
     }
   },
 
+  async parseData(source, map, decodeOptions, dataModel, configIn, res, id) {
+
+    logger.debug({ source, map, dataModel, configIn })
+   
+    let config = JSON.parse(JSON.stringify(configGlobal))
+
+    if (
+      (
+        !source.name
+        &&
+        (
+          !source.type
+          ||
+          (
+            !source.data && !source.url && !source.id && !source.minioObjName
+          )
+        )
+      )
+    ) {
+
+      logger.debug({
+        sourceName: source.name,
+        sourceType: source.type,
+        sourceData: source.data,
+        sourceUrl: source.url,
+        sourceId: source.id,
+        sourceMinioObjName: source.minioObjName,
+        map,
+        dataModelId: dataModel.id,
+        dataModelData: dataModel.data,
+        dataModelName: dataModel.name,
+        dataModelUrl: dataModel.url,
+        configNoSchema: config.noSchema,
+        configInNoSchema: configIn.noSchema
+      })
+
+      throw {
+        message: "Missing fields",
+        source,
+        map,
+        dataModel
+      }
+    }
+
+    if (configIn) {
+
+      for (let configKey in configIn) { //TODO merge this with mergeConfig and use only mergeConfig
+        if (configKey == "orionWriter") {
+          for (let orionConfigKey in configIn[configKey])
+            if (!this.orionConfigInDisabled(orionConfigKey))
+              config[configKey][orionConfigKey] = configIn[configKey][orionConfigKey]
+        }
+        else if (configKey == "orionUrl")
+          config.orionWriter.orionUrl = configIn.orionUrl
+        else if (configIn[configKey] != "undefined" && configIn[configKey] != undefined)
+          config[configKey] = configIn[configKey]
+      }
+    }
+
+    if (source.id && !source.data) {
+      //try { 
+      if (!mongoose.Types.ObjectId.isValid(source.id))
+        source.data = await Source.findOne({ name: source.id })
+      else
+        source.data = await Source.findOne({ _id: source.id })
+      source.data = source.data.source || source.data.sourceCSV
+    }
+
+    if (!source.name && !source.url && !source.id && source.minioObjName && (!source.data || source.data && !source.data[0] && (source.path == "root" || source.path == ".root$$$" || source.path == ".root")) && common.isMinioWriterActive()) {
+      logger.debug("picking from minio", { source })
+      source.data = await this.minioGetObject(source.minioBucketName, source.minioObjName, source.type)
+    }
+    if ((!source.data || source.data && !source.data[0]) && source.url) {
+      if (!fs.existsSync("./cachedData"))
+        fs.mkdirSync("./cachedData", { recursive: true });
+      if (fs.existsSync(`./cachedData/${cleanUrlForCache(source.url)}`)) {
+        const cached = fs.readFileSync(`./cachedData/${cleanUrlForCache(source.url)}`, "utf8");
+        let parsed
+        try {
+          parsed = JSON.parse(cached)
+        }
+        catch (e) {
+          logger.warn("cached data could not be parsed")
+          logger.warn(e.message)
+        }
+        source.download = { data: parsed || cached }
+      }
+      else {
+        source.download = await downloader(source.url)
+        if (config.debug.sdmxCache || config.debug.cacheDownloadedData)
+          fs.writeFileSync(`./cachedData/${cleanUrlForCache(source.url)}`, source.download.data, "utf8");
+      }
+      source.data = source.download.data
+      delete source.download.headers
+      delete source.download.request
+
+      if (decodeOptions)
+        decodeOptions.fromUrl = source.url
+    }
+
+    if (!Array.isArray(source.data) && (source.type == "json" || source.type == ".json" || source.type == "JSON" || source.type == ".JSON") && (!source.path || source.path == ".root$$$")) {
+      logger.debug("Wrapped source data in array")
+      source.data = [source.data];
+    }
+
+    if (source.data && source.path && source.path != ".root$$$")
+      source.data = source.data[source.path]
+
+    let sourceTempId, schemaTempId
+    logger.debug("{ source }")
+
+    if (source.data && !decodeOptions && !config.dontWriteTempFiles) {
+      let sourceDataTempWriting = {}
+      sourceTempId = common.createRandId() //common.createRandId() + source.type
+      fs.writeFile(config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type, source.type == "csv" ? source.data : typeof source.data === "object" || Array.isArray(source.data) ? JSON.stringify(source.data) : source.data, function (err) {
+        //fs.writeFile(config.sourceDataPath + sourceTempId, source.type == "csv" ? source.data : JSON.stringify(source.data), function (err) {
+        if (err) throw err;
+        logger.debug('File sourceData temp is created successfully.');
+        sourceDataTempWriting.value = 'File sourceData temp is created successfully.'
+      })
+      await finish(sourceDataTempWriting)
+    }
+
+    if (!res.dmm)
+      res.dmm = {}
+
+    res.dmm = {
+      ...res.dmm,
+      sourceTempName: config.sourceDataPath + 'sourceFileTemp' + sourceTempId + "." + source.type,
+      schemaTempName: "dataModels/DataModelTemp" + schemaTempId + ".json"
+    }
+
+    if (Array.isArray(map) && dataModel.data) {
+      logger.debug(map[0].targetDataModel)
+      map[0].targetDataModel = "DataModelTemp" + schemaTempId
+    }
+
+    res.dmm.source = source
+    logger.debug(source.name, sourceTempId)
+
+    if (id && decodeOptions)
+      decodeOptions.id = id
+
+    try {
+      if (decodeOptions) {
+        logger.debug("Decode options provided, using decodeOptions mapping")
+        logger.debug(decodeOptions)
+        logger.debug(map)
+        res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, {}, false, {}, config, res, decodeOptions, id)
+        await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
+      }
+      else 
+        throw {error : "No parsing"}
+    }
+    catch (error) {
+      logger.error(error)
+      try {
+        fs.unlinkSync(res.dmm.schemaTempName, (err) => {
+          if (err) {
+            logger.error(
+              `Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`,
+              err
+            );
+          } else {
+            logger.info(`File ${res.dmm.schemaTempName} eliminato.`);
+          }
+        })
+      } catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.schemaTempName}:`);
+        logger.error(error)
+      }
+      try {
+        fs.unlinkSync(res.dmm.sourceTempName, (err) => {
+          if (err) {
+            logger.error(
+              `Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`,
+              err
+            );
+          } else {
+            logger.info(`File ${res.dmm.sourceTempName} eliminato.`);
+          }
+        })
+      }
+      catch (error) {
+        logger.error(`Errore durante l'eliminazione del file ${res.dmm.sourceTempName}:`);
+        logger.error(error)
+      }
+      res.dmm.deleteSession("error" + error.toString())
+      process.dataModelMapper.map = undefined
+      process.dataModelMapper.resetConfig = undefined
+      //throw error
+    }
+  },
+
   getVersion() {
     return fs.readFileSync("/app/date.txt", 'utf8');
   },
@@ -738,7 +932,7 @@ module.exports = {
     return source
   },
 
-  async getMap(id, name, prefix) {
+  async getMap(id, name, description, prefix) {
     // Same treatment already applied to sources and Data Models: a mapID/adapterID may be
     // a NAME rather than an ObjectId. Without this, Mongo raises
     // "CastError: Cast to ObjectId failed for value ... at path _id for model map".
@@ -747,7 +941,13 @@ module.exports = {
         name = id
       id = undefined
     }
-    let map = await Map.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
+    let query = { }
+    if (name)
+      query.name = name
+    if (description)
+      query.description = description
+    logger.debug(query)
+    let map = await Map.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { ...query, user: (prefix?.split("/")[0] || "shared") })
     if (!map) throw { code: 404, message: "NOT FOUND" }
     if (map.dataModel)
       map.dataModel = this.dataModelDeClean(map.dataModel)

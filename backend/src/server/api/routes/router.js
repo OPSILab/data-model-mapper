@@ -15,6 +15,7 @@ router.post(encodeURI("/dataModel"), upload.none(), auth, controller.insertDataM
 router.post(encodeURI("/dereferenceSchema"), upload.none(), auth, controller.dereferenceSchema)
 router.post(encodeURI("/cleanSchema"), upload.none(), auth, controller.cleanSchema)
 router.post(encodeURI("/buildGeoJson"), upload.none(), auth, controller.buildGeoJson)
+router.post(encodeURI("/parse"), upload.none(), auth, controller.parse)
 
 router.get(encodeURI("/map"), auth, controller.getMap)
 router.get(encodeURI("/config"), auth, controller.getConfig)

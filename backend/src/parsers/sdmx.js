@@ -434,7 +434,7 @@ async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
 
     if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
       logger.debug("rowHandler")
-      snapshot[i] = funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
+      snapshot[i] = await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
     }
     else 
       break
@@ -534,7 +534,10 @@ async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collec
       saxParser.close();
       if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++, config, funcParams);
       try {
-        await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
+        // funcParams.res, not a bare `res`: this function has no res parameter, so the bare
+        // identifier threw ReferenceError, the local catch swallowed it and the response was
+        // never assembled (symptom: output {}). See the sibling parseStructureSpecificRows.
+        await utils.printFinalReportAndSendResponse(logger, null, config, funcParams.res)//TODO test this
         //finalizeProcess(minioObj, config, res);
       } catch (error) {
         logger.error("Error While finalizing the streaming process: ");

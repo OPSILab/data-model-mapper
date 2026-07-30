@@ -12,6 +12,101 @@ const Session = require("../models/session.js");
 
 module.exports = {
 
+    parse: async (req, res) => {
+        logger.debug("Parse data")
+        while (process.dataModelMapper?.lockMapping)
+            await common.sleep(100, "parse waiting for lock")
+
+        if (globalConfig.forceInitAfterMapping) {
+            await waiting("parse")
+            process.dataModelMapper.parse = "busy"
+        }
+        let { sourceData, map, decodeOptions, dataModel } = utils.bodyMapper(req.body, req.query)
+        const emitter = new EventEmitter();
+        emitter.on('message', (message) => {
+            if (message == "delete") {
+                logger.info("Deleting session ", id)
+                //this[id] = null
+                if (!req.query.streamMode) {
+                    let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    res.send(outputFile);
+                }
+                /*Session.insertMany({ sessionId: id }).then(result => {
+                    logger.log('session inserted');
+                }).catch(err => {
+                    logger.error(err);
+                });*/
+                delete this[id]
+                logger.info(message, " ", id)
+            }
+            else if (message.toString().startsWith("error")) {
+                logger.info("error")
+                delete this[id]
+                res.status(500).send(message.toString().substring(5))
+                logger.info(message, " ", id)
+            }
+            else {
+                logger.info("Not recognized message for session ", id, ": ", message)
+                //this[id] = null
+                if (!req.query.streamMode) {
+                    let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    res.send(outputFile);
+                }
+                delete this[id]
+                res.status(500).send(message)
+                logger.info(message, " ", id)
+            }
+        });
+        emitter.on('error', (error) => {
+            logger.error("Error in parsing process for session ", id, ": ", error)
+            logger.error(error)
+            if (error.response) {
+                logger.error(error.response.data)
+                logger.error(error.request)
+                res.status(error.response.status).send(error.response.data)
+            }
+            else
+                res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+        })
+        let id
+        try {
+            function deleteSession(error) {
+                logger.info("Emitting delete for session ", id)
+                process.dataModelMapper.map = undefined
+                process.dataModelMapper.resetConfig = undefined
+                if (error)
+                    emitter.emit('message', "error" + error.toString())
+                else
+                    emitter.emit('message', "delete");
+            }
+            id = req.body.config.group +
+                (req.body.reqId || common.createRandId())
+            this[
+                id
+            ] = { res }//TODO .push instead?
+            res.dmm = { outputID: id }
+            res.dmm.deleteSession = deleteSession
+            if (req.query.streamMode)
+                res.send({ id })
+            //res.send(id)
+            let result = await service.parseData(sourceData, map, decodeOptions, dataModel, req.body.config, res, id)
+            if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
+        }
+        catch (error) {
+            //TODO here should be catched errors from process.js too. Actually there is a workaround in process.js with res.status(500) but it should be fixed properly. The error was genereted from mapHandler
+            logger.error(error)
+            if (error.response) {
+                logger.error(error.response.data)
+                logger.error(error.request)
+                res.status(error.response.status).send(error.response.data)
+            }
+            else
+                res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+        }
+        process.dataModelMapper.setupError = null
+        logger.info("controller.parse end");
+    },
+
     checkMaximumSpaceOverflow: async (req, res) => {
         if (!globalConfig.manualCheckMaximumSpaceOverflow) {
             await utils.checkMaximumSpaceOverflow()
@@ -368,10 +463,10 @@ module.exports = {
     },
 
     getMap: async (req, res) => {
-        const { id, name } = req.query
+        const { id, name, description } = req.query
 
         try {
-            res.send(await service.getMap(id, name, req.body.prefix))
+            res.send(await service.getMap(id, name, description, req.body.prefix))
         }
         catch (error) {
             logger.error(error)
