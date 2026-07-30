@@ -87,3 +87,4 @@ tools/node-v14.17.0-win-x64.zip
 backend/src/utils/decoders/out_sdmx/
 backend/src/utils/decoders/cachedData/
 backend/cachedData/
+backend/docs/mapping-open-questions.md

@@ -394,9 +394,15 @@ const objectHandler = (parsedSourceKey, normSourceKey, schemaDestKey, source, ig
             }
             else if (schemaFieldType === 'object') {
                 logger.debug("schemaFieldType === 'object'")
-                // Accumulate into a FRESH object: passing mapSourceSubField as destination mutated
-                // the map in place and left unmatched sub-keys holding the raw map value.
-                parsedSourceKey[key] = objectHandler(freshContainer(mapSourceSubField), mapSourceSubField, schemaDestSubKey, source, ignoreValidation)
+                // A STRING here names a source field holding the whole nested object
+                // ("obs": "obs"). Handing it to objectHandler made it iterate the string's
+                // characters via for...in, producing {"0": "..."}. Same case already handled
+                // at top level; see docs/mapping-open-questions.md group E.
+                parsedSourceKey[key] = (typeof mapSourceSubField === 'string')
+                    ? resolveWithoutSchema(mapSourceSubField, source)
+                    // Accumulate into a FRESH object: passing mapSourceSubField as destination
+                    // mutated the map in place and left unmatched sub-keys holding the raw value.
+                    : objectHandler(freshContainer(mapSourceSubField), mapSourceSubField, schemaDestSubKey, source, ignoreValidation)
             } else if (mapSourceSubField.includes('.')) {// && dotPattern.test(key)) 
                 logger.debug("mapSourceSubField.includes(.)")
                 parsedSourceKey[key] = extractFromNestedField(source, mapSourceSubField);
