@@ -1,3 +1,5 @@
+const { mappingReport } = require("../../config");
+
 module.exports = {
     body: {
         "dataModelIn": "Spotted",
@@ -23,6 +25,7 @@ module.exports = {
         "config": {
             "rowEnd": 2,
             "ignoreValidation": true,
+            mappingReport: false,
             regexCleanDest: "id",
             writers: []
         }
@@ -55,14 +58,6 @@ module.exports = {
             },
             "id": "urn:ngsi-ld:Spotted:gabriele.percoco@demetrix.it:bike644001489880d4d150286f56-2",
             "type": "Spotted"
-        },
-        {
-            "MAPPING_REPORT": {
-                "Processed_objects": 4154,
-                "Mapped_and_Validated_Objects": "2-4154",
-                "Mapped_and_NOT_Validated_Objects": "4152-4154"
-            },
-            "ORION_REPORT": "Orion writer not enabled"
         }
     ]
 }

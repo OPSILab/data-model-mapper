@@ -533,6 +533,8 @@ const mapObjectToDataModel = (rowNumber, source, map, modelSchema, site, service
                                 parsedSourceKey = Number(num);
                             else if (typeof num === 'number')
                                 parsedSourceKey = num
+                            else 
+                                parsedSourceKey = undefined
                         }
                     }
                 }
