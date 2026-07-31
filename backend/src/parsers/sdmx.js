@@ -424,21 +424,24 @@ function extractDatasetInfoFromHeader(headerFields, datasetAttrs) {
   return info;
 }
 
+let map = require("../../assets/maps")
+
 async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
 
   const snapshot = rows.splice(0, config.batch);
   let rowNumber
-  for (let i = 0; i < snapshot.length; i++) {
-    rowNumber = Number(config.rowNumber) + 1;
-    config.rowNumber = rowNumber;
+  if (map[snapshot[0].survey])
+    for (let i = 0; i < snapshot.length; i++) {
+      rowNumber = Number(config.rowNumber) + 1;
+      config.rowNumber = rowNumber;
 
-    if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
-      logger.debug("rowHandler")
-      snapshot[i] = await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
+      if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
+        logger.debug("rowHandler")
+        snapshot[i] = map[snapshot[i].survey](snapshot[i])//await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
+      }
+      else
+        break
     }
-    else 
-      break
-  }
   if (config.sessionLocation.mongo) {
     if (!collectedOutput)
       logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");

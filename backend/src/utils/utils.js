@@ -734,7 +734,7 @@ const sendOutput = async (config, res) => {
             })
         else if (config.dontWriteTempFiles)
             logger.debug("no files to delete")
-        else 
+        else
             logger.warn("Strangely, no files to delete. Control your own to prevent memory leak")
     }
     catch (error) {
@@ -803,22 +803,40 @@ const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) =
 
         //logger.debug(config.orionWriter)
 
-        res.dmm.outputFile[res.dmm.outputFile.length] = {
-            MAPPING_REPORT: {
-                Processed_objects: config.rowNumber,
-                Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
-                Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
-                Details: {
-                    outputId: res.dmm.outputID
-                }
-            },
-            ORION_REPORT: isOrionWriterActive(config) ? {
-                "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
-                "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
-                "Object SKIPPED": config.orionSkippedCount.toString() + '/' + config.validCount.toString(),
-                details: config.orionWriter.details
-            } : "Orion writer not enabled"
-        }
+        if (!res.dmm.outputFile)
+            res.dmm.outputFile = [{
+                MAPPING_REPORT: {
+                    Processed_objects: config.rowNumber,
+                    Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
+                    Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
+                    Details: {
+                        outputId: res.dmm.outputID
+                    }
+                },
+                ORION_REPORT: isOrionWriterActive(config) ? {
+                    "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
+                    "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
+                    "Object SKIPPED": config.orionSkippedCount.toString() + '/' + config.validCount.toString(),
+                    details: config.orionWriter.details
+                } : "Orion writer not enabled"
+            }]
+        else
+            res.dmm.outputFile[res.dmm.outputFile.length] = {
+                MAPPING_REPORT: {
+                    Processed_objects: config.rowNumber,
+                    Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
+                    Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
+                    Details: {
+                        outputId: res.dmm.outputID
+                    }
+                },
+                ORION_REPORT: isOrionWriterActive(config) ? {
+                    "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
+                    "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
+                    "Object SKIPPED": config.orionSkippedCount.toString() + '/' + config.validCount.toString(),
+                    details: config.orionWriter.details
+                } : "Orion writer not enabled"
+            }
 
         if (config.report?.errorsDetails)
             res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].Details.errors = res.dmm.errors
