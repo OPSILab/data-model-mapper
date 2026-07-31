@@ -88,3 +88,4 @@ backend/src/utils/decoders/out_sdmx/
 backend/src/utils/decoders/cachedData/
 backend/cachedData/
 backend/docs/mapping-open-questions.md
+backend/docs/db-insert-flow.md

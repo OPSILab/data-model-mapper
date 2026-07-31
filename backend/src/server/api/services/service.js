@@ -919,6 +919,9 @@ module.exports = {
   },
 
   async getSource(id, name, mapRef, prefix) {
+    // See getMap: with no identifier the filter is just { user } and an arbitrary source of
+    // that user would be returned. Use GET /sources to list them.
+    if (!id && !name && !mapRef) throw { code: 400, message: "BAD REQUEST.\nid, name or mapRef is required" }
     // The id may legitimately be a NAME. Copy it into name BEFORE clearing it:
     // doing it after (name = id, with id already undefined) silently lost the value
     // and the lookup degenerated into findOne({ name: undefined }).
@@ -933,6 +936,9 @@ module.exports = {
   },
 
   async getMap(id, name, description, prefix) {
+    // Without any identifier the query below is just { user }, so findOne would return an
+    // ARBITRARY map of that user as if it were the requested one. Use GET /maps to list them.
+    if (!id && !name && !description) throw { code: 400, message: "BAD REQUEST.\nid, name or description is required" }
     // Same treatment already applied to sources and Data Models: a mapID/adapterID may be
     // a NAME rather than an ObjectId. Without this, Mongo raises
     // "CastError: Cast to ObjectId failed for value ... at path _id for model map".
@@ -955,6 +961,9 @@ module.exports = {
   },
 
   async getDataModel(id, name, mapRef, prefix) {
+    // See getMap: with no identifier an arbitrary dataModel would be returned.
+    // Use GET /dataModels to list them.
+    if (!id && !name && !mapRef) throw { code: 400, message: "BAD REQUEST.\nid, name or mapRef is required" }
     // See getSource: name must be taken from id before id is cleared.
     if (id && !mongoose.Types.ObjectId.isValid(id)) {
       if (!name)
@@ -1017,14 +1026,21 @@ module.exports = {
 
   async insertSource(name, id, source, path, mapRef, bucket, prefix) {
     let insertedSource, map
+    // name is mandatory here: state it explicitly instead of relying on name.replaceAll
+    // throwing TypeError, which yields an opaque 400.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
 
     if (!source)
       throw { error: "source is required" }
     if (path == "")
       path = undefined
+    // See insertDataModel: resolve by _id when mapRef is a real ObjectId, so the link no
+    // longer depends on map and source sharing the same name.
     if (mapRef) {
-      map = (await Map.findOne({ name, user: (prefix?.split("/")[0] || "shared") }))
+      map = mongoose.Types.ObjectId.isValid(mapRef)
+        ? (await Map.findOne({ _id: mapRef, user: (prefix?.split("/")[0] || "shared") }))
+        : (await Map.findOne({ name, user: (prefix?.split("/")[0] || "shared") }))
       mapRef = map?._id
     }
     else
@@ -1066,6 +1082,8 @@ module.exports = {
   async insertMap(name, id, map, dataModel, status, description,
     sourceData, sourceDataMinio, sourceDataID, sourceDataIn, sourceDataURL, dataModelIn, dataModelID, dataModelURL,
     mapConfig, sourceDataType, path, bucketName, prefix) {
+    // See insertSource: name is mandatory, make it explicit.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
     if (path == "")
       path = undefined
@@ -1143,14 +1161,19 @@ module.exports = {
 
   async insertDataModel(name, id, dataModel, mapRef, bucket, prefix) {
     let insertedDataModel, map
+    // See insertSource: name is mandatory, make it explicit.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
     if (!dataModel)
       throw { error: "schema is required" }
     if (dataModel) dataModel = this.dataModelClean(dataModel, {})
-    //if (typeof mapRef == "string")
-    //    mapRef = (await Map.findOne({ name }))?._id
+    // mapRef was only used as a boolean and the map was resolved by NAME, which silently
+    // required map, source and dataModel to share the same name. When mapRef is a real
+    // ObjectId (what the frontend always sends) use it; keep the name lookup as fallback.
     if (mapRef) {
-      map = await Map.findOne({ name, user: (prefix?.split("/")[0] || "shared") })
+      map = mongoose.Types.ObjectId.isValid(mapRef)
+        ? await Map.findOne({ _id: mapRef, user: (prefix?.split("/")[0] || "shared") })
+        : await Map.findOne({ name, user: (prefix?.split("/")[0] || "shared") })
       mapRef = map?._id
     }
     else
@@ -1185,13 +1208,21 @@ module.exports = {
 
   async modifySource(name, id, source, path, mapRef, bucket, prefix) {
     let insertedSource, map
+    // Explicit guard: findOneAndReplace({ name, user }) below collapses to { user } when name
+    // is undefined (Mongoose strips undefined from filters), replacing an ARBITRARY source.
+    // Until now this was prevented only accidentally, by name.replaceAll throwing TypeError.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
     if (!source)
       throw { error: "source is required" }
     if (path == "") path = undefined
+    // See insertDataModel: resolve by _id when mapRef is a real ObjectId, so the link no
+    // longer depends on map, source and dataModel sharing the same name.
     if (mapRef) {
-      map = (await Map.findOne({ name, user: prefix?.split("/")[0] || "shared" }))
-      mapRef = map?._id.toString()
+      map = mongoose.Types.ObjectId.isValid(mapRef)
+        ? (await Map.findOne({ _id: mapRef, user: prefix?.split("/")[0] || "shared" }))
+        : (await Map.findOne({ name, user: prefix?.split("/")[0] || "shared" }))
+      mapRef = map?._id?.toString()
     }
     insertedSource = await Source.findOneAndReplace(mapRef ? { mapRef } : { name, user: prefix?.split("/")[0] || "shared" }, typeof source === 'string' ?
       { name: name, id: id, sourceCSV: source, user: (prefix?.split("/")[0] || "shared"), mapRef: mapRef?.toString() } :
@@ -1310,6 +1341,9 @@ module.exports = {
 
   async modifyMap(name, id, map, dataModel, status, description, sourceData, sourceDataMinio, sourceDataID, sourceDataIn, sourceDataURL, dataModelIn, dataModelID, dataModelURL,
     mapConfig, sourceDataType, path, bucketName, prefix) {
+    // See modifySource: without this the findOneAndReplace({ name, user }) below would replace
+    // an arbitrary map of that user.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
 
     //if (dataModel && dataModel.$schema)
@@ -1375,14 +1409,20 @@ module.exports = {
 
   async modifyDataModel(name, id, dataModel, mapRef, bucket, prefix) {
     let insertedDataModel, map
+    // See modifySource: guards the findOneAndReplace({ name, user }) below.
+    if (!name) throw { code: 400, message: "BAD REQUEST.\nname is required" }
     name = name.replaceAll("/", "-")
 
     if (!dataModel)
       throw { error: "schema is required" }
     dataModel = this.dataModelClean(dataModel, {})
+    // See insertDataModel: resolve by _id when mapRef is a real ObjectId, so the link no
+    // longer depends on map, source and dataModel sharing the same name.
     if (mapRef) {
-      map = (await Map.findOne({ name, user: prefix?.split("/")[0] || "shared" }))
-      mapRef = map?._id.toString()
+      map = mongoose.Types.ObjectId.isValid(mapRef)
+        ? (await Map.findOne({ _id: mapRef, user: prefix?.split("/")[0] || "shared" }))
+        : (await Map.findOne({ name, user: prefix?.split("/")[0] || "shared" }))
+      mapRef = map?._id?.toString()
     }
     insertedDataModel = await DataModel.findOneAndReplace(mapRef ? { mapRef } : { name, user: prefix?.split("/")[0] || "shared" },
       { name: name, id: id, dataModel: dataModel, user: (prefix?.split("/")[0] || "shared"), mapRef: mapRef?.toString() })
@@ -1395,7 +1435,12 @@ module.exports = {
   },
 
   async deleteSource(id, name, prefix) {
-    let source = await DataModel.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
+    // Without an identifier the filter would be { name: undefined, user }, and Mongoose STRIPS
+    // undefined, leaving { user }: deleteOne would then remove an ARBITRARY source of that user.
+    if (!id && !name) throw { code: 400, message: "BAD REQUEST.\nid or name is required" }
+    // Source, not DataModel: the mapRef check was reading the wrong collection.
+    let source = await Source.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
+    if (!source) throw { code: 404, message: "NOT FOUND" }
     if (source.mapRef)
       throw { code: 400, message: "BAD REQUEST.\nResource has a mapRef. Delete the mapper record who reference it before." }
     return await Source.deleteOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
@@ -1403,10 +1448,17 @@ module.exports = {
 
   async deleteMap(id, name, prefix, bucket) {
 
-    let mapRef
-    if (!id)
-      mapRef = (await Map.findOne({ name, user: (prefix?.split("/")[0] || "shared") }))._id
+    // See deleteSource: with neither identifier the filter collapses to { user } and findOne
+    // would happily return SOME map, which would then be deleted together with its cascade.
+    if (!id && !name) throw { code: 400, message: "BAD REQUEST.\nid or name is required" }
+    // Fail fast when the map does not exist. Optional chaining here would be actively harmful:
+    // with both id and mapRef undefined the filters below become { mapRef: undefined, user },
+    // and Mongoose STRIPS undefined from filters, so deleteOne({ user }) would delete an
+    // arbitrary source and dataModel of that user. Verified on mongoose 8.8.1.
+    // A single lookup also replaces the two identical queries that were here.
     let map = await Map.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
+    if (!map) throw { code: 404, message: "NOT FOUND" }
+    let mapRef = map._id
     await minioWriter.deleteObject(bucket, prefix.split("/")[0] + "/private generic data/" + map.name + ".json")
     if (map?.sourceDataID)
       await this.deAssignSource(map.sourceDataID, map._id)
@@ -1415,7 +1467,10 @@ module.exports = {
     let deletion = await Map.deleteOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
     //if (map.sourceDataID) {
     let source = await Source.findOne({ mapRef: (id || mapRef), user: (prefix?.split("/")[0] || "shared") })
-    if (source?.isAlsoReferencedBy[0]) {
+    // ?. must guard isAlsoReferencedBy too, not just source: modifySource/insertSource replace
+    // the document WITHOUT that field, so on any source created through the normal flow it is
+    // undefined and `source?.isAlsoReferencedBy[0]` threw TypeError.
+    if (source?.isAlsoReferencedBy?.[0]) {
       source.mapRef = source.isAlsoReferencedBy.shift()
       logger.debug(source)
       await source.save()
@@ -1425,7 +1480,9 @@ module.exports = {
     //}
     //if (map.dataModelID) {
     let dataModel = await DataModel.findOne({ mapRef: (id || mapRef), user: (prefix?.split("/")[0] || "shared") })
-    if (dataModel?.isAlsoReferencedBy[0]) {
+    // See the source above: isAlsoReferencedBy may be undefined on records created by the
+    // normal flow, so it needs its own ?. too.
+    if (dataModel?.isAlsoReferencedBy?.[0]) {
       dataModel.mapRef = dataModel.isAlsoReferencedBy.shift()
       logger.debug(dataModel)
       await dataModel.save()
@@ -1440,7 +1497,10 @@ module.exports = {
   },
 
   async deleteDataModel(id, name, prefix) {
+    // See deleteSource: an empty filter would delete an arbitrary dataModel of that user.
+    if (!id && !name) throw { code: 400, message: "BAD REQUEST.\nid or name is required" }
     let dataModel = await DataModel.findOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
+    if (!dataModel) throw { code: 404, message: "NOT FOUND" }
     if (dataModel.mapRef)
       throw { code: 400, message: "BAD REQUEST.\nResource has a mapRef. Delete the mapper record who reference it before." }
     return await DataModel.deleteOne(id ? { _id: id, user: (prefix?.split("/")[0] || "shared") } : { name, user: (prefix?.split("/")[0] || "shared") })
