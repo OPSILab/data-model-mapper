@@ -54,6 +54,10 @@ var config = {
         mongo: false, // if true, session output will be saved in MongoDB collection
         filesystem: false // if true, session output will be saved in filesystem
     },
+    // If false, the session file holds a "Sessions disabled" placeholder instead of the session.
+    // GET /api/report and GET /api/session both read that file, so they need this to be true.
+    // It serialises the whole res.dmm, which on large mappings is memory-heavy.
+    enableSessions: true,
     report: {
         errorsDetails: true
     },

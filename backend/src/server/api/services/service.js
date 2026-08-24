@@ -94,6 +94,10 @@ module.exports = {
 
   async getSession(id) {
     logger.debug("Getting session for id ", id)
+    // The guard lived only in the controller: reaching this without an id makes the filter
+    // collapse to {} and returns EVERY session. Sessions have no `user` field, so there is no
+    // scoping to fall back on. Use getSessions() to list them deliberately.
+    if (!id || id === "undefined") throw { code: 400, message: "BAD REQUEST.\nid is required" }
     return await Session.find({ sessionId: id })
   },
 

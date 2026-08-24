@@ -65,6 +65,10 @@ function sourceDataToRowStream(sourceData, map, schema, rowHandler, mappedHandle
 }
 
 function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
+    // rowHandler is async: awaiting it inside .on('data') would not delay 'end', and these
+    // functions are synchronous by design (process.js does not await them). So the promises
+    // are collected and awaited right before finalizeProcess.
+    const pendingRows = [];
 
     var rowNumber = Number(config.rowNumber);
     var rowStart = Number(config.rowStart);
@@ -81,12 +85,13 @@ function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizePro
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res, rawSourceData);
+                pendingRows.push(rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res, rawSourceData));
 
             }
         })
-        .on('end', function () {
+        .on('end', async function () {
             try {
+                await Promise.all(pendingRows); // all rows mapped before finalizing
                 finalizeProcess(minioObj, config, res);
                 logger.debug("urlToRowStream: request(url).pipe(geo.parse()).on(end)");
                 //utils.printFinalReportAndSendResponse(log);
@@ -101,6 +106,10 @@ function urlToRowStream(url, map, schema, rowHandler, mappedHandler, finalizePro
 
 
 function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
+    // rowHandler is async: awaiting it inside .on('data') would not delay 'end', and these
+    // functions are synchronous by design (process.js does not await them). So the promises
+    // are collected and awaited right before finalizeProcess.
+    const pendingRows = [];
 
     var rowNumber = Number(config.rowNumber);
     var rowStart = Number(config.rowStart);
@@ -119,7 +128,7 @@ function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, fina
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
                 try {
-                    rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                    pendingRows.push(rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res));
                 }
                 catch (error) {
                     logger.error("Error during row handler")
@@ -128,7 +137,7 @@ function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, fina
 
             }
         }
-        finalizeProcess(minioObj, config, res).then(() =>
+        Promise.all(pendingRows).then(() => finalizeProcess(minioObj, config, res)).then(() =>
             logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)")
         ).catch(error => logger.error(error))
     }
@@ -144,13 +153,14 @@ function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, fina
                 // outputs an object containing a set of key/value pair representing a line found in the csv file.
                 if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                    rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                    pendingRows.push(rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res));
 
                 }
 
             })
             .on('end', async function () {
 
+                await Promise.all(pendingRows); // all rows mapped before finalizing
                 await finalizeProcess(minioObj, config, res);
                 logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");
                 //utils.printFinalReportAndSendResponse(log);

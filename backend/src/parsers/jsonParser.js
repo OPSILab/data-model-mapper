@@ -53,7 +53,13 @@ async function sourceDataToRowStream(sourceData, map, schema, rowHandler, mapped
     else if (rawSourceData) {
         logger.debug("The Source Data is the raw data")
         try {
-            fileToRowStream(null, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
+            // MUST be awaited, like the three sibling branches. Without it the call detaches:
+            // mapData returns, the controller sends the response, and later the orphan
+            // fileToRowStream reaches finalizeProcess -> sendOutput -> res.set(), raising
+            // ERR_HTTP_HEADERS_SENT. The response was also sent before the rows were mapped.
+            // Note the try/catch above is useless on a non-awaited async call: a rejection
+            // would surface as an unhandled promise rejection instead.
+            await fileToRowStream(null, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData);
         }
         catch (err) {
             logger.error('There was an error while getting buffer from source data: \n');
@@ -70,6 +76,10 @@ async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, final
     var rowNumber = Number(config.rowNumber);
     var rowStart = Number(config.rowStart);
     var rowEnd = Number(config.rowEnd);
+    // rowHandler is async. Awaiting it inside .on('data') would NOT help: the stream keeps
+    // emitting and 'end' fires regardless, so finalizeProcess could run while rows are still
+    // being mapped. Collect the promises and await them in 'end' instead.
+    const pendingRows = [];
 
     request(url).pipe(JSONStream.parse('.*'))
         .on('error', function (err) {
@@ -85,7 +95,7 @@ async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, final
             // outputs an object containing a set of key/value pair representing a line found in the csv file.
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                pendingRows.push(rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res));
 
             }
         })
@@ -96,6 +106,7 @@ async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, final
         .on('end', async function () {
             try {
 
+                await Promise.all(pendingRows); // all rows mapped before finalizing
                 await finalizeProcess(minioObj, config, res);
                 logger.debug("urlToRowStream: request(url).pipe(geo.parse()).on(end)");
                 //await utils.printFinalReportAndSendResponse(log);
@@ -111,6 +122,9 @@ async function urlToRowStream(url, map, schema, rowHandler, mappedHandler, final
 
 async function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler, finalizeProcess, NGSI_entity, minioObj, config, res, rawSourceData) {
 
+    // See urlToRowStream: awaited directly in the for loop below, collected here for the
+    // stream branch, where awaiting inside .on('data') would not delay 'end'.
+    const pendingRows = [];
     logger.debug("fileToRowStream", rawSourceData)
 
     var rowNumber = Number(config.rowNumber);
@@ -125,7 +139,8 @@ async function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler
             if (rowNumber >= rowStart && rowNumber <= rowEnd) {
                 logger.debug("rowHandler")
 
-                rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                // In a plain for loop the await is enough (and keeps the rows in order).
+                await rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
 
             }
         }
@@ -144,13 +159,14 @@ async function fileToRowStream(inputData, map, schema, rowHandler, mappedHandler
                 // outputs an object containing a set of key/value pair representing a line found in the csv file.
                 if (rowNumber >= rowStart && rowNumber <= rowEnd) {
 
-                    rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res);
+                    pendingRows.push(rowHandler(rowNumber, row, map, schema, mappedHandler, NGSI_entity, minioObj, config, res));
 
                 }
 
             })
             .on('end', async function () {
 
+                await Promise.all(pendingRows); // all rows mapped before finalizing
                 await finalizeProcess(minioObj, config, res);
 
                 logger.debug("fileToRowStream: inputData.pipe(geo.parse()).on(end)");

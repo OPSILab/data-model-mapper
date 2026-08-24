@@ -36,6 +36,24 @@ const Output = require('../server/api/models/output.js')
 const mongoose = require("mongoose");
 const { JsonStreamStringify } = require('json-stream-stringify').default || require('json-stream-stringify');
 
+/* JSON.stringify that survives circular references, replacing a repeated object with
+ * "[Circular]" instead of throwing. Used for the session file: res.dmm carries config, source
+ * and promises, so cycles are possible and a throw there would leave the file unwritten.
+ * For very large sessions the memory-friendlier route is the already-imported
+ * JsonStreamStringify, streaming straight into a write stream.
+ */
+function safeStringify(value) {
+    const seen = new WeakSet();
+    return JSON.stringify(value, (key, val) => {
+        if (val !== null && typeof val === 'object') {
+            if (seen.has(val))
+                return "[Circular]";
+            seen.add(val);
+        }
+        return val;
+    });
+}
+
 function readDirRecursive(dir) {
     let results = [];
     let entries
@@ -144,16 +162,26 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
             let sessions = await Session.find().lean();
             logger.debug(`Found ${sessions.length} sessions in the database.`)
             for (const session of sessions) {
-                const outputId = session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId
+                // A session written by the older variant (see the commented insertMany in
+                // printFinalReportAndSendResponse) has no `data`, so walking it unguarded threw
+                // TypeError and aborted the whole cleanup, leaving the storage never freed.
+                const outputFile = session.data?.outputFile
+                const outputId = outputFile?.[outputFile.length - 1]?.MAPPING_REPORT?.outputId
+                // Without sessionId the filter below becomes {} and deleteOne would remove an
+                // ARBITRARY session: Mongoose strips undefined from filters even with strict:false.
+                if (!session.sessionId) {
+                    logger.warn("Skipping a session document without sessionId: deleting it would match an arbitrary session")
+                    continue
+                }
                 const foundCollection = collections.find(coll => coll.name == "output" + outputId)
                 if (outputId && foundCollection)
                     try {
                         dropOutput(outputId)
-                        logger.info(`Dropped collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}`)
+                        logger.info(`Dropped collection for session ${session.sessionId} with outputId ${outputId}`)
                         usedMB -= foundCollection.storageSize
                     }
                     catch (error) {
-                        logger.error(`Error dropping collection for session ${session.sessionId} with outputId ${session.data.outputFile[session.data.outputFile.length - 1].MAPPING_REPORT?.outputId}:`, error)
+                        logger.error(`Error dropping collection for session ${session.sessionId} with outputId ${outputId}:`, error)
                     }
                 const size = (Buffer.byteLength(JSON.stringify(session), "utf8")) / (1024 * 1024); // Convert to MB
                 await Session.deleteOne({ sessionId: session.sessionId });
@@ -163,7 +191,11 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
             }
             for (const coll of collections.filter(coll => coll.name.includes("output"))) {
                 const outputId = coll.name.replace("output", "")
-                if (!sessions.find(session => session.data.outputFile[session.data.outputFile.length - 1]?.MAPPING_REPORT?.outputId == outputId))
+                // Same guard as above: sessions without `data` must not abort the sweep.
+                if (!sessions.find(session => {
+                    const of = session.data?.outputFile
+                    return of?.[of.length - 1]?.MAPPING_REPORT?.outputId == outputId
+                }))
                     try {
                         dropOutput(outputId)
                         logger.info(`Dropped collection output${outputId} not linked to any session.`)
@@ -747,7 +779,16 @@ const sendOutput = async (config, res) => {
     }*/
     let outputDataTempWriting = {}
     let outputId = res.dmm.outputID //common.createRandId() + source.type
-    res.set('outputId', outputId);
+    // In streamMode the controller already answered with { id } (see controller.mapData), so the
+    // response is closed by the time we get here and res.set() raised ERR_HTTP_HEADERS_SENT.
+    // That exception aborted the rest of this function, including the writeFileSync below, so
+    // ./output/output<id>.json was never produced and GET /api/report had nothing to read.
+    // streamMode lives in req.query and is not visible here: headersSent covers it and every
+    // other already-answered case.
+    if (!res.headersSent)
+        res.set('outputId', outputId);
+    else
+        logger.debug("Response already sent (e.g. streamMode): skipping the outputId header")
     if (config.mappingReport)
         res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"].outputId = outputId
     else
@@ -757,11 +798,22 @@ const sendOutput = async (config, res) => {
         if (res.dmm.source.data && res.dmm.source.url)
             res.dmm.source.data = undefined
         if (config.sessionLocation.filesystem)
-            fs.writeFileSync('./output/output' + outputId + '.json', config.enableSessions ? res.dmm : "Sessions disabled", "utf8");
+            // JSON.stringify is mandatory: writeFileSync rejects a plain object with
+            // ERR_INVALID_ARG_TYPE, so the enabled branch could only ever throw. The Mongo
+            // branch below legitimately passes the object, since Mongo accepts it.
+            // The placeholder is stringified too, so readers can JSON.parse it either way.
+            // res.dmm holds config, source and promises, so it can contain cycles: a plain
+            // JSON.stringify throws "Converting circular structure to JSON", the catch below
+            // swallows it and the file is never created, which surfaces much later as an ENOENT
+            // in GET /api/report. Drop already-seen objects instead of failing.
+            fs.writeFileSync('./output/output' + outputId + '.json', safeStringify(config.enableSessions ? res.dmm : "Sessions disabled"), "utf8");
         if (config.sessionLocation.mongo)
             await Session.insertMany([{ sessionId: outputId, data: res.dmm }])
     }
     catch (error) {
+        // Say WHICH file failed and why: this silence is what turned a write failure into an
+        // unexplained ENOENT inside GET /api/report, one poll later.
+        logger.error(`Could not persist the session for outputId ${outputId}. GET /api/report and GET /api/session will not find it:`)
         logger.error(error)
         //logger.error(res.dmm)
         outputDataTempWriting.value = 'Error during output file creation.'

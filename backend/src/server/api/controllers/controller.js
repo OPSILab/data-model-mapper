@@ -242,7 +242,10 @@ module.exports = {
                 //}))
                 logger.trace(output)
                 //if (jsonOutput || output)
-                res.write(`data: ${JSON.stringify({ message: (jsonOutput.outputFile || output || "Strange, no data") })}\n\n`)
+                // jsonOutput?.outputFile: after the catch above jsonOutput is undefined (missing
+                // file, or content that is not JSON), and the || fallback never got a chance
+                // because the dereference threw first, taking the whole SSE handler down.
+                res.write(`data: ${JSON.stringify({ message: (jsonOutput?.outputFile || output || "Strange, no data") })}\n\n`)
                 res.write(`data: ${JSON.stringify({ close: "now closing" })}\n\n`)
                 //res.write(JSON.stringify(jsonOutput.outputFile) || output)
                 //else
