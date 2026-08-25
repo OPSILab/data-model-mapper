@@ -917,6 +917,7 @@ const sendOutput = async (config, res) => {
     process.dataModelMapper.map = undefined
     process.dataModelMapper.resetConfig = undefined
     logger.debug("Processing time : ", Date.now() - process.env.start)
+    console.debug("Processing time : ", Date.now() - process.env.start)
 };
 
 const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) => {

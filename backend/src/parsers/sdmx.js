@@ -427,6 +427,7 @@ function extractDatasetInfoFromHeader(headerFields, datasetAttrs) {
 let map = require("../../assets/maps")
 
 async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
+  console.log(config.mappingMode)
 
   const snapshot = rows.splice(0, config.batch);
   let rowNumber
@@ -437,7 +438,10 @@ async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
 
       if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
         //logger.debug("rowHandler, ", i)
-        snapshot[i] = map[snapshot[i].survey](snapshot[i])//await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
+        if (config.mappingMode == "light")
+          snapshot[i] = map[snapshot[i].survey](snapshot[i])
+        else
+          snapshot[i] = await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
       }
       else
         break

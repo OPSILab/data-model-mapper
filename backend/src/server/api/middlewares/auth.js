@@ -61,8 +61,14 @@ module.exports = {
             else
                 map = await Map.findOne({ id: req.body.mapID || req.body.adapterID })
                     || await Map.findOne({ name: req.body.mapID || req.body.adapterID })
+            // The map carries a stored config, but assigning it here DISCARDED whatever the
+            // caller sent in the body: a request asking for mappingMode "light" silently ran in
+            // the map's mode. Merge instead, with the request winning, so precedence reads
+            // global config < map config < request config.
+            // JSON round-trip first: config is a Mixed field, so map.config can arrive as a
+            // Mongoose-backed object whose internal keys would leak into the spread.
             if (map?.config)
-                req.body.config = map.config
+                req.body.config = mergeConfig(JSON.parse(JSON.stringify(map.config)), req.body.config || {})
         }
 
         req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})

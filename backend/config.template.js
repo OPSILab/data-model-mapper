@@ -62,6 +62,10 @@ var config = {
         errorsDetails: true
     },
     manualCheckMaximumSpaceOverflow: false, // if true, the check of maximum space overflow will be triggered only by a specific endpoint, otherwise it will be automatically checked at the end of each mapping process
+    
+    dontWriteTempFiles:true,
+    newSdmxDecode : true,
+    mappingMode: "full", // light or full, if light, the mapping will be using maps.js in assets
 
     /********************** 3 INPUTS CONFIGURATION ************************
     * Followings are related to Mapping MANDATORY inputs (source, map, data model).
