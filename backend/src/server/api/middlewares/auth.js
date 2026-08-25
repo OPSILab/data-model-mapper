@@ -108,8 +108,12 @@ module.exports = {
                             break
                         }
                         catch (err) {
-                            logger.warn("Still trying to validate token... ", err.message)
-                            error = err
+                            if (err.message == "invalid token" || err.message == "jwt expired" || err.message == "jwt malformed")
+                                return send(res, 403);
+                            else {
+                                logger.warn("Still trying to validate token... ", err.message)
+                                error = err
+                            }
                         }
                     if (!authenticated) {
                         logger.error(error)

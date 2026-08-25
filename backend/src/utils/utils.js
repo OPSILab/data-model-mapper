@@ -89,6 +89,36 @@ function pathIsOutput(path) {
     )
     return !isNaN(parseInt(path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."))))
 }
+/* The fileWriter output must never be treated as a session. The guards used to compare against
+ * the literal "./output/results.json" (note the stray "s": the real name comes from
+ * config.fileWriter.filePath, "./output/result.json"), while the earlier filter compared against
+ * the Windows form "output\\result.json". On Linux/Docker the path uses forward slashes, so the
+ * filter missed it, the misspelled guards did not protect it, and the file got deleted as an
+ * orphan session. Compare the basename instead, so it holds on every platform.
+ */
+function isFileWriterOutput(p) {
+    if (typeof p !== 'string') return false;
+    const base = p.replaceAll("\\", "/").split("/").pop();
+    const writerBase = String(config.fileWriter?.filePath || "./output/result.json")
+        .replaceAll("\\", "/").split("/").pop();
+    return base === writerBase;
+}
+
+/* A legacy standalone session carries its own outputFile, so it is self-sufficient and must not
+ * be deleted just because it has no batched output folder: that is also the case of any small
+ * mapping, which never exceeds config.batch and therefore never produces one.
+ * Only a session with neither its own data nor a folder is a real orphan.
+ */
+function sessionIsSelfContained(sessionPath) {
+    try {
+        const parsed = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+        return Array.isArray(parsed?.outputFile) && parsed.outputFile.length > 0;
+    } catch (error) {
+        logger.debug(`Could not inspect session ${sessionPath}, treating it as not self-contained: ${error.message}`);
+        return false;
+    }
+}
+
 function pathIsSession(path) {
     return isNaN(parseInt(path.substring(path.lastIndexOf("/"), path.lastIndexOf("."))))
 }
@@ -261,6 +291,13 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
                 sessionedOutputs[file.path].searchingSessionFound = true
         }
         let stats
+        // The file list is a snapshot taken before the sweep, while cleanup removes whole folders
+        // with rmSync(recursive). Siblings of an already-deleted folder are therefore expected to
+        // be gone by the time we reach them: a normal outcome, not an error.
+        if (!fs.existsSync(file.path)) {
+            logger.debug(`Skipping ${file.path}: already removed together with its folder`)
+            continue
+        }
         try {
             stats = fs.statSync(file.path);
         } catch (error) {
@@ -294,7 +331,7 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
                     else
                         orphanSession = file.path
                     logger.debug(`Checking for orphan session with id ${orphanSession} linked to deleted file...`)
-                    if (fs.existsSync(orphanSession) && orphanSession !== "./output/results.json")
+                    if (fs.existsSync(orphanSession) && !isFileWriterOutput(orphanSession))
                         try {
                             fs.unlinkSync(orphanSession);
                         } catch (error) {
@@ -313,12 +350,39 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
         if (!sessionedOutputs[key].searchingSessionFound) {
             logger.warn(`Orphan output detected: ${key}`)
             logger.debug(`Deleting folder ${sessionedOutputs[key].folderPath} for orphan output...`)
-            fs.rmSync(sessionedOutputs[key].folderPath, { recursive: true, force: true });
+            // folderPath is only set for entries first seen as an output file or folder; entries
+            // born from a session file carry filePath instead, and rmSync(undefined) throws.
+            // force:true already tolerates a path that no longer exists.
+            if (sessionedOutputs[key].folderPath)
+                fs.rmSync(sessionedOutputs[key].folderPath, { recursive: true, force: true });
+            else
+                logger.debug(`No folderPath recorded for ${key}, nothing to remove`)
         }
-        else if (!sessionedOutputs[key].searchingOutputFound && sessionedOutputs[key].filePath !== "./output/results.json") {
-            logger.warn(`Orphan session detected: ${key}`)
-            logger.debug(`Deleting file ${sessionedOutputs[key].filePath} for orphan session...`)
-            fs.unlinkSync(sessionedOutputs[key].filePath)
+        else if (!sessionedOutputs[key].searchingOutputFound && !isFileWriterOutput(sessionedOutputs[key].filePath)) {
+            // ignoringOutputId was honoured only for folders (see above), never here: that is why
+            // the session file of the run in progress was deleted milliseconds after being
+            // written, and GET /api/report then failed with ENOENT.
+            // The size-based sweep above may already have removed this very file: the map still
+            // holds the entry, so without this check we inspected a missing file (logging a
+            // misleading "not self-contained") and then unlinked it, and that ENOENT escaped
+            // uncaught all the way up to printFinalReportAndSendResponse.
+            if (!fs.existsSync(sessionedOutputs[key].filePath))
+                logger.debug(`Skipping session ${key}: already removed earlier in this sweep`)
+            else if (ignoringOutputId && String(sessionedOutputs[key].filePath || "").includes(ignoringOutputId))
+                logger.debug(`Keeping session ${key}: it belongs to the mapping currently being finalized`)
+            // A standalone/legacy session holds its own outputFile, and so does any mapping small
+            // enough never to have produced a batched folder: neither is an orphan.
+            else if (sessionIsSelfContained(sessionedOutputs[key].filePath))
+                logger.debug(`Keeping session ${key}: self-contained (it carries its own outputFile)`)
+            else {
+                logger.warn(`Orphan session detected: ${key}`)
+                logger.debug(`Deleting file ${sessionedOutputs[key].filePath} for orphan session...`)
+                try {
+                    fs.unlinkSync(sessionedOutputs[key].filePath)
+                } catch (error) {
+                    logger.error(`Could not delete orphan session ${sessionedOutputs[key].filePath}:`, error)
+                }
+            }
         }
     logger.debug(sessionedOutputs)
     logger.debug("Current filesystem storage size for sessions and outputs: ", Number(usedMB.toFixed(3)), " MB")
@@ -837,14 +901,14 @@ const sendOutput = async (config, res) => {
 
 const printFinalReportAndSendResponse = async (loggerr, minioObj, config, res) => {
 
-    await logger.info('\n--------  MAPPING REPORT ----------\n' +
+    if (config.validCount + config.unvalidCount < config.rowNumber)
+        config.unvalidCount = config.rowNumber - config.validCount
+
+    logger.info('\n--------  MAPPING REPORT ----------\n' +
         '\t Processed objects: ' + config.rowNumber + '\n' +
         '\t Mapped and Validated Objects: ' + config.validCount + '/' + config.rowNumber + '\n' +
         '\t Mapped and NOT Validated Objects: ' + config.unvalidCount + '/' + config.rowNumber + '\n' +
         '-----------------------------------------');
-
-    if (config.validCount + config.unvalidCount < config.rowNumber)
-        config.unvalidCount = config.rowNumber - config.validCount
 
     if (config.mode == 'server') {
         //Mapping report in output file
