@@ -121,6 +121,14 @@ function resetFolderSync(folderPath) {//TODO this should go in a utils
   fs.mkdirSync(folderPath, { recursive: true });
 }
 
+// A 401/403 from the backend means the token is no longer accepted, not that the mapping is wrong.
+// Without telling the two apart, a token expiring mid-suite turns every remaining file into a
+// failure that reads exactly like a mapping bug.
+function isAuthFailure(error) {
+  const status = error?.response?.status || error?.httpStatus
+  return status === 401 || status === 403
+}
+
 async function handleJwtExpired(error) {//TODO this should go in a utils or in a errorHanlder file
   console.log("Handling JWT expiration")
   console.log(error)
@@ -272,16 +280,37 @@ async function test10() {
   const files = fs.readdirSync("./assets/tests/"); // blocca finché non ha finito
   console.log('Contenuto di', "./assets/tests/", ':');
   for (let file of files) {
-    try {
-      if (require("./assets/tests/" + file).pre){
-        console.log("Running pre test for", file)
-        await require("./assets/tests/" + file).pre()
-        console.log("Pre test for", file, "finished")
+    // One retry per file, and only for an auth failure: the token gets refreshed and the file is
+    // replayed once. Anything else, or a second auth failure in a row, is reported as before.
+    // The bound lives in the loop head, but it has to be a counter and not a "retried" flag:
+    // `continue` re-evaluates the condition, so a flag flipped inside the catch would exit the
+    // loop instead of replaying the file, skipping the errorHandler with it.
+    const maxAttempts = 2
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        if (require("./assets/tests/" + file).pre){
+          console.log("Running pre test for", file)
+          await require("./assets/tests/" + file).pre()
+          console.log("Pre test for", file, "finished")
+        }
+        await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
+        attempt++
+        break
+      } catch (error) {
+        if (isAuthFailure(error) && attempt < maxAttempts) {
+          console.log("Auth rejected while running", file, "- refreshing the token and retrying once")
+          await handleJwtExpired(error)
+          // The asset modules captured the old token at require time, so drop them too: the
+          // refresh rewrote token.js, but their own copy would survive in require.cache.
+          for (const cached of Object.keys(require.cache))
+            if (cached.includes("assets" + require("path").sep + "tests"))
+              delete require.cache[cached]
+          continue
+        }
+        errors++
+        errorHandler({ actual: error.actual || serverError(error) || error.message, expected: error.expected || require("./assets/tests/" + file).response, message: error.message }, file + " - pre test")
+        break
       }
-      await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
-    } catch (error) {
-      errors++
-      errorHandler({ actual: error.actual || serverError(error) || error.message, expected: error.expected || require("./assets/tests/" + file).response, message: error.message }, file + " - pre test")
     }
     console.log("Test 10 - ", files.indexOf(file))
   }

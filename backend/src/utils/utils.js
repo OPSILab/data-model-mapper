@@ -385,7 +385,27 @@ async function checkMaximumSpaceOverflow(ignoringOutputId) {
             }
         }
     logger.debug(sessionedOutputs)
-    logger.debug("Current filesystem storage size for sessions and outputs: ", Number(usedMB.toFixed(3)), " MB")
+    // usedMB is accumulated while walking the snapshot, i.e. BEFORE the deletions below it
+    // triggered: it says how much was there, not how much is left. Report it as such, and
+    // measure the size that actually remains.
+    logger.debug("Filesystem storage size for sessions and outputs before cleanup: ", Number(usedMB.toFixed(3)), " MB")
+    logger.debug("Filesystem storage size for sessions and outputs after cleanup: ", Number(measureOutputMB().toFixed(3)), " MB")
+}
+
+// Walks ./output/ and sums what is on disk right now. Deletions use rmSync on whole folders,
+// whose total size is not known at deletion time, so subtracting as we go would drift: a fresh
+// pass over a few dozen files is cheaper than a wrong number.
+function measureOutputMB() {
+    let bytes = 0
+    for (const entry of readDirRecursive("./output/")) {
+        if (entry.folder) continue
+        try {
+            bytes += fs.statSync("./" + entry).size
+        } catch (error) {
+            logger.debug(`Could not size ${entry}, skipping it in the total: ${error.code}`)
+        }
+    }
+    return bytes / (1024 * 1024)
 }
 
 function ngsi(NGSI_entity, confIn) {
