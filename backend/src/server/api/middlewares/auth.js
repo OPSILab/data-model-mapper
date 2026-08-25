@@ -68,10 +68,15 @@ module.exports = {
             // JSON round-trip first: config is a Mixed field, so map.config can arrive as a
             // Mongoose-backed object whose internal keys would leak into the spread.
             if (map?.config)
-                req.body.config = mergeConfig(JSON.parse(JSON.stringify(map.config)), req.body.config || {})
+                if (Array.isArray(req.body.config))
+                    req.body.config = JSON.parse(JSON.stringify(map.config))
+                else
+                    req.body.config = mergeConfig(JSON.parse(JSON.stringify(map.config)), req.body.config || {})
         }
-
-        req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
+        if (Array.isArray(req.body.config))
+            req.body.config = JSON.parse(JSON.stringify(config))
+        else
+            req.body.config = mergeConfig(JSON.parse(JSON.stringify(config)), req.body.config || {})
 
         if (authConfig.disableAuth) {
             let pilot = "shared", username = "shared", email = "shared"
