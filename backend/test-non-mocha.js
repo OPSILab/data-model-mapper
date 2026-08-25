@@ -282,21 +282,28 @@ async function test10() {
   for (let file of files) {
     // One retry per file, and only for an auth failure: the token gets refreshed and the file is
     // replayed once. Anything else, or a second auth failure in a row, is reported as before.
-    // The bound lives in the loop head, but it has to be a counter and not a "retried" flag:
-    // `continue` re-evaluates the condition, so a flag flipped inside the catch would exit the
-    // loop instead of replaying the file, skipping the errorHandler with it.
+    // The counter is advanced ONLY by the for header. Incrementing it inside the body too made
+    // `continue` skip a step, so the retry never ran and the catch below never reported anything:
+    // the file vanished from the results instead of failing. Same trap as a "retried" flag.
     const maxAttempts = 2
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        if (require("./assets/tests/" + file).pre){
+        let pre = require("./assets/tests/" + file).pre
+        if (pre){
           console.log("Running pre test for", file)
-          await require("./assets/tests/" + file).pre()
+          // pre() is async and seeds the DB with the map/source/dataModel this test then
+          // references by id. Without await the transform below races it, and a rejection
+          // inside pre() never reaches the catch: it becomes an unhandled rejection, which
+          // takes the whole suite down instead of failing this one file.
+          await pre()
           console.log("Pre test for", file, "finished")
         }
         await dmmRequestWithReport(file, require("./assets/tests/" + file).body, require("./assets/tests/" + file).response)
-        attempt++
         break
       } catch (error) {
+        // attempt is 1-based, so this reads "there is still an attempt left". With a 0-based
+        // counter it would have to be maxAttempts - 1, and getting that wrong means the last
+        // auth failure exits the loop without ever reaching the errorHandler.
         if (isAuthFailure(error) && attempt < maxAttempts) {
           console.log("Auth rejected while running", file, "- refreshing the token and retrying once")
           await handleJwtExpired(error)
