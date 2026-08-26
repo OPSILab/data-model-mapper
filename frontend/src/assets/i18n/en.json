@@ -12,7 +12,11 @@
       "home": "Home",
       "editor": "Mapper editor",
       "landing": "Landing",
-      "map_records" : "Mapper records"
+      "map_records" : "Mapper records",
+      "light_mapping" : "Light mapping"
+    },
+    "lightMapping": {
+      "placeholder": "This section is under construction."
     },
     "account": {
       "roles": "Your Roles",

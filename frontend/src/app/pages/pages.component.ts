@@ -65,6 +65,11 @@ export class PagesComponent implements OnInit, OnDestroy {
         icon: 'edit-outline',
         link: '/pages/dmm-editor',
       },
+      {
+        title: 'general.menu.light_mapping',
+        icon: 'shuffle-2-outline',
+        link: '/pages/light-mapping',
+      }
     ];
 
     // if put on constructor it will doing twice when refresh a page.

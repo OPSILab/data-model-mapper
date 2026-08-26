@@ -104,10 +104,14 @@ function isFileWriterOutput(p) {
     return base === writerBase;
 }
 
-/* A legacy standalone session carries its own outputFile, so it is self-sufficient and must not
- * be deleted just because it has no batched output folder: that is also the case of any small
- * mapping, which never exceeds config.batch and therefore never produces one.
- * Only a session with neither its own data nor a folder is a real orphan.
+/* Whether an output folder exists depends on the FLOW, not on the amount of data:
+ *   - sdmx / json-stat always write ./output/<id>/N.json, even for a single small batch;
+ *   - csv / json / geojson never write one, however large the mapping, and store everything
+ *     inline in ./output/output<id>.json.
+ * So "no folder" cannot mean "orphan". A session that carries its own outputFile is
+ * self-sufficient and must be kept; only a session with neither its own data nor a folder is a
+ * real orphan, i.e. one whose folder the size-based cleanup has removed.
+ * (The two flows ought to agree on when to split. Deliberately deferred: see docs.)
  */
 function sessionIsSelfContained(sessionPath) {
     try {

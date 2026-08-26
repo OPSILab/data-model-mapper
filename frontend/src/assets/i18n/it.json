@@ -12,7 +12,11 @@
       "home": "Home",
       "editor": "Mapper editor",
       "landing": "Landing",
-      "map_records": "File di mapping registrati"
+      "map_records": "File di mapping registrati",
+      "light_mapping" : "Mappatura semplice"
+    },
+    "lightMapping": {
+      "placeholder": "Questa sezione è in costruzione."
     },
     "account": {
       "roles": "I tuoi ruoli",

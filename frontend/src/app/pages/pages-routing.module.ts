@@ -40,8 +40,8 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'landing',
-        loadChildren: () => import('./landing/landing.module').then((m) => m.LandingModule),
+        path: 'light-mapping',
+        loadChildren: () => import('./light-mapping/light-mapping.module').then((m) => m.LightMappingModule),
         canActivate: [AuthGuard],
       }
     ],

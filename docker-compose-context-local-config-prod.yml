@@ -18,6 +18,7 @@ services:
       - ./frontend/src/assets/config.prod.json:/app/data-model-mapper-gui/pages/dmm-editor/assets/config.json
       - ./frontend/src/assets/config.prod.json:/app/data-model-mapper-gui/login/assets/config.json
       - ./frontend/src/assets/config.prod.json:/app/data-model-mapper-gui/login/loginPopup/assets/config.json
+      - ./frontend/src/assets/config.prod.json:/app/data-model-mapper-gui/pages/light-mapping/assets/config.json
   data-model-mapper-backend:
     image: engineeringopsilab/data-model-mapper-backend
     build: 
