@@ -3,7 +3,12 @@ name: Sync Backend
 on:
   push:
     branches:
-      - fullstack 
+      - frontend_dev
+      - frontend
+      - fullstack
+      - build
+      - debug
+      - main
   workflow_dispatch: 
 
 jobs:

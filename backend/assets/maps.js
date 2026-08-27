@@ -114,8 +114,8 @@ module.exports = {
                 row['obsHR']['citizen'],
                 row['obsHR']['unit'],
                 row['obsHR']['sex'],
-                row['obsHR']['freq'],
                 row['obsHR']['age'],
+                row['obsHR']['freq'],
                 row['obsHR']['time_period']
             ],
             value: row['value'],
@@ -174,8 +174,8 @@ module.exports = {
             timestamp: row['timestamp'],
             dimensions: [
                 row['obsHR']['geo'],
-                row['obsHR']['indic_de'],
                 row['obsHR']['freq'],
+                row['obsHR']['indic_de'],
                 row['obsHR']['time_period']
             ],
             value: row['value'],
@@ -345,9 +345,9 @@ module.exports = {
                 row['obsHR']['age'],
                 row['obsHR']['indic_he'],
                 row['obsHR']['unit'],
-                row['obsHR']['sex'],
-                row['obsHR']['icd10'],
                 row['obsHR']['freq'],
+                row['obsHR']['icd10'],
+                row['obsHR']['sex'],
                 row['obsHR']['time_period']
             ],
             value: row['value'],
@@ -546,9 +546,9 @@ module.exports = {
             fromUrl: row['fromUrl'],
             timestamp: row['timestamp'],
             dimensions: [
+                row['obsHR']['freq'],
                 row['obsHR']['coop_ptn'],
                 row['obsHR']['unit'],
-                row['obsHR']['freq'],
                 row['obsHR']['geo'],
                 row['obsHR']['time_period']
             ],
@@ -651,7 +651,6 @@ module.exports = {
                 row['obsHR']['c_load'],
                 row['obsHR']['c_unload'],
                 row['obsHR']['freq'],
-                row['obsHR']['conf_status'],
                 row['obsHR']['time_period']
             ],
             value: row['value'],
