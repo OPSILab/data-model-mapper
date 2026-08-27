@@ -18,6 +18,7 @@ router.post(encodeURI("/buildGeoJson"), upload.none(), auth, controller.buildGeo
 router.post(encodeURI("/parse"), upload.none(), auth, controller.parse)
 
 router.get(encodeURI("/map"), auth, controller.getMap)
+router.get(encodeURI("/lightMap"), auth, controller.getLightMap)
 router.get(encodeURI("/config"), auth, controller.getConfig)
 router.get(encodeURI("/source"), auth, controller.getSource)
 router.get(encodeURI("/dataModel"), auth, controller.getDataModel)

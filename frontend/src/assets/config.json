@@ -27,5 +27,9 @@
       "it",
       "en"
     ]
+  },
+  "light_mapping": {
+    "get_url": "http://localhost:5500/api/lightMap",
+    "post_url": "http://localhost:5500/api/lightMap"
   }
 }

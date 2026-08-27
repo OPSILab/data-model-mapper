@@ -16,7 +16,13 @@
       "light_mapping" : "Light mapping"
     },
     "lightMapping": {
-      "placeholder": "This section is under construction."
+      "reload": "Reload",
+      "upload": "Upload changes",
+      "loading": "Loading data...",
+      "unsavedChanges": "You have unsaved changes.",
+      "emptyArray": "No data available.",
+      "saveSuccess": "Data uploaded successfully.",
+      "saving": "Uploading..."
     },
     "account": {
       "roles": "Your Roles",

@@ -16,7 +16,13 @@
       "light_mapping" : "Mappatura semplice"
     },
     "lightMapping": {
-      "placeholder": "Questa sezione è in costruzione."
+      "reload": "Ricarica",
+      "upload": "Carica modifiche",
+      "loading": "Caricamento dati...",
+      "unsavedChanges": "Ci sono modifiche non salvate.",
+      "emptyArray": "Nessun dato disponibile.",
+      "saveSuccess": "Dati caricati correttamente.",
+      "saving": "Caricamento in corso..."
     },
     "account": {
       "roles": "I tuoi ruoli",

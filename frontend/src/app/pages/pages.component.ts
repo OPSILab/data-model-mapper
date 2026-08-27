@@ -67,7 +67,7 @@ export class PagesComponent implements OnInit, OnDestroy {
       },
       {
         title: 'general.menu.light_mapping',
-        icon: 'shuffle-2-outline',
+        icon: 'edit-outline',
         link: '/pages/light-mapping',
       }
     ];

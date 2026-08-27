@@ -664,7 +664,7 @@ module.exports = {
   async parseData(source, map, decodeOptions, dataModel, configIn, res, id) {
 
     logger.debug({ source, map, dataModel, configIn })
-   
+
     let config = JSON.parse(JSON.stringify(configGlobal))
 
     if (
@@ -812,8 +812,8 @@ module.exports = {
         res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, {}, false, {}, config, res, decodeOptions, id)
         await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
       }
-      else 
-        throw {error : "No parsing"}
+      else
+        throw { error: "No parsing" }
     }
     catch (error) {
       logger.error(error)
@@ -951,7 +951,7 @@ module.exports = {
         name = id
       id = undefined
     }
-    let query = { }
+    let query = {}
     if (name)
       query.name = name
     if (description)
@@ -962,6 +962,20 @@ module.exports = {
     if (map.dataModel)
       map.dataModel = this.dataModelDeClean(map.dataModel)
     return map
+  },
+
+  getLightMap(id, name, description, prefix) {
+    delete require.cache[require.resolve("../../../../assets/maps.js")];
+    //let lightMap = //fs.readFileSync("./assets/maps.js", "utf-8")
+    let lightMap = require("../../../../assets/maps.js")
+    //lightMap = lightMap.replace("module.exports = ", "")
+    //lightMap = JSON.parse(lightMap)
+    //logger.debug(lightMap)
+    let mapCopy = []
+    for (let map in lightMap) {
+      mapCopy.push({ [map]: lightMap[map].toString().replace("return ", "").replace("(row) => ", "") })
+    }
+    return mapCopy
   },
 
   async getDataModel(id, name, mapRef, prefix) {

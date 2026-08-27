@@ -479,6 +479,22 @@ module.exports = {
         //process.dataModelMapper.resetConfig = undefined
     },
 
+    getLightMap: async (req, res) => {
+        logger.info("Get light map")
+        const { id, name, description } = req.query
+
+        try {
+            //logger.debug(service.getLightMap(id, name, description, req.body.prefix))
+            res.send(service.getLightMap(id, name, description, req.body.prefix))
+        }
+        catch (error) {
+            logger.error(error)
+
+            res.status(error.code || 400).send(error.toString() == "[object Object]" ? error : error.toString())
+        }
+        //process.dataModelMapper.resetConfig = undefined
+    },
+
     getConfig: async (req, res) => {
 
         try {

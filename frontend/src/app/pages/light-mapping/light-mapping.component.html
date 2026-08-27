@@ -1,9 +1,36 @@
-<nb-card>
-  <nb-card-header>
-    <nb-icon icon="edit-outline"></nb-icon>
-    {{ 'general.menu.light_mapping' | translate }}
-  </nb-card-header>
-  <nb-card-body>
-    <p>{{ 'general.lightMapping.placeholder' | translate }}</p>
-  </nb-card-body>
-</nb-card>
+<div class="light-mapping-page">
+  <nb-card class="toolbar-card">
+    <nb-card-body class="toolbar">
+      <div class="title-block">
+        <nb-icon icon="shuffle-2-outline"></nb-icon>
+        <h5>{{ 'general.menu.light_mapping' | translate }}</h5>
+        <span class="dirty-dot" *ngIf="dirty" [title]="'general.lightMapping.unsavedChanges' | translate"></span>
+      </div>
+      <div class="toolbar-actions">
+        <button nbButton status="basic" outline size="small" (click)="load()" [disabled]="loading || saving">
+          <nb-icon icon="refresh-outline"></nb-icon>
+          {{ 'general.lightMapping.reload' | translate }}
+        </button>
+        <button nbButton status="primary" size="small" (click)="save()" [disabled]="!dirty || loading || saving">
+          <nb-icon icon="cloud-upload-outline"></nb-icon>
+          {{ 'general.lightMapping.upload' | translate }}
+        </button>
+      </div>
+    </nb-card-body>
+  </nb-card>
+
+  <nb-card
+    class="editor-card"
+    [nbSpinner]="loading || saving"
+    nbSpinnerStatus="primary"
+    [nbSpinnerMessage]="(loading ? 'general.lightMapping.loading' : 'general.lightMapping.saving') | translate"
+  >
+    <nb-card-body>
+      <ngx-json-array-editor *ngIf="loaded" [items]="data" [depth]="0" (changed)="onChanged()"> </ngx-json-array-editor>
+
+      <div class="empty-state" *ngIf="loaded && (!data || data.length === 0)">
+        {{ 'general.lightMapping.emptyArray' | translate }}
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

@@ -27,5 +27,9 @@
       "it",
       "en"
     ]
+  },
+  "light_mapping": {
+    "get_url": "https://platform.beopendep.it/api/light-mapping/data",
+    "post_url": "https://platform.beopendep.it/api/light-mapping/data"
   }
 }

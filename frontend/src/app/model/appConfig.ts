@@ -6,6 +6,7 @@ export interface AppConfig {
   system: System;
   i18n: I18n;
   data_model_mapper: DataModelMapper;
+  light_mapping: LightMapping;
 }
 
 export interface System {
@@ -44,4 +45,9 @@ export interface DataModelMapper {
   default_mapper_url: string;
   default_map_ID: string;
   connect: boolean;
+}
+
+export interface LightMapping {
+  get_url: string;
+  post_url: string;
 }

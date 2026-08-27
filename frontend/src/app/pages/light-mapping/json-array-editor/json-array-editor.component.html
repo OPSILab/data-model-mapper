@@ -1,0 +1,97 @@
+<div
+  class="json-array"
+  [class.root]="depth === 0"
+  cdkDropList
+  (cdkDropListDropped)="drop($event)"
+>
+  <div
+    class="json-item"
+    [ngClass]="'depth-' + (depth % 5)"
+    *ngFor="let item of items; let i = index; trackBy: trackByIndex"
+    cdkDrag
+  >
+    <div class="drag-handle" cdkDragHandle>
+      <nb-icon icon="menu-outline"></nb-icon>
+    </div>
+
+    <div class="item-index">{{ i + 1 }}</div>
+
+    <div class="item-content">
+      <!-- valore primitivo (elemento diretto dell'array) -->
+      <ng-container *ngIf="isPrimitive(item)">
+        <nb-toggle
+          *ngIf="isBoolean(item); else primitiveInput"
+          [checked]="item"
+          (checkedChange)="items[i] = $event; onValueChanged()"
+        ></nb-toggle>
+        <ng-template #primitiveInput>
+          <input
+            class="value-input"
+            [ngModel]="item"
+            (ngModelChange)="items[i] = $event; onValueChanged()"
+            [type]="isNumber(item) ? 'number' : 'text'"
+          />
+        </ng-template>
+        <span class="type-badge">{{ typeOf(item) }}</span>
+      </ng-container>
+
+      <!-- oggetto: campi scalari + eventuali array innestati -->
+      <ng-container *ngIf="isObject(item)">
+        <div class="object-fields">
+          <div class="field-row" *ngFor="let key of objectKeys(item)">
+            <ng-container *ngIf="isPrimitive(item[key])">
+              <label class="field-label">{{ key }}</label>
+              <nb-toggle
+                *ngIf="isBoolean(item[key]); else objectPrimitiveInput"
+                [checked]="item[key]"
+                (checkedChange)="item[key] = $event; onValueChanged()"
+              ></nb-toggle>
+              <ng-template #objectPrimitiveInput>
+                <input
+                  class="value-input"
+                  [ngModel]="item[key]"
+                  (ngModelChange)="item[key] = $event; onValueChanged()"
+                  [type]="isNumber(item[key]) ? 'number' : 'text'"
+                />
+              </ng-template>
+            </ng-container>
+          </div>
+
+          <div class="nested-array" *ngFor="let key of objectKeys(item)">
+            <ng-container *ngIf="isArray(item[key])">
+              <div class="nested-label">
+                <nb-icon icon="folder-outline"></nb-icon>
+                <span class="key-name">{{ key }}</span>
+                <span class="type-badge">array · {{ item[key].length }}</span>
+              </div>
+              <ngx-json-array-editor
+                [items]="item[key]"
+                [depth]="depth + 1"
+                (changed)="onValueChanged()"
+              ></ngx-json-array-editor>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- elemento che è a sua volta un array -->
+      <ng-container *ngIf="isArray(item)">
+        <div class="nested-label">
+          <nb-icon icon="folder-outline"></nb-icon>
+          <span class="type-badge">array · {{ item.length }}</span>
+        </div>
+        <ngx-json-array-editor
+          [items]="item"
+          [depth]="depth + 1"
+          (changed)="onValueChanged()"
+        ></ngx-json-array-editor>
+      </ng-container>
+    </div>
+
+    <div class="drag-placeholder" *cdkDragPlaceholder></div>
+  </div>
+
+  <div class="empty-state" *ngIf="!items || items.length === 0">
+    {{ 'general.lightMapping.emptyArray' | translate }}
+  </div>
+</div>
