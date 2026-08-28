@@ -13,7 +13,7 @@ module.exports = () => {
     const log = require('../utils/logger')//.app(module);
     const { type } = require('os');
     const { Logger } = log
-    const logger = new Logger(__filename)
+    const logger = require('percocologger')
     const dmmServer = express();
 
     swaggerDocument.host = (config.host == "host.docker.internal" ? "localhost" : config.host) + (config.externalPort ? ":" + (config.externalPort || 5500) : "")

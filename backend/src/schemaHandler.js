@@ -22,9 +22,7 @@ const fs = require('fs');
 const startHttp = /http:\/\//g;
 const RefParser = require('json-schema-ref-parser');
 
-const log = require('./utils/logger')//.app(module);
-const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const report = require('./utils/logger').report;
 const config = require('../config')
 

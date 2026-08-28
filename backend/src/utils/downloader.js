@@ -5,7 +5,7 @@ const path = require("path");
 const { Readable } = require("stream");
 const log = require('./logger')//.app(module);
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 
 async function downloadAndParse(url) {
     const response = await axios.get(url, {

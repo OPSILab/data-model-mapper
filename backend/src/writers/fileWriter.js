@@ -20,7 +20,7 @@
 var fs = require('fs');
 const log = require('../utils/logger')//.app(module);
 const {Logger} = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const utils = require('../utils/utils');
 const config = require('../../config').fileWriter;
 

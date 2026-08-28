@@ -22,7 +22,7 @@ const config = require('../../config')
 
 const log = require('../utils/logger')//.app(module);
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const utils = require('../utils/utils');
 
 module.exports = async (sourceDataIn, mapPathIn, dataModelIn, schema, NGSI_entity, minioObj, config, res, decodeOptions, rawSourceData, sourceDataType) => {

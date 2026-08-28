@@ -4,7 +4,7 @@ const common = require("../../../utils/common.js")
 const { waiting } = utils
 const log = require('../../../utils/logger')//.app(module);
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const fs = require("fs");
 const EventEmitter = require('events');
 const globalConfig = require("../../../../config.js")
@@ -289,6 +289,7 @@ module.exports = {
             await waiting("map")
             process.dataModelMapper.map = "busy"
         }
+        logger.debug({body:req.body})
         let { sourceData, map, decodeOptions, dataModel } = utils.bodyMapper(req.body, req.query)
         const emitter = new EventEmitter();
         emitter.on('message', (message) => {

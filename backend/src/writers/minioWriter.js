@@ -4,7 +4,7 @@ const { sleep } = require('../utils/common')
 const Source = require("../server/api/models/source.js")
 const log = require('../utils/logger')//.app(module);
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 
 let minioClient = new Minio.Client({
   endPoint: minioConfig.endPoint,

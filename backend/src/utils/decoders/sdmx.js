@@ -12,7 +12,7 @@ const axios = require("axios");
 const Output = require('../../server/api/models/output');
 const log = require('../logger')//.app(module);
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 
 const nuts = {
   "NUTS-2024": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2024_3035.geojson', 'utf-8')),

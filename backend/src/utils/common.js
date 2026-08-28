@@ -2,7 +2,7 @@
 let logIndex = 0
 const log = require('./logger')
 const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const proj4 = require('proj4');
 const Terraformer = require('terraformer');
 const TerraformerProj4js = require('terraformer-proj4js');

@@ -28,9 +28,7 @@ const toArrayPattern = /toarray:(.*)/;
 const forEachPattern = /foreach:(.*)/;
 const dotPattern = /(.*)\.(.*)/;
 
-const log = require('./utils/logger')//.app(module);
-const { Logger } = log
-const logger = new Logger(__filename)
+const logger = require('percocologger')
 const Debugger = require('./utils/debugger');
 const { type } = require('os');
 const report = require('./utils/logger').report;
