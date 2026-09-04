@@ -8,15 +8,16 @@ RUN apt-get update && apt-get install -y gnupg \
       | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
  && apt-get update && apt-get install -y mongodb-mongosh \
  && rm -rf /var/lib/apt/lists/*
-COPY ./backend/dataModels ./dataModels
-COPY ./backend/docs ./docs
-COPY ./backend/src ./src
+COPY ./backend . 
+#COPY ./backend/dataModels ./dataModels
+#COPY ./backend/docs ./docs
+#COPY ./backend/src ./src
 RUN mkdir ./output
 RUN mkdir ./input
 #COPY ./backend/config*.js ./
-COPY ./backend/*.config*.js ./
-COPY ./backend/mapper.js ./
-COPY ./backend/LICENSE ./
+#COPY ./backend/*.config*.js ./
+#COPY ./backend/mapper.js ./
+#COPY ./backend/LICENSE ./
 COPY ./backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN date > /app/date.txt
