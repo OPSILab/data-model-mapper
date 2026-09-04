@@ -100,6 +100,7 @@ module.exports = {
                 if (authHeader && !authHeader.startsWith("Bearer"))
                     authHeader = "Bearer " + authHeader
 
+                logger.debug("Authorization header:", authHeader)
                 const jwtToken = authHeader.split(' ')[1];
 
                 //logger.debug("!" + jwtToken, "\n", Buffer.from(jwtToken.split(".")[1], 'base64').toString())

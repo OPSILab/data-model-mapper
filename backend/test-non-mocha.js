@@ -66,7 +66,7 @@ function minify(str) {
   return str.substring(0, 100) + "..." + str.substring(str.length - 100)
 }
 
-function stringify(obj){
+function stringify(obj) {
   try {
     return JSON.stringify(obj, null, 2)
   }
@@ -75,7 +75,7 @@ function stringify(obj){
   }
 }
 
-function parse(str){
+function parse(str) {
   try {
     return JSON.parse(str)
   }
@@ -133,7 +133,23 @@ async function handleJwtExpired(error) {//TODO this should go in a utils or in a
   console.log("Handling JWT expiration")
   console.log(error)
   authorization = await keycloak.updateJWT()
-  email = jwt.verify(authorization, config.authConfig.publicKey, { algorithms: ['RS256'] }).email
+  let emailUpdated = false
+  //let error
+  for (let key of config.authConfig.publicKeys)
+    try {
+      email = jwt.verify(authorization, key, { algorithms: ['RS256'] }).email
+      emailUpdated = true
+    }
+    catch (e) {
+      console.log("JWT verification failed with public key", key, ":", e.message)
+      error = e
+    }
+  if (!emailUpdated){
+    console.error("JWT verification failed with all public keys")
+    console.error(error)
+    console.error("now closing the test suite because the JWT is not valid")
+    process.exit(1)
+  }
   console.log(email)
 }
 
@@ -289,7 +305,7 @@ async function test10() {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
         let pre = require("./assets/tests/" + file).pre
-        if (pre){
+        if (pre) {
           console.log("Running pre test for", file)
           // pre() is async and seeds the DB with the map/source/dataModel this test then
           // references by id. Without await the transform below races it, and a rejection
