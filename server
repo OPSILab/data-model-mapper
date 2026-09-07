@@ -2,22 +2,20 @@ FROM node:16-bullseye
 WORKDIR /app
 COPY ./backend/package*.json ./
 RUN npm install
-RUN apt-get update && apt-get install -y gnupg \
- && wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | apt-key add - \
- && echo "deb [ arch=amd64 ] https://repo.mongodb.org/apt/debian bullseye/mongodb-org/7.0 main" \
-      | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
- && apt-get update && apt-get install -y mongodb-mongosh \
+RUN rm -rf /var/lib/apt/lists/* \
+ && apt-get clean \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates wget gnupg \
+ && wget -qO /usr/share/keyrings/mongodb-server-7.0.gpg \
+      https://www.mongodb.org/static/pgp/server-7.0.asc \
+ && echo "deb [ arch=amd64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bullseye/mongodb-org/7.0 main" \
+      > /etc/apt/sources.list.d/mongodb-org-7.0.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends mongodb-mongosh \
  && rm -rf /var/lib/apt/lists/*
 COPY ./backend . 
-#COPY ./backend/dataModels ./dataModels
-#COPY ./backend/docs ./docs
-#COPY ./backend/src ./src
 RUN mkdir ./output
 RUN mkdir ./input
-#COPY ./backend/config*.js ./
-#COPY ./backend/*.config*.js ./
-#COPY ./backend/mapper.js ./
-#COPY ./backend/LICENSE ./
 COPY ./backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN date > /app/date.txt
