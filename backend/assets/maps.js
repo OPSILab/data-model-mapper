@@ -15,7 +15,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     BD_HGNACE_R: (row) => {
@@ -35,7 +36,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     BD_SALGE1_NACE_R: (row) => {
@@ -55,7 +57,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     BD_SALGE1_SIZE_R: (row) => {
@@ -76,7 +79,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     CENS_21COBHS_R3: (row) => {
@@ -99,7 +103,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     CENS_21CTZ_R3: (row) => {
@@ -121,7 +126,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     CENS_21M_R3: (row) => {
@@ -143,7 +149,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     DEMO_R_D3DENS: (row) => {
@@ -162,7 +169,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     DEMO_R_GIND3: (row) => {
@@ -181,7 +189,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     DEMO_R_PJANAGGR3: (row) => {
@@ -202,7 +211,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     DEMO_R_PJANGRP3: (row) => {
@@ -223,7 +233,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     EDAT_LFSE_22: (row) => {
@@ -246,7 +257,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     EDUC_UOE_ENRA14: (row) => {
@@ -266,7 +278,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     EDUC_UOE_ENRT06: (row) => {
@@ -287,7 +300,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     EF_LUS_ALLCROPS: (row) => {
@@ -310,7 +324,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ENV_WASFAC: (row) => {
@@ -330,7 +345,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     HLTH_CO_DISCH1T: (row) => {
@@ -353,7 +369,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ISOC_R_BLT12_I: (row) => {
@@ -373,7 +390,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ISOC_R_CI_IT_EN2: (row) => {
@@ -395,7 +413,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ISOC_R_GOV_I: (row) => {
@@ -415,7 +434,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ISOC_R_IACC_H: (row) => {
@@ -434,7 +454,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ISOC_R_IUSE_I: (row) => {
@@ -454,7 +475,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     NAMA_10R_3EMPERS: (row) => {
@@ -475,7 +497,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     NAMA_10R_3GVA: (row) => {
@@ -495,7 +518,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     NAMA_10R_3NLP: (row) => {
@@ -515,7 +539,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     NRG_CHDDR2_A: (row) => {
@@ -535,7 +560,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     PAT_EP_TOT: (row) => {
@@ -555,7 +581,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     RD_E_GERDREG: (row) => {
@@ -575,7 +602,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ROAD_GO_NA_RL3G: (row) => {
@@ -595,7 +623,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     ROAD_GO_NA_RU3G: (row) => {
@@ -615,7 +644,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     TRAN_R_ELVEHST: (row) => {
@@ -635,7 +665,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     },
     TRAN_R_RAPA: (row) => {
@@ -656,7 +687,8 @@ module.exports = {
             value: row['value'],
             obs: row['obs'],
             obsHR: row['obsHR'],
-            rawDimensions: row['rawDimensions']
+            rawDimensions: row['rawDimensions'],
+            reordered: true
         }
     }
 }
