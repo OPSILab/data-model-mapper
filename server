@@ -1,23 +1,47 @@
-FROM node:16-bullseye
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVM_DIR=/root/.nvm
+
 WORKDIR /app
-COPY ./backend/package*.json ./
-RUN npm install
-RUN rm -rf /var/lib/apt/lists/* \
- && apt-get clean \
- && apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates wget gnupg \
- && wget -qO /usr/share/keyrings/mongodb-server-7.0.gpg \
-      https://www.mongodb.org/static/pgp/server-7.0.asc \
- && echo "deb [ arch=amd64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/debian bullseye/mongodb-org/7.0 main" \
-      > /etc/apt/sources.list.d/mongodb-org-7.0.list \
- && apt-get update \
- && apt-get install -y --no-install-recommends mongodb-mongosh \
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      curl \
+      ca-certificates \
+      wget \
  && rm -rf /var/lib/apt/lists/*
-COPY ./backend . 
-RUN mkdir ./output
-RUN mkdir ./input
+
+# NVM + Node 16
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash \
+ && . "$NVM_DIR/nvm.sh" \
+ && nvm install 16.20.2 \
+ && nvm alias default 16.20.2
+
+ENV PATH="/root/.nvm/versions/node/v16.20.2/bin:$PATH"
+
+# mongosh
+RUN wget -q https://downloads.mongodb.com/compass/mongosh-2.3.8-linux-x64.tgz \
+ && tar -xzf mongosh-2.3.8-linux-x64.tgz \
+ && mv mongosh-2.3.8-linux-x64/bin/mongosh /usr/local/bin/mongosh \
+ && rm -rf mongosh-2.3.8-linux-x64.tgz mongosh-2.3.8-linux-x64
+
+RUN node --version \
+ && npm --version \
+ && mongosh --version
+
+COPY ./backend/package*.json ./
+
+RUN npm install
+
+COPY ./backend .
+
+RUN mkdir ./output ./input
+
 COPY ./backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 RUN date > /app/date.txt
-#RUN sed -i 's/localhost/host.docker.internal/g' /app/config.js
+
 CMD ["node", "mapper"]
