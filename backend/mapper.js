@@ -17,7 +17,7 @@
  ******************************************************************************/
 const log = require('./src/utils/logger')
 const { Logger } = log
-process.percocologger = require("./percocologger.config");
+process.percocologger = require("./percocologger.config.json");
 const logger = require('percocologger')
 process.dataModelMapper = {}
 
