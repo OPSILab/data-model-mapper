@@ -249,6 +249,6 @@ async function download(url) {
     return result
 }
 
-//const jsonUrl = "https://dx-lab.eng.it/data-model-mapper-gui/assets/source.json"
+//const jsonUrl = "http://localhost:12345/data-model-mapper-gui/assets/source.json"
 //const tarGzUrl = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/NAMA_10R_3GDP?format=sdmx_2.1_structured&compressed=true"
 module.exports = download
