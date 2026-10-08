@@ -885,6 +885,11 @@ const sendOutput = async (config, res) => {
     try {
         if (res.dmm.source.data && res.dmm.source.url)
             res.dmm.source.data = undefined
+        // source.download.data is the same Buffer fetched by the downloader (service.js).
+        // JSON.stringify would expand it via Buffer.prototype.toJSON into one array element per
+        // byte (sparse/dictionary-mode array), exhausting the heap on large datasets.
+        if (res.dmm.source.download)
+            res.dmm.source.download = undefined
         if (config.sessionLocation.filesystem)
             // JSON.stringify is mandatory: writeFileSync rejects a plain object with
             // ERR_INVALID_ARG_TYPE, so the enabled branch could only ever throw. The Mongo
