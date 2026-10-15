@@ -16,7 +16,7 @@ module.exports = {
             return await jsonStatDecoder(payload, id);
         }
         else if (decodeOptions.decodeFrom === 'sdmx-xml')
-            return await sdmxDecoder(payload, null, null, null, decodeOptions.fromUrl, id);
+            return await sdmxDecoder(payload, null, null, null, decodeOptions.fromUrl, id, config);
         else
             throw new Error("Unsupported decodeFrom option");
     }

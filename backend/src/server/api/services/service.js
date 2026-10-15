@@ -605,6 +605,9 @@ module.exports = {
         logger.debug("Decode options provided, using decodeOptions mapping")
         logger.debug(decodeOptions)
         logger.debug(map)
+        // as process.js does for the other paths: counters reset and exposed to GET /reportSync
+        Object.assign(config, { validCount: 0, unvalidCount: 0, orionWrittenCount: 0, orionUnWrittenCount: 0, orionSkippedCount: 0, fileWrittenCount: 0, fileUnWrittenCount: 0, rowNumber: 0 })
+        res.dmm.config = config
         res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, schema, NGSI_entity, minioObj, config, res, decodeOptions, id)
         await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
         //res.dmm.outputFile = res.dmm.outputFile[0]
@@ -809,6 +812,9 @@ module.exports = {
         logger.debug("Decode options provided, using decodeOptions mapping")
         logger.debug(decodeOptions)
         logger.debug(map)
+        // as process.js does for the other paths: counters reset and exposed to GET /reportSync
+        Object.assign(config, { validCount: 0, unvalidCount: 0, orionWrittenCount: 0, orionUnWrittenCount: 0, orionSkippedCount: 0, fileWrittenCount: 0, fileUnWrittenCount: 0, rowNumber: 0 })
+        res.dmm.config = config
         res.dmm.outputFile = await decodeHandler.handleDecode(source, map, dataModel, {}, false, {}, config, res, decodeOptions, id)
         await utils.printFinalReportAndSendResponse(logger, null, config, res)//TODO test this
       }

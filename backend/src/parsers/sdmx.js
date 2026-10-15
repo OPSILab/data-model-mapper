@@ -426,26 +426,34 @@ function extractDatasetInfoFromHeader(headerFields, datasetAttrs) {
 
 let map = require("../../assets/maps")
 
+const { waitForFeedback } = require("../utils/streamFeedback")
+
 async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
-  console.log(config.mappingMode)
+  logger.debug(config.mappingMode)
 
   const snapshot = rows.splice(0, config.batch);
   let rowNumber
-  if (map[snapshot[0].survey])
-    for (let i = 0; i < snapshot.length; i++) {
-      rowNumber = Number(config.rowNumber) + 1;
-      config.rowNumber = rowNumber;
+  // rows of surveys without an entry in assets/maps are written as they are (as before), but they are counted
+  // too: otherwise the report stayed at 0 for the whole mapping
+  const assetMap = map[snapshot[0].survey]
+  for (let i = 0; i < snapshot.length; i++) {
+    rowNumber = Number(config.rowNumber) + 1;
+    config.rowNumber = rowNumber;
+    if (!assetMap)
+      continue
 
-      if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
-        //logger.debug("rowHandler, ", i)
-        if (config.mappingMode == "light")
-          snapshot[i] = map[snapshot[i].survey](snapshot[i])
-        else
-          snapshot[i] = await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
+    if (rowNumber >= config.rowStart && rowNumber <= config.rowEnd) {
+      //logger.debug("rowHandler, ", i)
+      if (config.mappingMode == "light") {
+        snapshot[i] = assetMap(snapshot[i])
+        config.validCount = Number(config.validCount || 0) + 1 // light maps do not validate: mapped = valid
       }
       else
-        break
+        snapshot[i] = await funcParams.processRow(rowNumber, snapshot[i], funcParams.map, funcParams.schema, funcParams.processMappedObject, funcParams.NGSI_entity, funcParams.minioObj, funcParams.config, funcParams.res);//TODO this does not return nothing
     }
+    else
+      break
+  }
   if (config.sessionLocation.mongo) {
     if (!collectedOutput)
       logger.warn("No collectedOutput available, cannot save batch of rows to MongoDB");
@@ -457,6 +465,10 @@ async function flushRows(rows, collectedOutput, id, part, config, funcParams) {
       fs.mkdirSync('./output/' + id + '/', { recursive: true });
     fs.writeFileSync('./output/' + id + '/' + part + '.json', JSON.stringify(snapshot), 'utf8');
   }
+  config.partsWritten = part // read by GET /reportSync
+  if (config.waitForFeedback)
+    await waitForFeedback(id, part, config)
+  //  funcParams.res.write(JSON.stringify(snapshot) + "\n");
   logger.debug(snapshot.length + " Datapoints salvati nel database.");
 }
 
@@ -550,6 +562,8 @@ async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collec
         logger.error("Error While finalizing the streaming process: ");
         logger.error(error)
       }
+      // without this the promise never settled for Generic SDMX: fetchDatasetRows and mapData hung forever
+      resolve();
     } catch (err) { reject(err); }
   });
 }
@@ -747,6 +761,14 @@ async function sdmxDecoder(
     return [{ id }];
   } catch (err) {
     logger.error(err);
+    // cli/setup.js turns this error into setupError and does not rethrow, so nobody closed the session: in
+    // streamMode it stayed "running" forever and the client polled forever. Closing it here marks it as
+    // ended with an error (GET /reportSync) and, without streamMode, answers 500 with the real message.
+    try {
+      res?.dmm?.deleteSession?.(err)
+    } catch (error) {
+      logger.error(error)
+    }
     throw err;
   }
 }

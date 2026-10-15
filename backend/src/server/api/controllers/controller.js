@@ -10,9 +10,58 @@ const EventEmitter = require('events');
 const globalConfig = require("../../../../config.js")
 const Session = require("../models/session.js");
 
+// Sessions already ended (done or error). this[id] is deleted when a session ends, so without this a client
+// polling GET /reportSync could not tell "finished" from "never existed". Kept for a while, then dropped.
+const endedSessions = new Map()
+const ENDED_SESSIONS_TTL = 60 * 60 * 1000
+
+// MAPPING_REPORT while running and at the end. While running the total is not known yet (the source is
+// streamed, the rows are counted as they come), so the second number is "?" until the session has ended.
+function buildMappingReport(config, ended) {
+    const rowNumber = config?.rowNumber || 0
+    const total = ended ? rowNumber : "?"
+    return {
+        Processed_objects: rowNumber,
+        Mapped_and_Validated_Objects: (config?.validCount || 0) + '-' + total,
+        Mapped_and_NOT_Validated_Objects: (config?.unvalidCount || 0) + '-' + total,
+    }
+}
+
+function rememberEndedSession(id, config, error) {
+    if (!id || endedSessions.has(id)) // the first end wins (a session can be closed twice on error)
+        return
+    const now = Date.now()
+    for (const [key, value] of endedSessions)
+        if (now - value.endedAt > ENDED_SESSIONS_TTL)
+            endedSessions.delete(key)
+    endedSessions.set(id, {
+        endedAt: now,
+        status: error ? "error" : "done",
+        error: error ? error.toString() : undefined,
+        parts: config?.partsWritten || 0,
+        MAPPING_REPORT: buildMappingReport(config, true)
+    })
+    if (process.dmm?.feedback)
+        delete process.dmm.feedback[id]
+}
+
 module.exports = {
 
+    // The client of a streamed mapping (config.waitForFeedback) has stored the last part and lets the session go on.
+    // Per session (?id=<outputId>); without id it unblocks whichever session is waiting (old clients).
+    feedback: async (req, res) => {
+        const id = req.query.id
+        logger.info("Feedback received" + (id ? " for session " + id : " without session id"))
+        if (!process.dmm)
+            process.dmm = {}
+        if (!process.dmm.feedback)
+            process.dmm.feedback = {}
+        process.dmm.feedback[id || "*"] = true
+        res.send({ message: "Feedback received" })
+    },
+
     parse: async (req, res) => {
+        let responseSent = false
         logger.debug("Parse data")
         while (process.dataModelMapper?.lockMapping)
             await common.sleep(100, "parse waiting for lock")
@@ -30,6 +79,7 @@ module.exports = {
                 if (!req.query.streamMode) {
                     let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
+                    responseSent = true
                 }
                 /*Session.insertMany({ sessionId: id }).then(result => {
                     logger.log('session inserted');
@@ -42,18 +92,27 @@ module.exports = {
             else if (message.toString().startsWith("error")) {
                 logger.info("error")
                 delete this[id]
-                res.status(500).send(message.toString().substring(5))
+                if (!responseSent) {
+                    res.status(500).send(message.toString().substring(5))
+                    responseSent = true
+                }
                 logger.info(message, " ", id)
             }
             else {
                 logger.info("Not recognized message for session ", id, ": ", message)
                 //this[id] = null
-                if (!req.query.streamMode) {
+                if (!responseSent) {
                     let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
+                    outputFile.push(message)
                     res.send(outputFile);
+                    responseSent = true
+                }
+                else {
+                    res.status(500).send(message)
+                    responseSent = true
                 }
                 delete this[id]
-                res.status(500).send(message)
+                //res.status(500).send(message)
                 logger.info(message, " ", id)
             }
         });
@@ -63,15 +122,21 @@ module.exports = {
             if (error.response) {
                 logger.error(error.response.data)
                 logger.error(error.request)
-                res.status(error.response.status).send(error.response.data)
+                if (!req.query.streamMode && !responseSent) {
+                    res.status(error.response.status).send(error.response.data)
+                    responseSent = true
+                }
             }
-            else
+            else if (!responseSent) {
                 res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+                responseSent = true
+            }
         })
         let id
         try {
             function deleteSession(error) {
                 logger.info("Emitting delete for session ", id)
+                rememberEndedSession(id, res.dmm?.config, error)
                 process.dataModelMapper.map = undefined
                 process.dataModelMapper.resetConfig = undefined
                 if (error)
@@ -86,11 +151,16 @@ module.exports = {
             ] = { res }//TODO .push instead?
             res.dmm = { outputID: id }
             res.dmm.deleteSession = deleteSession
-            if (req.query.streamMode)
+            if (req.query.streamMode && !responseSent) {
                 res.send({ id })
+                responseSent = true
+            }
             //res.send(id)
             let result = await service.parseData(sourceData, map, decodeOptions, dataModel, req.body.config, res, id)
-            if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
+            if (process.dataModelMapper.setupError && !responseSent) {
+                res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
+                responseSent = true
+            }
         }
         catch (error) {
             //TODO here should be catched errors from process.js too. Actually there is a workaround in process.js with res.status(500) but it should be fixed properly. The error was genereted from mapHandler
@@ -98,10 +168,15 @@ module.exports = {
             if (error.response) {
                 logger.error(error.response.data)
                 logger.error(error.request)
-                res.status(error.response.status).send(error.response.data)
+                if (!responseSent) {
+                    res.status(error.response.status).send(error.response.data)
+                    responseSent = true
+                }
             }
-            else
+            else if (!responseSent) {
                 res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+                responseSent = true
+            }
         }
         process.dataModelMapper.setupError = null
         logger.info("controller.parse end");
@@ -144,6 +219,10 @@ module.exports = {
                             logger.debug("Output file found for session ", req.query.id, " with index ", req.query.index + 1, ", reading file...")
                             output = fs.readFileSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json", 'utf-8')
                             jsonOutput = JSON.parse(output)//);
+                            if(req.query.deleteAfterRead === "true") {
+                                fs.unlinkSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json")
+                                fs.writeFileSync("./output/" + req.query.id + "/" + (req.query.index + 1)+ ".json", "Deleted" )
+                            }
                             return res.send(jsonOutput)
                         }
                         else
@@ -198,17 +277,35 @@ module.exports = {
             res.send(session)
     },
 
+    // State of a session: running (completed: false, totals "?"), ended (completed: true, status done|error, final
+    // report), or unknown id ({ data: "No data" }, as before: never existed, expired, or the mapper was restarted).
+    // parts = output parts written so far (./output/<id>/<n>.json or the output collection).
     getReportSync: async (req, res) => {
-        let config = this[req.query.id]?.res.dmm.config
-        if (!config)
-            res.send({ data: "No data" })
-        else
-            res.send({
-                MAPPING_REPORT: {
-                    Processed_objects: config.rowNumber,
-                    Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
-                    Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
-                },
+        const session = this[req.query.id]
+        const config = session?.res.dmm.config
+        const ended = endedSessions.get(req.query.id)
+        if (!session && ended)
+            return res.send({
+                completed: true,
+                status: ended.status,
+                error: ended.error,
+                parts: ended.parts,
+                MAPPING_REPORT: ended.MAPPING_REPORT
+            })
+        if (!session)
+            return res.send({ data: "No data" })
+        if (!config) // registered, still downloading / setting up
+            return res.send({
+                completed: false,
+                status: "starting",
+                parts: 0,
+                MAPPING_REPORT: buildMappingReport(null, false)
+            })
+        res.send({
+                completed: false,
+                status: "running",
+                parts: config.partsWritten || 0,
+                MAPPING_REPORT: buildMappingReport(config, false),
                 ORION_REPORT: utils.isOrionWriterActive() ? {
                     "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
                     "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
@@ -261,11 +358,7 @@ module.exports = {
                     res.write(JSON.stringify({ data: "No data" }))
                 else {
                     let message = {
-                        MAPPING_REPORT: {
-                            Processed_objects: config.rowNumber,
-                            Mapped_and_Validated_Objects: config.validCount + '-' + config.rowNumber,
-                            Mapped_and_NOT_Validated_Objects: config.unvalidCount + '-' + config.rowNumber,
-                        },
+                        MAPPING_REPORT: buildMappingReport(config, false),
                         ORION_REPORT: utils.isOrionWriterActive() ? {
                             "Object written to Orion Context Broker": config.orionWrittenCount.toString() + '/' + config.validCount.toString(),
                             "Object NOT written to Orion Context Broker": config.orionUnWrittenCount.toString() + '/' + config.validCount.toString(),
@@ -282,6 +375,7 @@ module.exports = {
 
     mapData: async (req, res) => {
 
+        let responseSent = false
         while (process.dataModelMapper?.lockMapping)
             await common.sleep(100, "mapData waiting for lock")
 
@@ -289,16 +383,17 @@ module.exports = {
             await waiting("map")
             process.dataModelMapper.map = "busy"
         }
-        logger.debug({body:req.body})
+        logger.debug({ body: req.body })
         let { sourceData, map, decodeOptions, dataModel } = utils.bodyMapper(req.body, req.query)
         const emitter = new EventEmitter();
         emitter.on('message', (message) => {
             if (message == "delete") {
                 logger.info("Deleting session ", id)
                 //this[id] = null
-                if (!req.query.streamMode) {
+                if (!req.query.streamMode && !responseSent) {
                     let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
+                    responseSent = true
                 }
                 /*Session.insertMany({ sessionId: id }).then(result => {
                     logger.log('session inserted');
@@ -311,18 +406,25 @@ module.exports = {
             else if (message.toString().startsWith("error")) {
                 logger.info("error")
                 delete this[id]
-                res.status(500).send(message.toString().substring(5))
+                if (!responseSent) {
+                    res.status(500).send(message.toString().substring(5))
+                    responseSent = true
+                }
                 logger.info(message, " ", id)
             }
             else {
                 logger.info("Not recognized message for session ", id, ": ", message)
                 //this[id] = null
-                if (!req.query.streamMode) {
+                if (!responseSent) {
                     let outputFile = ((req.body.config.mappingReport !== false && globalConfig.mappingReport) || !res.dmm.outputFile[res.dmm.outputFile.length - 1]["MAPPING_REPORT"]) ? res.dmm.outputFile : res.dmm.outputFile.slice(0, res.dmm.outputFile.length - 1)
                     res.send(outputFile);
+                    responseSent = true
+                }
+                else {
+                    res.status(500).send(message)
+                    responseSent = true
                 }
                 delete this[id]
-                res.status(500).send(message)
                 logger.info(message, " ", id)
             }
         });
@@ -332,15 +434,21 @@ module.exports = {
             if (error.response) {
                 logger.error(error.response.data)
                 logger.error(error.request)
-                res.status(error.response.status).send(error.response.data)
+                if (responseSent) {
+                    res.status(error.response.status).send(error.response.data)
+                    responseSent = true
+                }
             }
-            else
+            else if (!responseSent) {
                 res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+                responseSent = true
+            }
         })
         let id
         try {
             function deleteSession(error) {
                 logger.info("Emitting delete for session ", id)
+                rememberEndedSession(id, res.dmm?.config, error)
                 process.dataModelMapper.map = undefined
                 process.dataModelMapper.resetConfig = undefined
                 if (error)
@@ -355,11 +463,16 @@ module.exports = {
             ] = { res }//TODO .push instead?
             res.dmm = { outputID: id }
             res.dmm.deleteSession = deleteSession
-            if (req.query.streamMode)
+            if (req.query.streamMode && !responseSent) {
                 res.send({ id })
+                responseSent = true
+            }
             //res.send(id)
             let result = await service.mapData(sourceData, map, decodeOptions, dataModel, req.body.config, res, id)
-            if (process.dataModelMapper.setupError) res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
+            if (process.dataModelMapper.setupError && !responseSent) {
+                res.status(404).send(process.dataModelMapper.setupError + ".\nMaybe the files name you specified are not correct.")
+                responseSent = true
+            }
         }
         catch (error) {
             //TODO here should be catched errors from process.js too. Actually there is a workaround in process.js with res.status(500) but it should be fixed properly. The error was genereted from mapHandler
@@ -367,10 +480,15 @@ module.exports = {
             if (error.response) {
                 logger.error(error.response.data)
                 logger.error(error.request)
-                res.status(error.response.status).send(error.response.data)
+                if (!responseSent) {
+                    res.status(error.response.status).send(error.response.data)
+                    responseSent = true
+                }
             }
-            else
+            else if (!responseSent) {
                 res.status(400).send(error.toString() == "[object Object]" ? error : error.toString())
+                responseSent = true
+            }
         }
         process.dataModelMapper.setupError = null
         logger.info("controller.mapData end");

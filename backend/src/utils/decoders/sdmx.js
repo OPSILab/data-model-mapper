@@ -13,6 +13,7 @@ const Output = require('../../server/api/models/output');
 const log = require('../logger')//.app(module);
 const { Logger } = log
 const logger = require('percocologger')
+const { waitForFeedback } = require("../streamFeedback")
 
 const nuts = {
   "NUTS-2024": JSON.parse(fs.readFileSync('./src/utils/decoders/lighterGeojson/lighter-NUTS_RG_60M_2024_3035.geojson', 'utf-8')),
@@ -423,8 +424,11 @@ function extractDatasetInfoFromHeader(headerFields, datasetAttrs) {
   return info;
 }
 
-async function flushRows(rows, collectedOutput, id, part) {
-  
+// requestConfig: the per-request config (batch and sessionLocation still come from the global one, as before).
+// It gets the progress read by GET /reportSync (rowNumber, partsWritten) and, with waitForFeedback, the parse
+// stops after each part until the client has stored it.
+async function flushRows(rows, collectedOutput, id, part, requestConfig) {
+
   const snapshot = rows.splice(0, config.batch);
   if (config.sessionLocation.mongo) {
     if (!collectedOutput)
@@ -438,9 +442,15 @@ async function flushRows(rows, collectedOutput, id, part) {
     fs.writeFileSync('./output/' + id + '/' + part + '.json', JSON.stringify(snapshot), 'utf8');
   }
   logger.debug(snapshot.length + " Datapoints salvati nel database.");
+  if (requestConfig) {
+    requestConfig.rowNumber = Number(requestConfig.rowNumber || 0) + snapshot.length
+    requestConfig.partsWritten = part
+    if (requestConfig.waitForFeedback)
+      await waitForFeedback(id, part, requestConfig)
+  }
 }
 
-async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id) {
+async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id, requestConfig) {
   return new Promise(async (resolve, reject) => {
     const saxParser = new SaxesParser({ xmlns: false });
     let rows = [], part = 1;
@@ -515,17 +525,17 @@ async function parseGenericSdmxRows(buffer, enrichRowFn, timeDimensionId, collec
       for (let i = 0; i < buf.length; i += CHUNK_SIZE) {
         saxParser.write(buf.slice(i, i + CHUNK_SIZE).toString('utf8'));
         if (rows.length > config.batch) {
-          await flushRows(rows, collectedOutput, id, part++);
+          await flushRows(rows, collectedOutput, id, part++, requestConfig);
         }
       }
       saxParser.close();
-      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++);
+      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++, requestConfig);
       resolve();
     } catch (err) { reject(err); }
   });
 }
 
-async function parseStructureSpecificRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id) {
+async function parseStructureSpecificRows(buffer, enrichRowFn, timeDimensionId, collectedOutput, id, requestConfig) {
   return new Promise(async (resolve, reject) => {
     const saxParser = new SaxesParser({ xmlns: false });
     let rows = [], part = 1;
@@ -591,25 +601,25 @@ async function parseStructureSpecificRows(buffer, enrichRowFn, timeDimensionId, 
       for (let i = 0; i < buf.length; i += CHUNK_SIZE) {
         saxParser.write(buf.slice(i, i + CHUNK_SIZE).toString('utf8'));
         if (rows.length > config.batch) {
-          await flushRows(rows, collectedOutput, id, part++);
+          await flushRows(rows, collectedOutput, id, part++, requestConfig);
         }
       }
       saxParser.close();
-      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++);
+      if (rows.length > 0) await flushRows(rows, collectedOutput, id, part++, requestConfig);
       resolve();
     } catch (err) { reject(err); }
   });
 }
 
-async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id) {
+async function fetchDatasetRows(dataset, filters = {}, enrichRow, timeDimensionId, collectedOutput, id, requestConfig) {
   const buf = Buffer.isBuffer(dataset) ? dataset : Buffer.from(dataset);
   const sniff = buf.slice(0, 512).toString('utf8');
   const isStructureSpecific = sniff.includes('StructureSpecificData');
 
   if (isStructureSpecific) {
-    await parseStructureSpecificRows(buf, enrichRow, timeDimensionId, collectedOutput, id);
+    await parseStructureSpecificRows(buf, enrichRow, timeDimensionId, collectedOutput, id, requestConfig);
   } else {
-    await parseGenericSdmxRows(buf, enrichRow, timeDimensionId, collectedOutput, id);
+    await parseGenericSdmxRows(buf, enrichRow, timeDimensionId, collectedOutput, id, requestConfig);
   }
 }
 
@@ -650,7 +660,8 @@ async function tryEurostatFlow(dataset, BASE, fromUrl) {
 }
 
 
-async function sdmxDecoder(dataset, datastructure, codelists, BASE, fromUrl, id) {
+// requestConfig is optional: callers that do not pass it keep the old behaviour (no progress, no waiting)
+async function sdmxDecoder(dataset, datastructure, codelists, BASE, fromUrl, id, requestConfig) {
   const collectedOutput = config.sessionLocation.mongo ? Output(id) : null;
   try {
     if (!datastructure && config.decodeOptions.sdmxTryEurostatFlow) {
@@ -670,7 +681,8 @@ async function sdmxDecoder(dataset, datastructure, codelists, BASE, fromUrl, id)
       translator.enrichRow,
       translator.timeDimensionId,
       collectedOutput,
-      id
+      id,
+      requestConfig
     );
 
     return [{ id }];
