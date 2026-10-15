@@ -219,10 +219,8 @@ module.exports = {
                             logger.debug("Output file found for session ", req.query.id, " with index ", req.query.index + 1, ", reading file...")
                             output = fs.readFileSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json", 'utf-8')
                             jsonOutput = JSON.parse(output)//);
-                            if(req.query.deleteAfterRead === "true") {
-                                fs.unlinkSync("./output/" + req.query.id + "/" + (req.query.index + 1) + ".json")
-                                fs.writeFileSync("./output/" + req.query.id + "/" + (req.query.index + 1)+ ".json", "Deleted" )
-                            }
+                            // no deletion here: a part read but not yet stored by the client must stay whole until
+                            // its feedback (config.deleteAckedParts, utils/streamFeedback.js)
                             return res.send(jsonOutput)
                         }
                         else
