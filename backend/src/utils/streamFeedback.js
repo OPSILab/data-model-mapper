@@ -5,7 +5,8 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // config.waitForFeedback (sent by the Source Connector): after writing a part, wait until the client says it
 // has stored it (GET /api/feedback?id=<id>), so the parts do not pile up faster than they are consumed.
-// Per session; "*" is the feedback of old clients that send no id. Gives up after streamFeedbackTimeoutMs.
+// Per session and per part: feedback[id] is the highest part acknowledged (a number), or true from clients that
+// send no part number; "*" comes from clients that send no id. Gives up after streamFeedbackTimeoutMs.
 // With config.deleteAckedParts the acknowledged part is then emptied (see emptyAckedPart).
 // Used by parsers/sdmx.js (map) and utils/decoders/sdmx.js (parse).
 async function waitForFeedback(id, part, config) {
@@ -17,12 +18,14 @@ async function waitForFeedback(id, part, config) {
   const timeout = Number(config.streamFeedbackTimeoutMs) || 30 * 60 * 1000
   const start = Date.now()
   logger.debug(`Session ${id}: part ${part} written, waiting for feedback to continue processing...`)
-  while (!feedback[id] && !feedback["*"]) {
+  const acknowledged = () => feedback["*"] || feedback[id] === true || (typeof feedback[id] === "number" && feedback[id] >= part)
+  while (!acknowledged()) {
     if (Date.now() - start > timeout)
       throw new Error(`Session ${id}: no feedback for part ${part} after ${timeout / 1000}s, the client stopped reading the output`)
     await sleep(500)
   }
-  delete feedback[id]
+  if (feedback[id] === true) // one-shot acknowledgement: consumed. A part number stays (it only grows)
+    delete feedback[id]
   delete feedback["*"]
   if (config.deleteAckedParts)
     emptyAckedPart(id, part, config)

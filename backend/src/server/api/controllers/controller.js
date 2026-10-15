@@ -47,16 +47,23 @@ function rememberEndedSession(id, config, error) {
 
 module.exports = {
 
-    // The client of a streamed mapping (config.waitForFeedback) has stored the last part and lets the session go on.
-    // Per session (?id=<outputId>); without id it unblocks whichever session is waiting (old clients).
+    // The client of a streamed mapping (config.waitForFeedback) has stored a part and lets the session go on.
+    // ?id=<outputId>&part=<n>: the highest part acknowledged is kept, so a repeated feedback (a client retry after
+    // a connection reset whose first attempt did arrive) is harmless and never unblocks the following part.
+    // Without part: acknowledges whatever part is waiting (older clients); without id: any session.
     feedback: async (req, res) => {
         const id = req.query.id
-        logger.info("Feedback received" + (id ? " for session " + id : " without session id"))
+        const part = Number(req.query.part)
+        logger.info("Feedback received" + (id ? " for session " + id : " without session id") + (part ? ", part " + part : ""))
         if (!process.dmm)
             process.dmm = {}
         if (!process.dmm.feedback)
             process.dmm.feedback = {}
-        process.dmm.feedback[id || "*"] = true
+        const feedback = process.dmm.feedback
+        if (id && part > 0)
+            feedback[id] = Math.max(typeof feedback[id] === "number" ? feedback[id] : 0, part)
+        else
+            feedback[id || "*"] = true
         res.send({ message: "Feedback received" })
     },
 
