@@ -10,6 +10,8 @@
 5. [Logging](#logging)
 6. [License](#license)
 
+Technical documentation (streamed sessions, authentication, database flows): [backend/docs/README.md](backend/docs/README.md)
+
 --------------------
 
 <a name="introduction"></a>

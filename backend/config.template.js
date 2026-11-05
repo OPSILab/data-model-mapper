@@ -193,7 +193,7 @@ config.authConfig = {
     clientId: "",
     username: "",
     password: "",
-    disableAuth: "false",
+    disableAuth: false, // a boolean: any non-empty string, "false" included, counts as true
     authProfile: "oidc",
     authRealm: "",
     introspect: false, // validate jwt with keycloak

@@ -34,6 +34,20 @@ function send(res, status, body) {
     process.dataModelMapper.resetConfig = undefined
 }
 
+// RFC 6750 / RFC 9110: no token, or a token that is not valid (malformed, wrong signature, expired, not active, not
+// issued for this client): 401 with WWW-Authenticate - the client gets a new token and retries. 403 only for a valid
+// token without the permission (bucket, role): a new token would not change that.
+const JWT_ERRORS = new Set(["JsonWebTokenError", "TokenExpiredError", "NotBeforeError"])
+function unauthorized(res, description) {
+    try {
+        res.set("WWW-Authenticate", description ? `Bearer error="invalid_token", error_description="${String(description).replace(/["\\]/g, "'")}"` : "Bearer")
+    }
+    catch (error) {
+        logger.error(error)
+    }
+    return send(res, 401, description ? "Invalid token: " + description : "Authentication required")
+}
+
 module.exports = {
     auth: async (req, res, next) => {
 
@@ -120,8 +134,8 @@ module.exports = {
                             break
                         }
                         catch (err) {
-                            if (err.message == "invalid token" || err.message == "jwt expired" || err.message == "jwt malformed")
-                                return send(res, 403);
+                            if (err.name == "TokenExpiredError" || err.message == "invalid token" || err.message == "jwt malformed")
+                                return unauthorized(res, err.message);
                             else {
                                 logger.warn("Still trying to validate token... ", err.message)
                                 error = err
@@ -129,8 +143,8 @@ module.exports = {
                         }
                     if (!authenticated) {
                         logger.error(error)
-                        if (error.message == "invalid token" || error.message == "jwt expired" || error.message == "jwt malformed")
-                            return send(res, 403);
+                        if (JWT_ERRORS.has(error?.name))
+                            return unauthorized(res, error.message);
                         else
                             return send(res, 500);
                     }
@@ -146,8 +160,8 @@ module.exports = {
                     catch (error) {
 
                         logger.error(error)
-                        if (error.message == "invalid token" || error.message == "jwt expired" || error.message == "jwt malformed")
-                            return send(res, 403);
+                        if (JWT_ERRORS.has(error?.name))
+                            return unauthorized(res, error.message);
                         else
                             return send(res, 500);
                     }
@@ -168,7 +182,7 @@ module.exports = {
                                 next();
                             } else {
                                 logger.error('Token not valid.');
-                                send(res, 403)
+                                return unauthorized(res, 'token not active')
                             }
                         })
                         .catch(error => {
@@ -252,12 +266,12 @@ module.exports = {
                         logger.debug(decodedToken.azp)
                         logger.debug(authConfig.clientId)
                         logger.debug((decodedToken.exp * 1000) - Date.now())
-                        send(res, 403)
+                        return unauthorized(res, 'token not issued for this client or expired')
                     }
                 }
             }
             else
-                send(res, 401)
+                return unauthorized(res)
         }
     }
 };
