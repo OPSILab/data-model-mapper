@@ -2,298 +2,225 @@
 
 ## Introduction
 
-The Data model mapper GUI is a graphic user interface for the Data model mapper.
-The Data model mapper functionalities are explained in [Data model mapper Readme](../Readme.md)
+The Data model mapper GUI is the graphic user interface of the Data model mapper: it lets you write a mapper record
+(source, configuration, schema, map), try it on your data and save it, so that the Data model mapper can use it.
+What the mapper does and the meaning of each map and configuration field are explained in the
+[Data model mapper README](https://github.com/OPSILab/data-model-mapper#readme).
 
-## Home
+The screenshots use made-up data.
 
-The section **Home** is where you can see all mapper records
+## Layout
 
-![](images/home.png)
+![Home](images/home.png)
 
-By clicking the button in the column **Actions** you can see a menu. If the status of the mapper record is *Under development* you can see three options: 
+- **Side menu**: *Home*, *Mapper records* (the saved mapper records), *Mapper editor* (create or edit a record).
+- **Top bar**: the theme, the language (English / Italian), the logged user and the **?** button, which opens the
+  online help (`data_model_mapper.helpUrl` in the GUI `config.json`).
 
-![](images/home-actions-menu.png)
+## Mapper records
 
-- *Edit mapper*. You'll be redirected in the mapper editor section and you can edit the record
-- *Register*. You'll set the status of the mapper to *Completed*
-- *Delete*. The mapper will be deleted.
+The list of the mapper records of the logged user.
 
- If the status of the mapper is *Completed* you can see two options:
+![Mapper records](images/mapper-records.png)
 
- ![](images/home-actions-menu-2.png) 
+- Filter by name or description with the fields under the column titles; **CLEAR FILTERS** empties them.
+- **ADD MAPPER** opens the Mapper editor with a new record; **REFRESH** reloads the list.
+- The selector under the table sets how many records are shown per page.
 
-- *Transform*. You can try the mapper with an input file
-- *Deregister*. You'll change the status to *Under development*
+The **Status** column tells whether a record is *Under development* (orange) or *Completed* (green). The buttons of
+the **Actions** column depend on it:
 
-If you click *Transform*, a dialog with two accordion will appear.
+| Status | Button | What it does |
+|---|---|---|
+| Under development | pencil | opens the record in the Mapper editor |
+| Under development | lock | registers the record: it becomes *Completed* and can no longer be edited |
+| Under development | bin | deletes the record (asks for confirmation) |
+| Completed | play | transforms a source with the record (see below) |
+| Completed | open lock | deregisters the record: it goes back to *Under development* and can be edited again |
 
-## Source
+![Register](images/register-dialog.png)
 
-In the *Source* accordion, you'll see the csv input editor for sourceDataType csv
+![Delete](images/delete-dialog.png)
 
-![](images/transform-1.png)
+### Transforming with a completed record
 
-or the json input editor for sourceDataType json
+The play button opens the transformation in three steps: **Source**, **Output** and **Body and curl**.
 
-![](images/transform-1_2.png)
+In *Source* give the data to transform, as in the [Source](#1-source) step of the editor (paste it, pick it from
+the database or MinIO, or upload it), then press **Next**.
 
-You can edit the source data in the same way explained in **Mapper editor section**.
+![Transform: source](images/transform-source.png)
 
-## Output
+In *Output* press **TRANSFORM**: the result appears in the editor below and can be saved with **DOWNLOAD** (JSON) or
+**DOWNLOAD GEOJSON**. *Body and curl* shows the same request ready to be sent to the API (see
+[Body and curl](#6-body-and-curl)).
 
-In the *Output* accordion, you can transform your source input file by clicking *TRANFORM* button and download the transformed source by clicking the *DOWNLOAD* button.
-
-![](images/transform-2.png)
-
-If in your config.js file you have enabled the *mappingReport*, your last element of the array output will contain a report of your mapping, such as skipping files and object written to orion if enabled in *witers*
+![Transform: output](images/transform-output.png)
 
 ## Mapper editor
 
-The section **Map editor** is where you can save or edit mapper settings.
+![Mapper editor](images/editor.png)
 
-![](images/editor.png)
+At the top:
 
-It contains the following accordion 
+- **Select mapper record** loads a saved record, with its source, configuration, schema and map.
+- **CREATE NEW** empties the editor.
+- **SAVE AS NEW** saves the editor content as a new record; **UPDATE** (shown when a record under development is
+  opened from the list) saves the changes to that record. See [Saving](#saving).
+- **EXPORT** downloads the record (see [Exporting](#exporting)); **UPLOAD** loads a record from a file or a url.
 
--   *Source*. Where you can set the source input
--   *Mapper*. Where you can set the mapper options
--   *Output*. Where you can see a preview of the mapped source
--   *Config*. Where you can ser the transform config
+![Select mapper record](images/select-mapper-record.png)
 
-## Source
+Below, the record is written in six steps. Click a number to go to that step, or use **Back** and **Next** at the
+bottom. A completed step is green.
 
-In the **Source** accordion you can import a source file or edit it.
+![A loaded record](images/editor-record.png)
 
-![](images/source-1.png)
+### 1. Source
 
-Firstly, select the input type source
+The data to map. Choose the input type first, **CSV** or **JSON** (GeoJSON is JSON).
 
-![](images/select-input-type.png)
+![Input type](images/select-input-type.png)
 
-For CSV input type, this it the source editor
+The source can be:
 
-![](images/empty-csv.png)
+- written or pasted in the editor;
+- taken from the Data model mapper: choose **db** (sources saved in its database) or **minio** (files in MinIO) in
+  **From**, then the file in **Select source file**;
+- uploaded with **UPLOAD**, from a file of your computer (**file**, then **BROWSE**) or from a url (**url**, then
+  write the address), and confirmed with the **UPLOAD** button of the dialog.
 
-You can either write your CSV data inside the textarea or import it by clicking the upload button.
-If you want to import it, click **UPLOAD** button and a dialog will appear
+![Upload: file or url](images/import-dialog.png)
 
-![](images/import.png)
+![Upload from a url](images/import-from-url.png)
 
-By clicking on the select labeled **Select csv data** you can chose to import a source file from your PC 
+When the source is ready, press **UPDATE SOURCE FIELDS**: the fields of the source become the ones offered by the
+guided mapping of the [Map file](#4-map-file) step.
 
-![](images/import-from-file-csv.png)
+**CSV.** Write the rows in *CSV TEXT*, and choose the separator of your file (comma, semi-colon or tab).
 
-or from a remote URL
+![CSV source](images/source-csv.png)
 
-![](images/import-from-url.png)
+![Separator](images/separator.png)
 
-If you select **URL** paste or write the URL in the *Data URL* input and click **UPLOAD**.
+*CSV TABLE* shows the same data as a table: if the columns are not split correctly, the separator is wrong.
 
-If you chose **file** then you have to click **BROWSE** button and select your file from the explorer window
+![CSV table](images/source-csv-table.png)
 
-![](images/explorer-window.png)
+**JSON.** The source is shown in a JSON editor; its **View** menu switches to **Code**, to write or paste the JSON
+as text. If the objects to map are not at the top of the document, choose where they are with **Select path**
+(`root.` is the top; the value at the chosen path must be an array).
 
-Click **open** and then click **UPLOAD**
+![JSON source](images/source-json.png)
 
-![](images/import-from-file-csv-upload.png)
+![Select path](images/select-path.png)
 
-You'll see the textarea filled with your source file
+### 2. Configuration
 
-![](images/csv-textarea.png)
+The transform configuration of this record: the same fields as the `config.js` of the Data model mapper (their
+meaning is in its README), here valid for this record only. Edit them in the editor and press **UPDATE CONFIG**;
+**RESET CONFIG** brings back the configuration of the server.
 
-If you prefer a table view, click on **CSV TABLE**
+![Configuration](images/configuration.png)
 
-![](images/csv-source.png)
+### 3. Schema
 
-If your table is not formatted properly, you must change the colon separator with the one present in your source file
+The JSON schema of the output, for example a Smart Data Model or any other JSON schema. Pick one saved in the
+Data model mapper with **Select Json Schema**, upload one with **UPLOAD**, or write it in the editor.
 
-![](images/separator.png)
+![Schema](images/schema.png)
 
-Then you'll see the CSV formatted in a table view
+![Select a schema](images/select-schema.png)
 
-![](images/csv-source.png)
+**GENERATE MAPPER** writes the skeleton of the map from the schema: one key for every field of the output, to be
+filled in the next step.
 
-If you want to import or edit a JSON file, click on the input type select and chose JSON
+### 4. Map file
 
-![](images/select-input-type.png)
+The map: for each output key, where its value comes from. It can be written by hand, in the tree or (from the menu
+next to *Tree*) in code mode, following the syntax in the README: a source field name (e.g. `address`), a static
+value (`static:Point`), an array that concatenates fields, nested objects for nested output fields.
 
-You'll see a JSON editor
+![Map file](images/map-file.png)
 
-![](images/json-input.png)
+Or with the guided dialog: click the small button at the left of a key and choose **Map**.
 
-You can write your JSON code by clicking on **View**
+![Map menu](images/map-context-menu.png)
 
-![](images/view-code.png)
+![Map dialog](images/map-dialog.png)
 
-and selecting **Code**
+- **Select encode option**: `none`, or `base64` to encode the value.
+- **Single or multi input**: `single` takes one value; `multi` concatenates several values (into an array or a string,
+  depending on the type of the output field in the schema).
+- **Direct or static input**: `direct` takes the value from a field of the source, `static` is a fixed value.
 
-![](images/json-as-code.png)
+According to the choices:
 
-If you want to import it, the steps are the same as mentioned for CSV import.
+| Choice | What to fill in |
+|---|---|
+| single + direct | the source field, from the list of the source fields |
+| single + static | the static value |
+| multi + direct | a source field, then **ADD ELEMENT**, for each field; *Values inserted* shows the list |
+| multi + static | a static value, then **ADD ELEMENT**, for each value |
 
-![](images/import-from-file-json.png)
+![Single, direct](images/map-single-direct.png)
 
-![](images/import-from-file-2.png)
+![Single, static](images/map-single-static.png)
 
-If you select **View** instead of **Code** you will see the JSON formatted differently
+![Multi, direct](images/map-multi-direct.png)
 
-![](images/json-input-2.png)
+![Multi, static](images/map-multi-static.png)
 
-When you finished editing your source, click on **UPDATE SOURCE FIELDS** button and then click on **Select path** to select the path where you want to start analyzing your source field and subfields in order to map them. The value at selected path must be a json array.
+**CONFIRM** writes the mapping into the key; **RESET** starts the choices again.
 
-## Mapper
+### 5. Output
 
-In this section you can set the output schema
+Try the record on the source:
 
-![](images/mapper_1.png)
+- **PREVIEW** maps the source and shows the result;
+- **TRANSFORM** runs the same mapping as a session of the Data model mapper and shows the result when it has ended,
+  better for large sources;
+- **DOWNLOAD** saves the result as JSON, **DOWNLOAD GEOJSON** as GeoJSON.
 
-and the mapper settings
+![Output](images/output-preview.png)
 
-![](images/mapper_2.png)
+When the mapping report is enabled (`mappingReport` in the configuration), the last element of the result is the
+report: how many objects were processed, how many were mapped and validated against the schema and how many were
+not (`Mapped_and_NOT_Validated_Objects`), and what was written to Orion when the Orion writer is enabled.
 
-You can import a schema if you want set automatically the skeleton of the output. Click **UPLOAD** and the steps are the same as mentioned before for source imput. Same if you want to set it manually, just click **View** and then select **Code**
+![Output with the report](images/output-transform.png)
 
-Once you finished writing or importing the schema, click on **GENERATE MAPPER** button (it will be showed once you start typing or once you imported the schema) to generate the mapper skeleton. 
+### 6. Body and curl
 
-![](images/Schema-wrote.png)
+The request that does the same transformation through the API of the Data model mapper (`POST /api/map/transform`),
+to use from other programs: the **curl** command and the request **payload**. Press **UPDATE** to rebuild them after
+changing the record.
 
-If you prefer doing it manually, go down to the mapper editor
-
-![](images/mapper_2.png)
-
-click **tree** and then **code**
-
-![](images/map-options-2.png)
-
-this time, other 2 view features are available :
-
-- *Tree*.  A tree like view, with a button near each field to easily map your subfield
-
-- *Preview*.  A read only JSON map mapper preview
-
-**Code** and **View** are the same as source editor.
-
-If you imported the schema or you selected it from the select menu, you can start mapping your output subfield.
-
-If you selected **Code** you can write manually the mapper settings as explained in [Data model mapper Readme](../Readme.md).
-
-If you selected **Tree** mode, you can click next to the key subfield , on the **value** input field, and you can manually map the subfield there by texting it. 
-
-![](images/manual-insert.png)
-
-or you can click the button near the mapping subfield if you want to be guided by a dialog UI.
-First click it
-
-![](images/map-options.png)
-
-then click Map
-
-![](images/map-option.png)
-
-and a dialog will appear so you can easily select the map options from a select menu.
-
-![](images/map-settings.png)
-
-- Under *Select encode option* you can select the encode option (select *none* if you don't want to encode your output subfield)
-
-- Under *Select single or multi output* you can chose if you want to concatenate some input subfield and / or static values into an array or an output string (depending on the schema destination type). Allowed values are **Single** or **Multi**
-
-- Under *Direct or static input* you can chose to pick the output value from a source subfield or from a static value. Allowed values are **Direct** or **Static**
-
-According to your choises : 
-
-- If you chose **Single** and **Direct** you'll see an input menu where you can select the source input subfield to pick for the desired mapped output subfield 
-
-![](images/map-settings-single-direct.png)
-
-![](images/map-settings-single.png)
-
-- If you chose **Single** and **Static** you'll see an input field where you can write a static value for the desired mapped output subfield 
-
-![](images/map-settings-single-static.png)
-
-- If you chose **Multi** and **Direct** you'll see an input menu where you can select the source input subfield to pick for the desired mapped output subfield, an **Add Element** button to add it to an array / string (according to destination schema subfield type) and an ouput preview that will be filled each time you click **Add Element** button
-
-![](images/map-settings-multi.png)
-
-- If you chose **Multi** and **Static** you'll see an input field where you can write a static value for the desired mapped output subfield, an **Add Element** button to add it to an array / string (according to destination schema subfield type) and an ouput preview that will be filled each time you click **Add Element** button
-
-![](images/map-settings-multi-static.png)
-
-Click **Confirm** to confirm your choices, **Reset** if you want to redo the mapping from the beginning (for the selected subfield).
-
-You can also import a schema from Data model mapper DB by clicking **Select Json schema** and selecting the desired one
-
-![](images/select-schema.png)
-
-or import the entire mapper record by clicking **IMPORT** on the top of the page
-
-![](images/editor.png)
-
-or by selecting it from the Data model mapper DB 
-
-![](images/select-map-settings.png)
-
-## Output
-
-In this section you can see an ouptut preview (max 3 rows).
-
-![](images/output.png)
-
-Click **PREVIEW** and you'll see the output preview in an JSON editor similar to the ones mentioned for the *Source* and *Mapper* accordion, but this time the available view options are **View** and **Preview**.
-
-If in your config.js file you have enabled the *mappingReport*, your last element of the array output will contain a report of your mapping, such as skipping files and object written to orion if enabled in *witers*
-
-![](images/output-2.png)
+![Body and curl](images/body-curl.png)
 
 ## Saving
 
-If the Output preview is good, you can save the map or export it.
+**SAVE AS NEW** asks for a name, a description and the status of the record (*Under development* or *Completed*), and
+saves it in the Data model mapper. When the source or the schema differ from the ones loaded (or always, with
+`alwaysPromptSaveSource` / `alwaysPromptSaveSchema` in the GUI `config.json`), the dialog also offers to save them as
+separate records, to be reused by other maps.
 
-If you want to change something, you can go back to the desired editor and modify the related text. If you want to reset all, click **CREATE NEW** button.
+![Save](images/save-dialog.png)
 
-If you want to download mapper record, just click **EXPORT** button.
+To change a saved record, open it from **Mapper records** with the pencil (records *Under development* only), edit it,
+and press **UPDATE**. The name cannot be changed; description and status can.
 
-If you want to save mapper record into Data model mapper Database , click **SAVE AS NEW**.
+![Update button](images/editor-update.png)
 
-![](images/editor_top.png)
+![Update](images/update-dialog.png)
 
-A save dialog will appear.
+## Exporting
 
-![](images/save-dialog.png)
+**EXPORT** downloads the record: **Snippet** as the curl command (a `.bash` file), **File** as the JSON body of the
+request (a `.json` file).
 
-Chose a univoque Map ID and a name for the mapper record and then click save.
+![Export](images/export-dialog.png)
 
-## Updating
+**UPLOAD**, next to it, loads a record from a file or a url.
 
-If you want to update mapper record, click on **UPDATE**  button
-
-![](images/editor-after-save.png)
-
-and an update dialog will appear.
-
-![](images/update-dialog.png)
-
-The Map ID is can't be touched, but you can edit the other fields. 
-After finished, click **UPDATE** button.
-
-## Server endpoint
-
-If you want to use call the API endpoint with CURL, you can go to *Server endpoint* accordion and click the *UPDATE* button. You'll see the CURL snippet in a code view.
-
-![](images/curl.png)
-
-## Example payload
-
-If you just need an example payload, you can go to *example payload* accordion and click the *UPDATE* button. You'll see the body example in a read-only json editor.
-
-![](images/body.png)
-
-## Config accordion
-
-The config settings can be modified by writing them on the **Config file** in the *backend* folder once you install the Data model mapper, however you can set your transform config template for each mapper record. Go down to the *Config* accordion and click it.
-
-![](images/config.png)
-
-You can go to [README](../README.md) to read what each field mean. Once you finished modifying it, click on **UPDATE CONFIG** button or **RESER CONFIG** button if you want to revert all config fields to default.
+![Upload a record](images/upload-record-dialog.png)
